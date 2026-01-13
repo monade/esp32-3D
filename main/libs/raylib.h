@@ -191,7 +191,6 @@ typedef enum {
     MOUSE_BUTTON_BACK    = 6,       // Mouse button back (advanced mouse device)
 } MouseButton;
 
-// Variabili globali per timing e FPS
 static int64_t last_time_us = 0;
 static int64_t frame_start_time_us = 0;
 static int target_fps = 0;
@@ -208,7 +207,6 @@ static uint16_t framebuffer[LCD_W * LCD_H];
 
 static inline uint16_t color_to_rgb565(Color c) {
     uint16_t rgb = (uint16_t)(((c.r & 0xF8) << 8) | ((c.g & 0xFC) << 3) | (c.b >> 3));
-    // Swap bytes per big-endian (ST7789)
     return (rgb >> 8) | (rgb << 8);
 }
 
@@ -263,7 +261,6 @@ static void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 
 void ClearBackground(Color color) {
     uint16_t rgb565_color = color_to_rgb565(color);
-    // Riempi il buffer invece di scrivere direttamente sullo schermo
     for (int i = 0; i < LCD_W * LCD_H; i++) {
         framebuffer[i] = rgb565_color;
     }
@@ -287,7 +284,6 @@ void DrawRectangle(int posX, int posY, int width, int height, Color color) {
 
     uint16_t rgb565_color = color_to_rgb565(color);
     
-    // Scrivi sul buffer invece che direttamente sullo schermo
     for (int y = 0; y < height; y++) {
         int lCD_offset = (posY + y) * LCD_W + posX;
         for (int x = 0; x < width; x++) {
@@ -303,7 +299,6 @@ void lcd_init(void) {
     gpio_set_direction(PIN_RST, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_BL, GPIO_MODE_OUTPUT);
     
-    // Configura i pulsanti come input con pull-up
     gpio_set_direction(PIN_BUTTON_LEFT, GPIO_MODE_INPUT);
     gpio_set_pull_mode(PIN_BUTTON_LEFT, GPIO_PULLUP_ONLY);
     gpio_set_direction(PIN_BUTTON_RIGHT, GPIO_MODE_INPUT);
@@ -345,7 +340,7 @@ void lcd_init(void) {
     lcd_cmd(0x3A);
     lcd_data(&colmod, 1);
 
-    // Rotation landscape (modifica se necessario)
+    // Rotation landscape
     uint8_t madctl = 0x60;
     g_w = LCD_W;
     g_h = LCD_H;
@@ -386,7 +381,6 @@ void BeginDrawing() {
 }
 
 void EndDrawing() {
-    // Piccolo delay per sincronizzare con il refresh del display
     vTaskDelay(pdMS_TO_TICKS(2));
     
     lcd_set_window(0, 0, LCD_W - 1, LCD_H - 1);

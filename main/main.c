@@ -118,11 +118,13 @@ void cast_ray(Player p, Vector2 dir, int slice_x, float slice_w) {
             inc = (Vector2){.x = distY * dir.x / dir.y, .y = distY};
         }
         rs = Vector2Add(rs, inc);
+        #ifdef DEBUG
         // draw raycast
         if (rs.x > -1.0 && rs.x <= MINIMAP_W && rs.y > -1.0 && rs.y <= MINIMAP_H) {
             DrawLineEx(p.pos, rs, LINE_THICKNESS, BLUE);
             // DrawCircleV(rs, POINT_R, RED);
         }
+        #endif
     }
 }
 
