@@ -15,7 +15,7 @@
 #define PIN_DC 16
 #define PIN_RST 23
 #define PIN_BL 4
-#define MAX_TRANSFER_SIZE 65536
+#define SCREEN_BUFFER_SIZE (LCD_W * LCD_H * 2)
 
 // T-Display buttons
 #define PIN_BUTTON_LEFT 0
@@ -317,7 +317,7 @@ void lcd_init(void) {
         .sclk_io_num = PIN_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = MAX_TRANSFER_SIZE,
+        .max_transfer_sz = SCREEN_BUFFER_SIZE,
     };
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO));
 
@@ -381,29 +381,14 @@ void BeginDrawing() {
 }
 
 void EndDrawing() {
-    vTaskDelay(pdMS_TO_TICKS(2));
-    
     lcd_set_window(0, 0, LCD_W - 1, LCD_H - 1);
     gpio_set_level(PIN_DC, 1);
     
-    const int max_bytes_per_chunk = MAX_TRANSFER_SIZE;
-    const int total_bytes = LCD_W * LCD_H * 2;
-    int bytes_sent = 0;
+    spi_transaction_t t = {0};
+    t.length = SCREEN_BUFFER_SIZE * 8;
+    t.tx_buffer = ((uint8_t*)framebuffer);
     
-    while (bytes_sent < total_bytes) {
-        int bytes_to_send = total_bytes - bytes_sent;
-        if (bytes_to_send > max_bytes_per_chunk) {
-            bytes_to_send = max_bytes_per_chunk;
-        }
-        
-        spi_transaction_t t = {0};
-        t.length = bytes_to_send * 8;
-        t.tx_buffer = ((uint8_t*)framebuffer) + bytes_sent;
-        
-        ESP_ERROR_CHECK(spi_device_transmit(spi, &t));
-        
-        bytes_sent += bytes_to_send;
-    }
+    ESP_ERROR_CHECK(spi_device_transmit(spi, &t));
     
     if (target_fps > 0) {
         int64_t frame_end_time_us = esp_timer_get_time();
