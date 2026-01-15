@@ -5,10 +5,9 @@ all: cray
 
 config:
 	brew install raylib
-	mkdir -p build
 
 cray: main/main.c
 	$(CC) $(CFLAGS) -o build/ray main/main.c $(CLIBS)
 
-ray: cray
+run: cray
 	build/ray
