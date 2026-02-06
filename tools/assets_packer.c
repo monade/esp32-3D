@@ -7,6 +7,31 @@
 
 da_declare(StringArr, char*);
 
+void generate_rbg_32(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
+  for(int i = 0; i < x * y; i++) {
+    uint8_t r = bitmap[i * ch + 0];
+    uint8_t g = bitmap[i * ch + 1];
+    uint8_t b = bitmap[i * ch + 2];
+    uint32_t pixel = (r << 16) | (g << 8) | b;
+    str_appendf(buffer, "0x%08X", pixel);
+    if (i % 8 == 7) {
+      str_appendf(buffer, ",\n    ");
+    } else {
+      str_appendf(buffer, ", ");
+    }
+  }
+}
+
+void generate_rgb_565((String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch)) {
+  for(int i = 0; i < x * y; i++) {
+    uint8_t r = bitmap[i * ch + 0] * 31 / 255;
+    uint8_t g = bitmap[i * ch + 1] * 63 / 255;
+    uint8_t b = bitmap[i * ch + 2] * 31 / 255;
+    uint16_t pixel = (r << 11) | (g << 5) | b;
+    str_appendf(buffer, "0x%04X,\n", pixel);
+  }
+}
+
 int main(int argc, char **argv) {
     if(argc != 3) {
         log_error("Usage: ./assets_packer <input_dir> <output_file>\n");
@@ -39,9 +64,22 @@ int main(int argc, char **argv) {
         da_append(&assets, name);
 
         str_appendf(&out, "// %s\n", dir->d_name);
+        str_append(&out, "#ifdef ESP32\n");
+        str_append(&out, "#else\n");
+        str_append(&out, "#endif\n\n");
+
         int x, y, ch;
-        uint8_t *bitmap = stbi_load("nome", &x, &y, &ch, 0);
-        
+        char cfile[256] = {0};
+        strcat(cfile, argv[1]);
+        strcat(cfile, "/");
+        strcat(cfile, dir->d_name);
+        uint8_t *bitmap = stbi_load(cfile, &x, &y, &ch, 0);
+        printf("cfile content: %s\n", cfile);
+        printf("Bitmap %p, x: %d, y: %d, ch: %d\n", bitmap, x, y, ch);
+        if (!bitmap) {
+            log_error("Error loading image %s\n", cfile);
+            exit(1);
+        }
     }
     closedir(d);
 
