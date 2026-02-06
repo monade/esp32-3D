@@ -8,27 +8,45 @@
 da_declare(StringArr, char*);
 
 void generate_rgb_32(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
-  str_appendf(buffer, "static const pixel_t %s[] = { ", name);
+  str_appendf(buffer, "static const pixel_t %s[] = { \n   ", name);
   for(int i = 0; i < x * y; i++) {
     uint8_t r = bitmap[i * ch + 0];
     uint8_t g = bitmap[i * ch + 1];
     uint8_t b = bitmap[i * ch + 2];
     uint32_t pixel = (r << 16) | (g << 8) | b;
-    str_appendf(buffer, "0x%08X, ", pixel);
+    str_appendf(buffer, "0x%08X", pixel);
+    if (i % 8 == 7) {
+      if (i != (x * y) - 1) {
+        str_appendf(buffer, ",\n    ");
+      } else {
+        str_appendf(buffer, ", ");
+      }
+    } else {
+      str_appendf(buffer, ", ");
+    }
   }
-  str_appendf(buffer, "}\n");
+  str_appendf(buffer, "\n}\n");
 }
 
 void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
-  str_appendf(buffer, "static const pixel_t %s[] = { ", name);
+  str_appendf(buffer, "static const pixel_t %s[] = { \n    ", name);
   for(int i = 0; i < x * y; i++) {
     uint8_t r = bitmap[i * ch + 0] * 31 / 255;
     uint8_t g = bitmap[i * ch + 1] * 63 / 255;
     uint8_t b = bitmap[i * ch + 2] * 31 / 255;
     uint16_t pixel = (r << 11) | (g << 5) | b;
-    str_appendf(buffer, "0x%04X, ", pixel);
+    str_appendf(buffer, "0x%04X", pixel);
+    if (i % 8 == 7) {
+      if (i != (x * y) - 1) {
+        str_appendf(buffer, ",\n    ");
+      } else {
+        str_appendf(buffer, ", ");
+      }
+    } else {
+      str_appendf(buffer, ", ");
+    }
   }
-  str_appendf(buffer, "}\n");
+  str_appendf(buffer, "\n}\n");
 }
 
 int main(int argc, char **argv) {
@@ -38,6 +56,7 @@ int main(int argc, char **argv) {
     }
     String out = {0};
     StringArr assets = {0};
+    str_append(&out, "// File generated automatically by assets_packer.c. DO NOT EDIT. \n");
     str_append(&out, "#ifndef ASSETS_H\n");
     str_append(&out, "#define ASSETS_H\n");
     str_append(&out, "#include <stdint.h>\n");
@@ -56,7 +75,7 @@ int main(int argc, char **argv) {
     }
     while ((dir = readdir(d)) != NULL) {
         if(dir->d_type != 8) continue;
-        if(!ends_with(dir->d_name, ".png")) continue;
+        if(!ends_with(dir->d_name, ".png") && !ends_with(dir->d_name, ".jpg")) continue;
         char *name = strdup(dir->d_name);
         char *c=strrchr(name, '.');
         *c = 0;
@@ -97,6 +116,7 @@ int main(int argc, char **argv) {
         str_appendf(&out, "    %s,\n", assets.data[i]);
     }
     str_append(&out, "};\n");
+    str_append(&out, "#endif //ASSETS_H");
 
     write_entire_file(argv[2], &out);
     return 0;
