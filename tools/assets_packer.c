@@ -13,7 +13,7 @@ void generate_rgb_32(String *buffer, const char *name, uint8_t *bitmap, int x, i
     uint8_t r = bitmap[i * ch + 0];
     uint8_t g = bitmap[i * ch + 1];
     uint8_t b = bitmap[i * ch + 2];
-    uint32_t pixel = (r << 16) | (g << 8) | b;
+    uint32_t pixel = (r << 24) | (g << 16) | (b << 8) | 0xFF;
     str_appendf(buffer, "0x%08X", pixel);
     if (i % 8 == 7) {
       if (i != (x * y) - 1) {

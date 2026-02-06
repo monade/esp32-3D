@@ -27,6 +27,8 @@
 #define MINIMAP_CELL_SCALE 20
 #define FOV_ANGLE (PI / 3.5)
 #define MAX_RENDER_DIST 20.0
+#define TEXTURE_SIZE 64
+#define EPS 0.0001
 
 #define PLAYER_ROTATION_SPEED 1.25
 #define PLAYER_SPEED 2.5
@@ -102,9 +104,9 @@ void draw_minimap_player(Vector2 p) {
 }
 
 void raycast_walls(Player p, Vector2 dir, int slice_x) {
-    if (dir.x == 0.0) dir.x = EPSILON;
-    if (dir.y == 0.0) dir.y = EPSILON;
-    Vector2 rs = Vector2Add(p.pos, Vector2Scale(dir, EPSILON));
+    if (dir.x == 0.0) dir.x = EPS;
+    if (dir.y == 0.0) dir.y = EPS;
+    Vector2 rs = Vector2Add(p.pos, Vector2Scale(dir, EPS));
     while (Vector2Length(Vector2Subtract(rs, p.pos)) <= MAX_RENDER_DIST) {
         Vector2 cell = {.x = floorf(rs.x), .y = floorf(rs.y)};
         if (rs.x > 0.0 && rs.x < COLS && rs.y > 0.0 && rs.y < ROWS) {
@@ -121,21 +123,21 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
                     Color c = ColorBrightness(color_map[map_cell - 128], bright_factor);
                     DrawRectangle(slice_x, (SCREEN_H - h) / 2.0, RAY_RES, h, c);
                 } else {
-                    pixel_t *tex = assets_map[map_cell];
+                    const pixel_t *tex = assets_map[map_cell];
                     int texture_x;
                     float diff_x = rs.x - cell.x;
                     float diff_y = rs.y - cell.y;
 
 
-                    if (diff_x > EPSILON && diff_x < 1 - EPSILON) {
-                        texture_x = diff_x * 64;
+                    if (diff_x > EPS && diff_x < 1 - EPS) {
+                        texture_x = diff_x * TEXTURE_SIZE;
                     } else {
-                        texture_x = diff_y * 64;
+                        texture_x = TEXTURE_SIZE - (diff_y * TEXTURE_SIZE);
                     }
 
                     for (int y = 0; y < h; y++) {
-                        int texture_y = (y * 64) / h;
-                        pixel_t texel = tex[texture_y * 64 + texture_x];
+                        int texture_y = (y * TEXTURE_SIZE) / h;
+                        pixel_t texel = tex[texture_y * TEXTURE_SIZE + texture_x];
                         Color texel_color = GetColor(texel);
                         Color c = ColorBrightness(texel_color, bright_factor);
                         DrawRectangle(slice_x, (SCREEN_H - h) / 2.0 + y, RAY_RES, 1, c);
@@ -144,8 +146,8 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
                 return;
             }
         }
-        float distX = cell.x + (dir.x >= 0 ? 1.0 : -EPSILON) - rs.x;
-        float distY = cell.y + (dir.y >= 0 ? 1.0 : -EPSILON) - rs.y;
+        float distX = cell.x + (dir.x >= 0 ? 1.0 : -EPS) - rs.x;
+        float distY = cell.y + (dir.y >= 0 ? 1.0 : -EPS) - rs.y;
         Vector2 inc;
         if (fabs(distX / dir.x) < fabs(distY / dir.y)) {
             inc = (Vector2){.x = distX, .y = distX * dir.y / dir.x};

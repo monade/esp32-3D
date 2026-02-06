@@ -93,7 +93,7 @@
 
 // =================== CONFIG ===================
 
-#ifdef FB_DRAM
+#ifndef FB_DRAM
 #define FB_ATTR static
 #else
 // Attribute to place framebuffer in IRAM
