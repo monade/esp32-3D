@@ -5,6 +5,7 @@
 #include "raylib.h"
 #define RAYMATH_STATIC_INLINE
 #include "raymath.h"
+#include "assets.h"
 
 #define ARRAY_LEN(array) (sizeof(array) / sizeof(array[0]))
 #define SetPixel(x, y, color) DrawRectangle(x, y, 1, 1, color)
@@ -41,7 +42,7 @@ typedef struct {
 // 0 null, 1-127 texture_id, 128-255 color_id
 static uint8_t map[ROWS][COLS] = {0};
 
-// TODO texture_map
+// pixel_t assets_map from assets.h
 
 Color color_map[] = {
     RED,     // 128
@@ -54,12 +55,12 @@ Color color_map[] = {
 };
 
 void init_game() {
-    map[1][3] = 128;
+    map[1][3] = tx_bricks;
     map[1][4] = 131;
     map[1][5] = 129;
     map[2][5] = 133;
     map[3][4] = 129;
-    map[3][5] = 132;
+    map[3][5] = tx_bricks;
 
     map[7][7] = 130;
     map[8][8] = 129;
@@ -111,7 +112,7 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
             if (map_cell) {
                 // draw slice
                 float dist = Vector2DotProduct(Vector2Subtract(rs, p.pos), p.dir) / ASPECT_RATIO;
-                float h = SCREEN_H / dist;
+                int h = SCREEN_H / dist;
                 float bright_factor = 1.0 / dist - 0.9;
                 if (bright_factor >= 0.0) bright_factor = 0.0;
 
@@ -120,7 +121,25 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
                     Color c = ColorBrightness(color_map[map_cell - 128], bright_factor);
                     DrawRectangle(slice_x, (SCREEN_H - h) / 2.0, RAY_RES, h, c);
                 } else {
-                    // texture
+                    pixel_t *tex = assets_map[map_cell];
+                    int texture_x;
+                    float diff_x = rs.x - cell.x;
+                    float diff_y = rs.y - cell.y;
+
+
+                    if (diff_x > EPSILON && diff_x < 1 - EPSILON) {
+                        texture_x = diff_x * 64;
+                    } else {
+                        texture_x = diff_y * 64;
+                    }
+
+                    for (int y = 0; y < h; y++) {
+                        int texture_y = (y * 64) / h;
+                        pixel_t texel = tex[texture_y * 64 + texture_x];
+                        Color texel_color = GetColor(texel);
+                        Color c = ColorBrightness(texel_color, bright_factor);
+                        DrawRectangle(slice_x, (SCREEN_H - h) / 2.0 + y, RAY_RES, 1, c);
+                    }
                 }
                 return;
             }

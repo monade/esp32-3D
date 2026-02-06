@@ -25,7 +25,7 @@ void generate_rgb_32(String *buffer, const char *name, uint8_t *bitmap, int x, i
       str_appendf(buffer, ", ");
     }
   }
-  str_appendf(buffer, "\n}\n");
+  str_appendf(buffer, "\n};\n");
 }
 
 void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
@@ -46,7 +46,7 @@ void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, 
       str_appendf(buffer, ", ");
     }
   }
-  str_appendf(buffer, "\n}\n");
+  str_appendf(buffer, "\n};\n");
 }
 
 int main(int argc, char **argv) {
