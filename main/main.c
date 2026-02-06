@@ -139,8 +139,7 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
 
                     for (int y = 0; y < hmax; y++) {
                         int overflow_screen = (h-hmax)/2.0;
-                        int overflow_bitmap = overflow_screen * TEXTURE_SIZE / h;
-                        int texture_y = overflow_bitmap + (y * TEXTURE_SIZE) / h;
+                        int texture_y = ((overflow_screen+y) * TEXTURE_SIZE) / h;
                         pixel_t texel = tex[texture_y * TEXTURE_SIZE + texture_x];
                         Color texel_color = GetColor(texel);
                         Color c = ColorBrightness(texel_color, bright_factor);
