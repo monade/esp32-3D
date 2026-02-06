@@ -14,7 +14,7 @@
     #define TARGET_FPS 30
     #define SCREEN_W LCD_W
     #define SCREEN_H LCD_H
-    #define RAY_RES 2
+    #define RAY_RES 4
 #else
     #define TARGET_FPS 60
     #define SCREEN_W 800
@@ -28,7 +28,7 @@
 #define FOV_ANGLE (PI / 3.5)
 #define MAX_RENDER_DIST 20.0
 #define TEXTURE_SIZE 64
-#define EPS 0.0001
+#define THRESHOLD 0.0001
 
 #define PLAYER_ROTATION_SPEED 1.25
 #define PLAYER_SPEED 2.5
@@ -104,9 +104,9 @@ void draw_minimap_player(Vector2 p) {
 }
 
 void raycast_walls(Player p, Vector2 dir, int slice_x) {
-    if (dir.x == 0.0) dir.x = EPS;
-    if (dir.y == 0.0) dir.y = EPS;
-    Vector2 rs = Vector2Add(p.pos, Vector2Scale(dir, EPS));
+    if (dir.x == 0.0) dir.x = THRESHOLD;
+    if (dir.y == 0.0) dir.y = THRESHOLD;
+    Vector2 rs = Vector2Add(p.pos, Vector2Scale(dir, THRESHOLD));
     while (Vector2Length(Vector2Subtract(rs, p.pos)) <= MAX_RENDER_DIST) {
         Vector2 cell = {.x = floorf(rs.x), .y = floorf(rs.y)};
         if (rs.x > 0.0 && rs.x < COLS && rs.y > 0.0 && rs.y < ROWS) {
@@ -129,25 +129,29 @@ void raycast_walls(Player p, Vector2 dir, int slice_x) {
                     float diff_y = rs.y - cell.y;
 
 
-                    if (diff_x > EPS && diff_x < 1 - EPS) {
+                    if (diff_x > THRESHOLD && diff_x < 1 - THRESHOLD) {
                         texture_x = diff_x * TEXTURE_SIZE;
                     } else {
                         texture_x = TEXTURE_SIZE - (diff_y * TEXTURE_SIZE);
                     }
+                    int hmax = h;
+                    if(hmax > SCREEN_H) hmax = SCREEN_H;
 
-                    for (int y = 0; y < h; y++) {
-                        int texture_y = (y * TEXTURE_SIZE) / h;
+                    for (int y = 0; y < hmax; y++) {
+                        int overflow_screen = (h-hmax)/2.0;
+                        int overflow_bitmap = overflow_screen * TEXTURE_SIZE / h;
+                        int texture_y = overflow_bitmap + (y * TEXTURE_SIZE) / h;
                         pixel_t texel = tex[texture_y * TEXTURE_SIZE + texture_x];
                         Color texel_color = GetColor(texel);
                         Color c = ColorBrightness(texel_color, bright_factor);
-                        DrawRectangle(slice_x, (SCREEN_H - h) / 2.0 + y, RAY_RES, 1, c);
+                        DrawRectangle(slice_x, (SCREEN_H - hmax) / 2.0 + y, RAY_RES, 1, c);
                     }
                 }
                 return;
             }
         }
-        float distX = cell.x + (dir.x >= 0 ? 1.0 : -EPS) - rs.x;
-        float distY = cell.y + (dir.y >= 0 ? 1.0 : -EPS) - rs.y;
+        float distX = cell.x + (dir.x >= 0 ? 1.0 : -THRESHOLD) - rs.x;
+        float distY = cell.y + (dir.y >= 0 ? 1.0 : -THRESHOLD) - rs.y;
         Vector2 inc;
         if (fabs(distX / dir.x) < fabs(distY / dir.y)) {
             inc = (Vector2){.x = distX, .y = distX * dir.y / dir.x};
