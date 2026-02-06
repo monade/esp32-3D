@@ -7,29 +7,28 @@
 
 da_declare(StringArr, char*);
 
-void generate_rbg_32(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
+void generate_rgb_32(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
+  str_appendf(buffer, "static const pixel_t %s[] = { ", name);
   for(int i = 0; i < x * y; i++) {
     uint8_t r = bitmap[i * ch + 0];
     uint8_t g = bitmap[i * ch + 1];
     uint8_t b = bitmap[i * ch + 2];
     uint32_t pixel = (r << 16) | (g << 8) | b;
-    str_appendf(buffer, "0x%08X", pixel);
-    if (i % 8 == 7) {
-      str_appendf(buffer, ",\n    ");
-    } else {
-      str_appendf(buffer, ", ");
-    }
+    str_appendf(buffer, "0x%08X, ", pixel);
   }
+  str_appendf(buffer, "}\n");
 }
 
-void generate_rgb_565((String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch)) {
+void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
+  str_appendf(buffer, "static const pixel_t %s[] = { ", name);
   for(int i = 0; i < x * y; i++) {
     uint8_t r = bitmap[i * ch + 0] * 31 / 255;
     uint8_t g = bitmap[i * ch + 1] * 63 / 255;
     uint8_t b = bitmap[i * ch + 2] * 31 / 255;
     uint16_t pixel = (r << 11) | (g << 5) | b;
-    str_appendf(buffer, "0x%04X,\n", pixel);
+    str_appendf(buffer, "0x%04X, ", pixel);
   }
+  str_appendf(buffer, "}\n");
 }
 
 int main(int argc, char **argv) {
@@ -63,11 +62,6 @@ int main(int argc, char **argv) {
         *c = 0;
         da_append(&assets, name);
 
-        str_appendf(&out, "// %s\n", dir->d_name);
-        str_append(&out, "#ifdef ESP32\n");
-        str_append(&out, "#else\n");
-        str_append(&out, "#endif\n\n");
-
         int x, y, ch;
         char cfile[256] = {0};
         strcat(cfile, argv[1]);
@@ -80,6 +74,13 @@ int main(int argc, char **argv) {
             log_error("Error loading image %s\n", cfile);
             exit(1);
         }
+
+        str_appendf(&out, "// %s\n", dir->d_name);
+        str_append(&out, "#ifdef ESP32\n");
+        generate_rgb_565(&out, name, bitmap, x, y, ch);
+        str_append(&out, "#else\n");
+        generate_rgb_32(&out, name, bitmap, x, y, ch);
+        str_append(&out, "#endif\n\n");
     }
     closedir(d);
 
