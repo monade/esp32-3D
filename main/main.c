@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "raylib.h"
+#define RAYMATH_STATIC_INLINE
 #include "raymath.h"
 
 #define ARRAY_LEN(array) (sizeof(array) / sizeof(array[0]))
@@ -99,7 +100,7 @@ void draw_minimap_player(Vector2 p) {
     DrawCircleV(Vector2Scale(p, MINIMAP_CELL_SCALE), POINT_R * 2.0, GREEN);
 }
 
-void cast_ray(Player p, Vector2 dir, int slice_x, int slice_w) {
+void raycast_walls(Player p, Vector2 dir, int slice_x) {
     if (dir.x == 0.0) dir.x = EPSILON;
     if (dir.y == 0.0) dir.y = EPSILON;
     Vector2 rs = Vector2Add(p.pos, Vector2Scale(dir, EPSILON));
@@ -117,7 +118,7 @@ void cast_ray(Player p, Vector2 dir, int slice_x, int slice_w) {
                 if (map_cell >= 128) {
                     // color
                     Color c = ColorBrightness(color_map[map_cell - 128], bright_factor);
-                    DrawRectangle(slice_x, (SCREEN_H - h) / 2.0, slice_w, h, c);
+                    DrawRectangle(slice_x, (SCREEN_H - h) / 2.0, RAY_RES, h, c);
                 } else {
                     // texture
                 }
@@ -166,6 +167,16 @@ void move_player(Player *p) {
     }
 }
 
+void draw_walls(Player p) {
+    float alpha = -FOV_ANGLE / 2.0;
+    float alpha_step = FOV_ANGLE * RAY_RES / SCREEN_W;
+    for (int slice_x = 0; slice_x < SCREEN_W; slice_x += RAY_RES) {
+        Vector2 ray = Vector2Rotate(p.dir, alpha);
+        raycast_walls(p, ray, slice_x);
+        alpha += alpha_step;
+    }
+}
+
 #ifdef ESP32
 int app_main()
 #else
@@ -182,14 +193,7 @@ int main()
         move_player(&p);
         BeginDrawing();
         ClearBackground(BLACK);
-        int slice_w = RAY_RES;
-        float alpha = -FOV_ANGLE / 2.0;
-        float alpha_step = FOV_ANGLE / SCREEN_W * slice_w;
-        for (int slice_x = 0; slice_x < SCREEN_W; slice_x += slice_w) {
-            Vector2 ray = Vector2Rotate(p.dir, alpha);
-            cast_ray(p, ray, slice_x, slice_w);
-            alpha += alpha_step;
-        }
+        draw_walls(p);
         #ifdef DEBUG
         draw_minimap();
         draw_minimap_player(p.pos);

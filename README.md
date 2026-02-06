@@ -1,53 +1,47 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C5 | ESP32-C6 | ESP32-C61 | ESP32-H2 | ESP32-H21 | ESP32-H4 | ESP32-P4 | ESP32-S2 | ESP32-S3 | Linux |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | --------- | -------- | --------- | -------- | -------- | -------- | -------- | ----- |
+# Raycast engine for ESP32 with T-display
+This is a simple raycasting engine implemented in C for the ESP32 microcontroller, designed to work with the ST7789 display driver. 
+It also compiles for other platforms with the raylib library.
 
-# Hello World Example
+## Installation
+#### ESP32
+To use this code, you need to have the ESP-IDF development environment set up on your machine.
+Follow the official ESP-IDF documentation to install and configure the environment: [ESP-IDF Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
+The development has been done using ESP-IDF v5.5.2
 
-Starts a FreeRTOS task to print "Hello World".
+#### MacOS/Linux
+To compile and run the code on other platforms, you need to have the raylib library installed.
+Follow the official raylib documentation to install and configure the library: [Raylib Installation Guide](https://github.com/raysan5/raylib)
+The development has been done using raylib v5.5
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+Windows is not supported at the moment.
 
-## How to use example
-
-Follow detailed instructions provided specifically for this example.
-
-Select the instructions depending on Espressif chip installed on your development board:
-
-- [ESP32 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/stable/get-started/index.html)
-- [ESP32-S2 Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
-
-
-## Example folder contents
-
-The project **hello_world** contains one source file in C language [hello_world_main.c](main/hello_world_main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── pytest_hello_world.py      Python script used for automated testing
-├── main
-│   ├── CMakeLists.txt
-│   └── hello_world_main.c
-└── README.md                  This is the file you are currently reading
+To compile the code and run it, use the following command:
+```sh
+make run
 ```
 
-For more information on structure and contents of ESP-IDF projects, please refer to Section [Build System](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html) of the ESP-IDF Programming Guide.
+## Compilation flags
 
-## Troubleshooting
+```c
+#define FB_DRAM      // Define this flag to place the framebuffer in DRAM instead of IRAM.
 
-* Program upload failure
+// LCD configuration
+#define LCD_W 240    // Active width of the display
+#define LCD_H 135    // Active height of the display
+// internal vram is usually 320×240 for T-Display, smaller screens should be offsetted
+#define LCD_X_OFF 40 // display vram X offset
+#define LCD_Y_OFF 53 // display vram Y offset
 
-    * Hardware connection is not correct: run `idf.py -p PORT monitor`, and reboot your board to see if there are any output logs.
-    * The baud rate for downloading is too high: lower your baud rate in the `menuconfig` menu, and try again.
+// LCD Pins
+#define PIN_MOSI 19  // SPI MOSI pin
+#define PIN_CLK 18   // SPI Clock pin
+#define PIN_CS 5     // SPI Chip Select pin
+#define PIN_DC 16    // SPI Data/Command pin
+#define PIN_RST 23   // SPI Reset pin
+#define PIN_BL 4     // SPI Backlight pin
+#define SPI_CLOCK_SPEED (80 * 1000 * 1000) // SPI clock speed in Hz
 
-## Technical support and feedback
-
-Please use the following feedback channels:
-
-* For technical queries, go to the [esp32.com](https://esp32.com/) forum
-* For a feature request or bug report, create a [GitHub issue](https://github.com/espressif/esp-idf/issues)
-
-We will get back to you as soon as possible.
+// Key Pins
+#define PIN_KEY_A 0  // Key A pin
+#define PIN_KEY_D 35 // Key D pin
+```

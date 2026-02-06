@@ -1,13 +1,10 @@
-CFLAGS = -Wall -Wextra -I/opt/homebrew/Cellar/raylib/5.5/include -O2 -DDEBUG
-CLIBS = -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+CFLAGS = -Wall -Wextra -O2 -DDEBUG $(shell pkg-config --cflags raylib)
+LIBS = $(shell pkg-config --libs raylib) -lm
 
-all: cray
+all: ray
 
-config:
-	brew install raylib
+ray: main/main.c
+	$(CC) $(CFLAGS) -o build/ray main/main.c $(LIBS)
 
-cray: main/main.c
-	$(CC) $(CFLAGS) -o build/ray main/main.c $(CLIBS)
-
-run: cray
+run: ray
 	build/ray

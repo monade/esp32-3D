@@ -83,70 +83,116 @@
 *
 **********************************************************************************************/
 
+#ifndef _RAYLIB_H_
+#define _RAYLIB_H_
+
 #include <stdint.h>
 #include <esp_timer.h>
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
-#define RAYMATH_STATIC_INLINE
-#define ESP32
-#include "raymath.h"
 
 // =================== CONFIG ===================
 
-// T-Display (ST7789) pins
-#define PIN_MOSI 19
-#define PIN_CLK 18
-#define PIN_CS 5
-#define PIN_DC 16
-#define PIN_RST 23
-#define PIN_BL 4
-#define SCREEN_BUFFER_SIZE (LCD_W * LCD_H * 2)
-
-// T-Display buttons
-#define PIN_BUTTON_LEFT 0
-#define PIN_BUTTON_RIGHT 35
+#ifdef FB_DRAM
+#define FB_ATTR static
+#else
+// Attribute to place framebuffer in IRAM
+#define FB_ATTR __attribute__((section(".iram1"))) static
+#endif
 
 // Panel size (T-Display active area)
-#define LCD_H 140
+#ifndef LCD_W
 #define LCD_W 240
+#endif
+#ifndef LCD_H
+#define LCD_H 136
+#endif
+#ifndef LCD_X_OFF
+#define LCD_X_OFF 40
+#endif
+#ifndef LCD_Y_OFF
+#define LCD_Y_OFF 53
+#endif
+
+// T-Display (ST7789) std pins
+#ifndef PIN_MOSI
+#define PIN_MOSI 19
+#endif
+#ifndef PIN_CLK
+#define PIN_CLK 18
+#endif
+#ifndef PIN_CS
+#define PIN_CS 5
+#endif
+#ifndef PIN_DC
+#define PIN_DC 16
+#endif
+#ifndef PIN_RST
+#define PIN_RST 23
+#endif
+#ifndef PIN_BL
+#define PIN_BL 4
+#endif
+#ifndef SPI_CLOCK_SPEED
+#define SPI_CLOCK_SPEED (80 * 1000 * 1000)
+#endif
+
+#define SCREEN_BUFFER_SIZE (LCD_W * LCD_H * 2)
+
+// GPIO predefined buttons
+#ifndef PIN_KEY_A
+#define PIN_KEY_A 0
+#endif
+#ifndef PIN_KEY_D
+#define PIN_KEY_D 35
+#endif
+
+// =================== TYPES & STRUCTS ===================
+#if !defined(RL_VECTOR2_TYPE)
+// Vector2 type
+typedef struct Vector2 {
+    float x;
+    float y;
+} Vector2;
+#define RL_VECTOR2_TYPE
+#endif
 
 #define CLITERAL(type) (type)
 
-#define LIGHTGRAY CLITERAL(Color){200, 200, 200, 255} // Light Gray
-#define GRAY CLITERAL(Color){130, 130, 130, 255}      // Gray
-#define DARKGRAY CLITERAL(Color){80, 80, 80, 255}     // Dark Gray
-#define YELLOW CLITERAL(Color){253, 249, 0, 255}      // Yellow
-#define GOLD CLITERAL(Color){255, 203, 0, 255}        // Gold
-#define ORANGE CLITERAL(Color){255, 161, 0, 255}      // Orange
-#define PINK CLITERAL(Color){255, 109, 194, 255}      // Pink
-#define RED CLITERAL(Color){230, 41, 55, 255}         // Red
-#define MAROON CLITERAL(Color){190, 33, 55, 255}      // Maroon
-#define GREEN CLITERAL(Color){0, 228, 48, 255}        // Green
-#define LIME CLITERAL(Color){0, 158, 47, 255}         // Lime
-#define DARKGREEN CLITERAL(Color){0, 117, 44, 255}    // Dark Green
-#define SKYBLUE CLITERAL(Color){102, 191, 255, 255}   // Sky Blue
-#define BLUE CLITERAL(Color){0, 121, 241, 255}        // Blue
-#define DARKBLUE CLITERAL(Color){0, 82, 172, 255}     // Dark Blue
-#define PURPLE CLITERAL(Color){200, 122, 255, 255}    // Purple
-#define VIOLET CLITERAL(Color){135, 60, 190, 255}     // Violet
-#define DARKPURPLE CLITERAL(Color){112, 31, 126, 255} // Dark Purple
-#define BEIGE CLITERAL(Color){211, 176, 131, 255}     // Beige
-#define BROWN CLITERAL(Color){127, 106, 79, 255}      // Brown
-#define DARKBROWN CLITERAL(Color){76, 63, 47, 255}    // Dark Brown
-
-#define WHITE CLITERAL(Color){255, 255, 255, 255}    // White
-#define BLACK CLITERAL(Color){0, 0, 0, 255}          // Black
-#define BLANK CLITERAL(Color){0, 0, 0, 0}            // Blank (Transparent)
-#define MAGENTA CLITERAL(Color){255, 0, 255, 255}    // Magenta
-#define RAYWHITE CLITERAL(Color){245, 245, 245, 255} // My own White (raylib logo)
-
-typedef struct Color {
-    unsigned char r; // Color red value
-    unsigned char g; // Color green value
-    unsigned char b; // Color blue value
-    unsigned char a; // Color alpha value
+typedef struct {
+    uint16_t r : 5;
+    uint16_t g : 6;
+    uint16_t b : 5;
 } Color;
 
+static_assert(sizeof(Color) == 2, "Color struct size should be 2 bytes");
+
+#define LIGHTGRAY CLITERAL(Color){25, 50, 25}   // Light Gray
+#define GRAY CLITERAL(Color){16, 33, 16}        // Gray
+#define DARKGRAY CLITERAL(Color){10, 20, 10}    // Dark Gray
+#define YELLOW CLITERAL(Color){31, 62, 0}       // Yellow
+#define GOLD CLITERAL(Color){31, 50, 0}         // Gold
+#define ORANGE CLITERAL(Color){31, 40, 0}       // Orange
+#define PINK CLITERAL(Color){31, 27, 24}        // Pink
+#define RED CLITERAL(Color){28, 10, 6}          // Red
+#define MAROON CLITERAL(Color){23, 8, 6}        // Maroon
+#define GREEN CLITERAL(Color){0, 57, 6}         // Green
+#define LIME CLITERAL(Color){0, 39, 5}          // Lime
+#define DARKGREEN CLITERAL(Color){0, 29, 5}     // Dark Green
+#define SKYBLUE CLITERAL(Color){12, 47, 31}     // Sky Blue
+#define BLUE CLITERAL(Color){0, 30, 30}         // Blue
+#define DARKBLUE CLITERAL(Color){0, 20, 21}     // Dark Blue
+#define PURPLE CLITERAL(Color){24, 30, 31}      // Purple
+#define VIOLET CLITERAL(Color){16, 15, 23}      // Violet
+#define DARKPURPLE CLITERAL(Color){13, 7, 15}   // Dark Purple
+#define BEIGE CLITERAL(Color){26, 43, 16}       // Beige
+#define BROWN CLITERAL(Color){15, 26, 9}        // Brown
+#define DARKBROWN CLITERAL(Color){9, 15, 5}     // Dark Brown
+
+#define WHITE CLITERAL(Color){31, 63, 31}       // White
+#define BLACK CLITERAL(Color){0, 0, 0}          // Black
+#define MAGENTA CLITERAL(Color){31, 0, 31}      // Magenta
+#define RAYWHITE CLITERAL(Color){30, 61, 30}    // My own White (raylib logo)
 
 typedef enum {
     KEY_NULL            = 0,        // Key: NULL, used for no key pressed
@@ -278,27 +324,24 @@ typedef enum {
 
 static int64_t last_time_us = 0;
 static int64_t frame_start_time_us = 0;
-static int target_fps = 0;
-static int64_t target_frame_time_us = 0;
+static int target_fps = 30;
+static int64_t target_frame_time_us = 1000000 / 30;
 
+FB_ATTR uint16_t framebuffer[LCD_W * LCD_H];
 
-// ST7789 RAM offsets
-static int g_x_off = 52;
-static int g_y_off = 40;
-static int g_w = LCD_W;
-static int g_h = LCD_H;
-
-static uint16_t framebuffer[LCD_W * LCD_H];
-
-static inline uint16_t color_to_rgb565(Color c) {
-    uint16_t r = (c.r * 31) / 255;
-    uint16_t g = (c.g * 63) / 255;
-    uint16_t b = (c.b * 31) / 255;
-    uint16_t rgb = (uint16_t)((r << 11) | (g << 5) | b);
-    return (rgb >> 8) | (rgb << 8);
+// write a 16-bit value to an address in IRAM, handling unaligned accesses
+static inline void write_u16_iram(uint16_t *addr, uint16_t val) {
+    uintptr_t ptr = (uintptr_t)addr;
+    uint32_t *aligned = (uint32_t *)(ptr & ~3);
+    
+    if (ptr & 2) {
+        *aligned = (*aligned & 0x0000FFFF) | (val << 16);
+    } else {
+        *aligned = (*aligned & 0xFFFF0000) | val;
+    }
 }
 
-// =================== SPI/LCD ===================
+// =================== SPI/LCD Driver ===================
 
 static spi_device_handle_t spi;
 
@@ -320,10 +363,10 @@ static void lcd_data(const void *data, int len_bytes) {
 }
 
 static void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
-    x0 += g_x_off;
-    x1 += g_x_off;
-    y0 += g_y_off;
-    y1 += g_y_off;
+    x0 += LCD_X_OFF;
+    x1 += LCD_X_OFF;
+    y0 += LCD_Y_OFF;
+    y1 += LCD_Y_OFF;
 
     uint8_t buf[4];
 
@@ -345,52 +388,10 @@ static void lcd_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
 }
 
 
-// =================== PUBLIC API ===================
-
-void ClearBackground(Color color) {
-    uint16_t rgb565_color = color_to_rgb565(color);
-    for (int i = 0; i < LCD_W * LCD_H; i++) {
-        framebuffer[i] = rgb565_color;
-    }
-}
-
-void DrawRectangle(int posX, int posY, int width, int height, Color color) {
-    if (width <= 0 || height <= 0) return;
-    
-    // Clipping
-    if (posX < 0) {
-        width += posX;
-        posX = 0;
-    }
-    if (posY < 0) {
-        height += posY;
-        posY = 0;
-    }
-    if (posX + width > LCD_W) width = LCD_W - posX;
-    if (posY + height > LCD_H) height = LCD_H - posY;
-    if (width <= 0 || height <= 0) return;
-
-    uint16_t rgb565_color = color_to_rgb565(color);
-    
-    for (int y = 0; y < height; y++) {
-        int lCD_offset = (posY + y) * LCD_W + posX;
-        for (int x = 0; x < width; x++) {
-            framebuffer[lCD_offset + x] = rgb565_color;
-        }
-    }
-}
-
-// =================== INIT ===================
-
-void lcd_init(void) {
+static void lcd_init(void) {
     gpio_set_direction(PIN_DC, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_RST, GPIO_MODE_OUTPUT);
     gpio_set_direction(PIN_BL, GPIO_MODE_OUTPUT);
-    
-    gpio_set_direction(PIN_BUTTON_LEFT, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(PIN_BUTTON_LEFT, GPIO_PULLUP_ONLY);
-    gpio_set_direction(PIN_BUTTON_RIGHT, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(PIN_BUTTON_RIGHT, GPIO_PULLUP_ONLY);
 
     // Reset
     gpio_set_level(PIN_RST, 0);
@@ -410,11 +411,11 @@ void lcd_init(void) {
     ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO));
 
     spi_device_interface_config_t dev = {
-        .clock_speed_hz = 80 * 1000 * 1000,
+        .clock_speed_hz = SPI_CLOCK_SPEED,
         .mode = 0,
         .spics_io_num = PIN_CS,
         .queue_size = 7,
-        .flags = SPI_DEVICE_NO_DUMMY
+        .flags = SPI_DEVICE_HALFDUPLEX
     };
     ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &dev, &spi));
 
@@ -430,10 +431,6 @@ void lcd_init(void) {
 
     // Rotation landscape
     uint8_t madctl = 0x60;
-    g_w = LCD_W;
-    g_h = LCD_H;
-    g_x_off = 40;
-    g_y_off = 52;
     lcd_cmd(0x36);
     lcd_data(&madctl, 1);
 
@@ -444,24 +441,85 @@ void lcd_init(void) {
     gpio_set_level(PIN_BL, 1);
 }
 
+// =================== GPIO button/inputs initialization ===================
+static void inputs_init() {
+    gpio_set_direction(PIN_KEY_A, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(PIN_KEY_A, GPIO_PULLUP_ONLY);
+    gpio_set_direction(PIN_KEY_D, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(PIN_KEY_D, GPIO_PULLUP_ONLY);
+}
+
+// =================== PUBLIC API ===================
+Color GetColor(uint16_t value) {
+    Color c = {
+        .r = (value >> 11) & 31,
+        .g = (value >> 5) & 63,
+        .b = value & 31
+    };
+    return c;
+}
+
+uint16_t ColorToInt(Color c) {
+    uint16_t uc = (c.r << 11) | (c.g << 5) | (c.b);
+    return (uc >> 8) | (uc << 8);
+}
+
+void ClearBackground(Color color) {
+    uint16_t rgb565_color = ColorToInt(color);
+    for (int i = 0; i < LCD_W * LCD_H; i++) {
+        #ifdef FB_DRAM
+        framebuffer[i] = rgb565_color;
+        #else
+        write_u16_iram(&framebuffer[i], rgb565_color);
+        #endif
+    }
+}
+
+void DrawRectangle(int posX, int posY, int width, int height, Color color) {
+    if (width <= 0 || height <= 0) return;
+    
+    // Clipping
+    if (posX < 0) {
+        width += posX;
+        posX = 0;
+    }
+    if (posY < 0) {
+        height += posY;
+        posY = 0;
+    }
+    if (posX + width > LCD_W) width = LCD_W - posX;
+    if (posY + height > LCD_H) height = LCD_H - posY;
+    if (width <= 0 || height <= 0) return;
+
+    uint16_t rgb565_color = ColorToInt(color);
+    
+    for (int y = 0; y < height; y++) {
+        int lCD_offset = (posY + y) * LCD_W + posX;
+        for (int x = 0; x < width; x++) {
+            #ifdef FB_DRAM
+            framebuffer[lCD_offset + x] = rgb565_color;
+            #else
+            write_u16_iram(&framebuffer[lCD_offset + x], rgb565_color);
+            #endif
+        }
+    }
+}
+
 void InitWindow(int width, int height, const char *title) {
     (void)width;
     (void)height;
     (void)title;
     lcd_init();
+    inputs_init();
 }
 
 int WindowShouldClose() {
     return 0;
 }
 
-void SetTargetFPS(int fps) {
+void SetTargetFPS(unsigned int fps) {
     target_fps = fps;
-    if (fps > 0) {
-        target_frame_time_us = 1000000 / fps;
-    } else {
-        target_frame_time_us = 0;
-    }
+    target_frame_time_us = 1000000 / fps;
 }
 
 void BeginDrawing() {
@@ -489,7 +547,6 @@ void EndDrawing() {
     }
 }
 
-
 float GetFrameTime(void){
     int64_t current_time_us = esp_timer_get_time();
     if (last_time_us == 0)
@@ -504,22 +561,20 @@ float GetFrameTime(void){
     return (float)delta_us / 1000000.0f;
 }
 
-
 int IsKeyDown(KeyboardKey key) {
-    if (key == KEY_E) {
-        return !gpio_get_level(PIN_BUTTON_RIGHT) && !gpio_get_level(PIN_BUTTON_LEFT);
+    if (key == KEY_W) {
+        return !gpio_get_level(PIN_KEY_D) && !gpio_get_level(PIN_KEY_A);
     }
     if (key == KEY_A) {
-        return !gpio_get_level(PIN_BUTTON_LEFT);
+        return !gpio_get_level(PIN_KEY_A);
     }
     if (key == KEY_D) {
-        return !gpio_get_level(PIN_BUTTON_RIGHT);
+        return !gpio_get_level(PIN_KEY_D);
     }
     return 0;
 }
 
-Color ColorBrightness(Color color, float factor)
-{
+Color ColorBrightness(Color color, float factor) {
     Color result = color;
 
     if (factor > 1.0f) factor = 1.0f;
@@ -538,11 +593,11 @@ Color ColorBrightness(Color color, float factor)
     }
     else
     {
-        red = (255 - red)*factor + red;
-        green = (255 - green)*factor + green;
-        blue = (255 - blue)*factor + blue;
+        red = (31 - red)*factor + red;
+        green = (63 - green)*factor + green;
+        blue = (31 - blue)*factor + blue;
     }
-
+    
     result.r = (unsigned char)red;
     result.g = (unsigned char)green;
     result.b = (unsigned char)blue;
@@ -550,12 +605,13 @@ Color ColorBrightness(Color color, float factor)
     return result;
 }
 
-static inline Color GetColor(int hexValue) {
-    return *(Color*)&hexValue;
-}
+
+// =================== UNUSED STUBS ===================
 #define FLAG_MSAA_4X_HINT 0
 void SetConfigFlags(int flags) {}
 void DrawRectangleLines(int x, int y, int width, int height, Color color) {}
 void DrawLine(int startX, int startY, int endX, int endY, Color color) {}
 void DrawCircleV(Vector2 center, float radius, Color color) {}
 void DrawLineEx(Vector2 startPos, Vector2 endPos, float thick, Color color) {}
+
+#endif // _RAYLIB_H_
