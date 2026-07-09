@@ -94,6 +94,7 @@ typedef enum {
     YR_KEY_RIGHT_CONTROL   = 345,      // Key: Control right
     YR_KEY_RIGHT_ALT       = 346,      // Key: Alt right
     YR_KEY_RIGHT_SUPER     = 347,      // Key: Super right
+    YR_KEYS_COUNT                      // the number of configured keys
 } YrKeyboardKey;
 
 typedef enum {

@@ -7,14 +7,11 @@
 #include "renderer.h"
 #include "inputs.h"
 #include "colors.h"
+#include "yari_utils.h"
 #include "da.h"
+#include "ht.h"
 
-typedef struct {
-    Vector2 pos;
-    Vector2 dir;
-    float horizon;
-    float angle;
-} YrCamera;
+
 
 typedef struct YrGameState YrGameState;
 
@@ -24,9 +21,12 @@ typedef struct YrGameState YrGameState;
 
 typedef struct YrEntity YrEntity;
 typedef void (*YrEntityUpdateFunc)(YrGameState *state, YrEntity *self, size_t index);
+typedef void (*YrEntityInitFunc)(YrEntity *self, void *data);
+typedef void (*YrEntityCleanupFunc)(YrEntity *self);
 struct YrEntity {
     Vector2 pos;
     int texture_id;
+    int kind;
     float dist;
     float vdiv;
     float hdiv;
@@ -35,14 +35,20 @@ struct YrEntity {
     void *entity_data;
     uint32_t collision_mask;
     float collision_threshold;
+    YrAnimationStack animation;
+    YrEntityInitFunc init;
+    YrEntityCleanupFunc cleanup;
     YrEntityUpdateFunc update;
 };
 
 typedef struct {
-    YrEntity *data;
-    size_t length;
-    size_t capacity;
-} YrEntities;
+    Vector2 pos;
+    Vector2 dir;
+    float horizon;
+    float angle;
+} YrCamera;
+
+yr_hm_declare(YrEntityMap, size_t, YrEntity);
 
 typedef struct YrGameState {
     YrCamera camera;
@@ -55,15 +61,14 @@ typedef struct YrGameState {
     uint8_t *map_ceil;
     uint8_t map_cols;
     uint8_t map_rows;
-    YrEntities entities;
+    YrEntityMap entities;
     unsigned int ray_res;
     float *zbuffer;
     const yr_pixel_t **assets_map;
     size_t floor_texture;
     size_t ceil_texture;
-    uint32_t game_time; // ms since start of game
+    size_t next_entity_id;
     void* game_data; // game-defined state
-    
 } YrGameState;
 
 
@@ -77,16 +82,16 @@ void yr_draw_entities(YrGameState *state);
 
 void yr_draw_game();
 
-#ifdef WASM
-__attribute__((export_name("wasm_init")))
-#endif
+size_t yr_create_entity_ex(YrGameState *state, YrEntity e, void *data);
+#define yr_create_entity(state, e) yr_create_entity_ex(state, e, NULL)
+
+void yr_remove_entity(YrGameState *state, size_t id);
+size_t yr_get_entity_id(YrEntity *e);
+
 void _yr_init_game();
 
 void yr_init_game(YrGameState *state);
 
-#ifdef WASM
-__attribute__((export_name("wasm_frame")))
-#endif
 void _yr_update_game();
 
 void yr_update_game(YrGameState *state);
@@ -105,6 +110,10 @@ void _yr_free_game();
 #define draw_background yr_draw_background
 #define draw_entities yr_draw_entities
 #define draw_game yr_draw_game
+#define create_entity yr_create_entity
+#define create_entity_ex yr_create_entity_ex
+#define remove_entity yr_remove_entity
+#define get_entity_id yr_get_entity_id
 #endif
 
 #endif // YR_YARI_H

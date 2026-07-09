@@ -1,5 +1,7 @@
 #include <ctype.h>
+#ifndef _WIN32
 #include <dirent.h>
+#endif
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -25,9 +27,19 @@
 #pragma GCC diagnostic pop
 #endif
 
+/* Prevent windows.h (pulled in by ds.h) from declaring Rectangle, CloseWindow,
+   and ShowCursor, which conflict with raylib's own declarations. */
+#ifdef _WIN32
+#define NOGDI
+#define NOUSER
+#endif
 #define DS_IMPLEMENTATION
 #define DS_NO_PREFIX
 #include "ds.h"
+#ifdef _WIN32
+#undef NOGDI
+#undef NOUSER
+#endif
 
 #define DEFAULT_MAP_COLS 100
 #define DEFAULT_MAP_ROWS 100
@@ -44,7 +56,14 @@
 #define NO_SELECTION -1
 #define MAP_BUILDER_STATE_BEGIN "MAP_BUILDER_STATE_BEGIN"
 #define MAP_BUILDER_STATE_END "MAP_BUILDER_STATE_END"
-#define MAP_BUILDER_STATE_VERSION 1
+#define MAP_BUILDER_STATE_VERSION 2
+#define LEVEL_GEN_FILE_NAME "level_gen.h"
+#define ANIM_NAME_SIZE 64
+#define MAX_ANIM_FRAMES 64
+
+#define TOPBAR_HEIGHT 40.0f
+#define KIND_NAME_SIZE 32
+#define MAX_KINDS 1024
 
 typedef struct {
     char *name;
@@ -63,9 +82,13 @@ typedef struct {
     float vmove;
     bool disabled;
     bool exported;
+    char init_fn[ENTITY_NAME_SIZE];
     char update_fn[ENTITY_NAME_SIZE];
+    char cleanup_fn[ENTITY_NAME_SIZE];
+    char animation[ANIM_NAME_SIZE];
     uint32_t collision_mask;
     float collision_threshold;
+    int kind;
 } PlacedEntity;
 
 typedef struct {
@@ -77,7 +100,27 @@ typedef struct {
 
 typedef struct {
     char name[ENTITY_NAME_SIZE];
+} InitFn;
+
+typedef struct {
+    char name[ENTITY_NAME_SIZE];
 } UpdateFn;
+
+typedef struct {
+    char name[ENTITY_NAME_SIZE];
+} CleanupFn;
+
+typedef struct {
+    char name[KIND_NAME_SIZE];
+    int id;
+} EntityKind;
+
+typedef struct {
+    char name[ANIM_NAME_SIZE];
+    int frames[MAX_ANIM_FRAMES];
+    int frame_count;
+    float speed;
+} Animation;
 
 typedef struct {
     int cols;
@@ -90,6 +133,7 @@ typedef enum {
     BRUSH_ENTITY = 1,
     BRUSH_PLAYER = 2,
     BRUSH_SURFACE = 3,
+    BRUSH_ANIM = 4,
 } BrushKind;
 
 typedef enum {
@@ -102,6 +146,11 @@ typedef enum {
     SURFACE_FLOOR = 0,
     SURFACE_CEIL = 1,
 } SurfaceTarget;
+
+typedef enum {
+    ENTITY_TAB_PROPERTIES = 0,
+    ENTITY_TAB_FUNCTIONS = 1,
+} EntityTab;
 
 typedef enum {
     SELECTION_NONE = 0,
@@ -129,11 +178,15 @@ typedef struct {
 da_declare(Assets, Asset);
 da_declare(PlacedEntities, PlacedEntity);
 da_declare(CollisionLayers, CollisionLayer);
+da_declare(InitFns, InitFn);
 da_declare(UpdateFns, UpdateFn);
+da_declare(CleanupFns, CleanupFn);
+da_declare(EntityKinds, EntityKind);
 da_declare(SelectedEntities, int);
 da_declare(SelectedWalls, SelectedWall);
 da_declare(ClipboardEntities, ClipboardEntity);
 da_declare(ClipboardWalls, ClipboardWall);
+da_declare(Animations, Animation);
 
 typedef struct {
     Assets assets;
@@ -147,6 +200,7 @@ typedef struct {
     int floor_asset;
     int ceil_asset;
     SurfaceTarget surface_target;
+    EntityTab entity_tab;
     int editing_entity;
     bool editing_wall;
     int editing_wall_x;
@@ -194,7 +248,9 @@ typedef struct {
     bool threshold_edit;
     bool entity_name_edit;
     bool new_mask_edit;
+    bool init_fn_edit;
     bool update_fn_edit;
+    bool cleanup_fn_edit;
     bool player_pos_x_edit;
     bool player_pos_y_edit;
     bool player_dir_x_edit;
@@ -212,10 +268,16 @@ typedef struct {
     char brush_threshold_text[32];
     char brush_entity_name[ENTITY_NAME_SIZE];
     char new_collision_layer[MASK_NAME_SIZE];
+    char new_init_fn[ENTITY_NAME_SIZE];
     char new_update_fn[ENTITY_NAME_SIZE];
+    char new_cleanup_fn[ENTITY_NAME_SIZE];
     bool brush_disabled;
     bool brush_exported;
+    char brush_init_fn[ENTITY_NAME_SIZE];
     char brush_update_fn[ENTITY_NAME_SIZE];
+    char brush_cleanup_fn[ENTITY_NAME_SIZE];
+    char brush_animation[ANIM_NAME_SIZE];
+    float entity_anim_scroll;
 
     Vector2 player_pos;
     Vector2 player_dir;
@@ -230,16 +292,38 @@ typedef struct {
     float asset_scroll;
     float mask_scroll;
     float player_mask_scroll;
+    float init_fn_scroll;
     float update_fn_scroll;
+    float cleanup_fn_scroll;
     CollisionLayers collision_layers;
+    InitFns init_fns;
     UpdateFns update_fns;
+    CleanupFns cleanup_fns;
+    EntityKinds kinds;
+    int brush_kind;
+    float kind_scroll;
+    char new_kind_name[KIND_NAME_SIZE];
+    bool new_kind_edit;
     const char *asset_dir;
     const char *output_path;
+    char level_gen_path[1024];
+    bool use_level_suffix;
     char status[256];
     double status_until;
     bool pinching;
     float pinch_distance;
     bool suppress_left_drag;
+    bool show_exit_dialog;
+
+    Animations animations;
+    int selected_animation;
+    float anim_list_scroll;
+    float anim_frames_scroll;
+    bool new_anim_edit;
+    char new_anim_name[ANIM_NAME_SIZE];
+    bool anim_name_edit;
+    bool anim_speed_edit;
+    char anim_speed_text[32];
 } App;
 
 typedef struct {
@@ -249,13 +333,18 @@ typedef struct {
     WallMap ceil_map;
     PlacedEntities entities;
     CollisionLayers collision_layers;
+    InitFns init_fns;
     UpdateFns update_fns;
+    CleanupFns cleanup_fns;
+    EntityKinds kinds;
+    Animations animations;
     int floor_asset;
     int ceil_asset;
     Vector2 player_pos;
     Vector2 player_dir;
     float player_collision_threshold;
     uint32_t player_collision_mask;
+    bool use_level_suffix;
 } LoadedLevel;
 
 static void set_status(App *app, const char *fmt, ...);
@@ -611,12 +700,19 @@ static Rectangle get_sidebar_bounds(void) {
     return (Rectangle){(float)screen_w - SIDEBAR_WIDTH, 0.0f, SIDEBAR_WIDTH, (float)screen_h};
 }
 
+static Rectangle get_topbar_bounds(void) {
+    int screen_w = GetScreenWidth();
+    float map_width = (float)screen_w - SIDEBAR_WIDTH;
+    if (map_width < 160.0f) map_width = 160.0f;
+    return (Rectangle){0.0f, 0.0f, map_width, TOPBAR_HEIGHT};
+}
+
 static Rectangle get_map_bounds(void) {
     int screen_w = GetScreenWidth();
     int screen_h = GetScreenHeight();
     float map_width = (float)screen_w - SIDEBAR_WIDTH;
     if (map_width < 160.0f) map_width = 160.0f;
-    return (Rectangle){0.0f, 0.0f, map_width, (float)screen_h};
+    return (Rectangle){0.0f, TOPBAR_HEIGHT, map_width, (float)screen_h - TOPBAR_HEIGHT};
 }
 
 static void update_camera_offset(App *app, Rectangle map_bounds) {
@@ -641,12 +737,18 @@ static bool app_is_editing(const App *app) {
         app->threshold_edit ||
         app->entity_name_edit ||
         app->new_mask_edit ||
+        app->init_fn_edit ||
         app->update_fn_edit ||
+        app->cleanup_fn_edit ||
+        app->new_kind_edit ||
         app->player_pos_x_edit ||
         app->player_pos_y_edit ||
         app->player_dir_x_edit ||
         app->player_dir_y_edit ||
-        app->player_threshold_edit;
+        app->player_threshold_edit ||
+        app->new_anim_edit ||
+        app->anim_name_edit ||
+        app->anim_speed_edit;
 }
 
 static void set_status(App *app, const char *fmt, ...) {
@@ -706,6 +808,34 @@ static bool text_is_empty(const char *text) {
     return true;
 }
 
+static void sanitize_init_fn(char *dst, size_t dst_size, const char *src) {
+    if (dst_size == 0) return;
+
+    size_t out = 0;
+    for (const char *c = src; *c && out + 1 < dst_size; c++) {
+        unsigned char ch = (unsigned char)*c;
+        if (isalnum(ch) || ch == '_') {
+            dst[out++] = (char)ch;
+        } else if (out > 0 && dst[out - 1] != '_' && out + 1 < dst_size) {
+            dst[out++] = '_';
+        }
+    }
+
+    while (out > 0 && dst[out - 1] == '_') out--;
+    dst[out] = '\0';
+
+    if (out == 0) {
+        snprintf(dst, dst_size, "init_entity");
+        out = strlen(dst);
+    }
+
+    if (isdigit((unsigned char)dst[0])) {
+        char tmp[ENTITY_NAME_SIZE * 2] = {0};
+        snprintf(tmp, sizeof(tmp), "init_%s", dst);
+        snprintf(dst, dst_size, "%s", tmp);
+    }
+}
+
 static void sanitize_update_fn(char *dst, size_t dst_size, const char *src) {
     if (dst_size == 0) return;
 
@@ -734,11 +864,112 @@ static void sanitize_update_fn(char *dst, size_t dst_size, const char *src) {
     }
 }
 
+static void sanitize_cleanup_fn(char *dst, size_t dst_size, const char *src) {
+    if (dst_size == 0) return;
+
+    size_t out = 0;
+    for (const char *c = src; *c && out + 1 < dst_size; c++) {
+        unsigned char ch = (unsigned char)*c;
+        if (isalnum(ch) || ch == '_') {
+            dst[out++] = (char)ch;
+        } else if (out > 0 && dst[out - 1] != '_' && out + 1 < dst_size) {
+            dst[out++] = '_';
+        }
+    }
+
+    while (out > 0 && dst[out - 1] == '_') out--;
+    dst[out] = '\0';
+
+    if (out == 0) {
+        snprintf(dst, dst_size, "cleanup_entity");
+        out = strlen(dst);
+    }
+
+    if (isdigit((unsigned char)dst[0])) {
+        char tmp[ENTITY_NAME_SIZE * 2] = {0};
+        snprintf(tmp, sizeof(tmp), "cleanup_%s", dst);
+        snprintf(dst, dst_size, "%s", tmp);
+    }
+}
+
+static bool init_fn_exists(const InitFns *init_fns, const char *name) {
+    for (size_t i = 0; i < init_fns->length; i++) {
+        if (strcmp(init_fns->data[i].name, name) == 0) return true;
+    }
+    return false;
+}
+
 static bool update_fn_exists(const UpdateFns *update_fns, const char *name) {
     for (size_t i = 0; i < update_fns->length; i++) {
         if (strcmp(update_fns->data[i].name, name) == 0) return true;
     }
     return false;
+}
+
+static bool cleanup_fn_exists(const CleanupFns *cleanup_fns, const char *name) {
+    for (size_t i = 0; i < cleanup_fns->length; i++) {
+        if (strcmp(cleanup_fns->data[i].name, name) == 0) return true;
+    }
+    return false;
+}
+
+static bool remember_init_fn(InitFns *init_fns, const char *raw_name, char *stored_name, size_t stored_name_size) {
+    if (text_is_empty(raw_name)) return false;
+
+    char name[ENTITY_NAME_SIZE] = {0};
+    sanitize_init_fn(name, sizeof(name), raw_name);
+    if (stored_name && stored_name_size > 0) snprintf(stored_name, stored_name_size, "%s", name);
+
+    if (init_fn_exists(init_fns, name)) return true;
+
+    InitFn init_fn = {0};
+    snprintf(init_fn.name, sizeof(init_fn.name), "%s", name);
+    da_append(init_fns, init_fn);
+    return true;
+}
+
+static void add_init_fn(App *app, const char *raw_name) {
+    char name[ENTITY_NAME_SIZE] = {0};
+    if (!remember_init_fn(&app->init_fns, raw_name, name, sizeof(name))) return;
+
+    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "%s", name);
+    snprintf(app->new_init_fn, sizeof(app->new_init_fn), "");
+    app->init_fn_edit = false;
+}
+
+static void remove_init_fn_at(App *app, size_t index) {
+    if (index >= app->init_fns.length) return;
+
+    char name[ENTITY_NAME_SIZE] = {0};
+    snprintf(name, sizeof(name), "%s", app->init_fns.data[index].name);
+
+    if (strcmp(app->brush_init_fn, name) == 0) {
+        snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+    }
+
+    for (size_t i = 0; i < app->entities.length; i++) {
+        PlacedEntity *entity = &app->entities.data[i];
+        if (strcmp(entity->init_fn, name) == 0) {
+            snprintf(entity->init_fn, sizeof(entity->init_fn), "");
+        }
+    }
+
+    if (index + 1 < app->init_fns.length) {
+        memmove(
+            &app->init_fns.data[index],
+            &app->init_fns.data[index + 1],
+            (app->init_fns.length - index - 1) * sizeof(app->init_fns.data[0]));
+    }
+    app->init_fns.length--;
+    set_status(app, "Removed init fn %s", name);
+}
+
+static void sync_init_fns_from_entities(App *app) {
+    for (size_t i = 0; i < app->entities.length; i++) {
+        const PlacedEntity *entity = &app->entities.data[i];
+        if (entity->init_fn[0] == '\0') continue;
+        remember_init_fn(&app->init_fns, entity->init_fn, NULL, 0);
+    }
 }
 
 static bool remember_update_fn(UpdateFns *update_fns, const char *raw_name, char *stored_name, size_t stored_name_size) {
@@ -800,6 +1031,65 @@ static void sync_update_fns_from_entities(App *app) {
     }
 }
 
+static bool remember_cleanup_fn(CleanupFns *cleanup_fns, const char *raw_name, char *stored_name, size_t stored_name_size) {
+    if (text_is_empty(raw_name)) return false;
+
+    char name[ENTITY_NAME_SIZE] = {0};
+    sanitize_cleanup_fn(name, sizeof(name), raw_name);
+    if (stored_name && stored_name_size > 0) snprintf(stored_name, stored_name_size, "%s", name);
+
+    if (cleanup_fn_exists(cleanup_fns, name)) return true;
+
+    CleanupFn cleanup_fn = {0};
+    snprintf(cleanup_fn.name, sizeof(cleanup_fn.name), "%s", name);
+    da_append(cleanup_fns, cleanup_fn);
+    return true;
+}
+
+static void add_cleanup_fn(App *app, const char *raw_name) {
+    char name[ENTITY_NAME_SIZE] = {0};
+    if (!remember_cleanup_fn(&app->cleanup_fns, raw_name, name, sizeof(name))) return;
+
+    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "%s", name);
+    snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "");
+    app->cleanup_fn_edit = false;
+}
+
+static void remove_cleanup_fn_at(App *app, size_t index) {
+    if (index >= app->cleanup_fns.length) return;
+
+    char name[ENTITY_NAME_SIZE] = {0};
+    snprintf(name, sizeof(name), "%s", app->cleanup_fns.data[index].name);
+
+    if (strcmp(app->brush_cleanup_fn, name) == 0) {
+        snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+    }
+
+    for (size_t i = 0; i < app->entities.length; i++) {
+        PlacedEntity *entity = &app->entities.data[i];
+        if (strcmp(entity->cleanup_fn, name) == 0) {
+            snprintf(entity->cleanup_fn, sizeof(entity->cleanup_fn), "");
+        }
+    }
+
+    if (index + 1 < app->cleanup_fns.length) {
+        memmove(
+            &app->cleanup_fns.data[index],
+            &app->cleanup_fns.data[index + 1],
+            (app->cleanup_fns.length - index - 1) * sizeof(app->cleanup_fns.data[0]));
+    }
+    app->cleanup_fns.length--;
+    set_status(app, "Removed cleanup fn %s", name);
+}
+
+static void sync_cleanup_fns_from_entities(App *app) {
+    for (size_t i = 0; i < app->entities.length; i++) {
+        const PlacedEntity *entity = &app->entities.data[i];
+        if (entity->cleanup_fn[0] == '\0') continue;
+        remember_cleanup_fn(&app->cleanup_fns, entity->cleanup_fn, NULL, 0);
+    }
+}
+
 static bool entity_name_exists(const App *app, const char *name) {
     for (size_t i = 0; i < app->entities.length; i++) {
         if (strcmp(app->entities.data[i].name, name) == 0) return true;
@@ -824,6 +1114,12 @@ static void strip_numeric_suffix(char *name) {
     if (i > 0 && i < len && name[i - 1] == '_') name[i - 1] = '\0';
 }
 
+/* "entity" is the bare fallback name and collides with the generated create_entity()
+   factory function when a level has no name suffix, so it is never used unsuffixed. */
+static bool entity_name_is_generic(const char *name) {
+    return strcmp(name, "entity") == 0;
+}
+
 static void make_unique_entity_name(const App *app, const char *raw_name, char *dst, size_t dst_size) {
     char base[ENTITY_NAME_SIZE] = {0};
     sanitize_identifier(base, sizeof(base), raw_name, "entity", false);
@@ -833,10 +1129,13 @@ static void make_unique_entity_name(const App *app, const char *raw_name, char *
     strip_numeric_suffix(root);
     if (root[0] == '\0') snprintf(root, sizeof(root), "entity");
 
-    snprintf(dst, dst_size, "%s", base);
-    if (!entity_name_exists(app, dst)) return;
+    bool is_generic = entity_name_is_generic(base);
+    if (!is_generic) {
+        snprintf(dst, dst_size, "%s", base);
+        if (!entity_name_exists(app, dst)) return;
+    }
 
-    for (unsigned int suffix = 2; suffix < 100000; suffix++) {
+    for (unsigned int suffix = is_generic ? 1 : 2; suffix < 100000; suffix++) {
         snprintf(dst, dst_size, "%s_%u", root, suffix);
         if (!entity_name_exists(app, dst)) return;
     }
@@ -851,10 +1150,13 @@ static void make_unique_entity_name_except(const App *app, const char *raw_name,
     strip_numeric_suffix(root);
     if (root[0] == '\0') snprintf(root, sizeof(root), "entity");
 
-    snprintf(dst, dst_size, "%s", base);
-    if (!entity_name_exists_except(app, dst, skip_index)) return;
+    bool is_generic = entity_name_is_generic(base);
+    if (!is_generic) {
+        snprintf(dst, dst_size, "%s", base);
+        if (!entity_name_exists_except(app, dst, skip_index)) return;
+    }
 
-    for (unsigned int suffix = 2; suffix < 100000; suffix++) {
+    for (unsigned int suffix = is_generic ? 1 : 2; suffix < 100000; suffix++) {
         snprintf(dst, dst_size, "%s_%u", root, suffix);
         if (!entity_name_exists_except(app, dst, skip_index)) return;
     }
@@ -1016,12 +1318,18 @@ static void load_entity_fields_into_editor(App *app, int entity_index) {
     app->brush_collision_mask = entity->collision_mask;
     app->brush_disabled = entity->disabled;
     app->brush_exported = entity->exported;
+    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "%s", entity->init_fn);
+    if (app->brush_init_fn[0] != '\0') remember_init_fn(&app->init_fns, app->brush_init_fn, NULL, 0);
     snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "%s", entity->update_fn);
     if (app->brush_update_fn[0] != '\0') remember_update_fn(&app->update_fns, app->brush_update_fn, NULL, 0);
+    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "%s", entity->cleanup_fn);
+    if (app->brush_cleanup_fn[0] != '\0') remember_cleanup_fn(&app->cleanup_fns, app->brush_cleanup_fn, NULL, 0);
+    snprintf(app->brush_animation, sizeof(app->brush_animation), "%s", entity->animation);
     snprintf(app->brush_vdiv_text, sizeof(app->brush_vdiv_text), "%.3f", app->brush_vdiv);
     snprintf(app->brush_hdiv_text, sizeof(app->brush_hdiv_text), "%.3f", app->brush_hdiv);
     snprintf(app->brush_vmove_text, sizeof(app->brush_vmove_text), "%.3f", app->brush_vmove);
     snprintf(app->brush_threshold_text, sizeof(app->brush_threshold_text), "%.3f", app->brush_collision_threshold);
+    app->brush_kind = entity->kind;
     snprintf(app->brush_entity_name, sizeof(app->brush_entity_name), "%s", entity->name);
     set_status(app, "Editing entity %s", entity->name);
 }
@@ -1095,6 +1403,8 @@ static void make_unique_selected_entity_names(App *app) {
     strip_numeric_suffix(root);
     if (root[0] == '\0') snprintf(root, sizeof(root), "entity");
 
+    bool is_generic = entity_name_is_generic(base);
+
     size_t count = app->selected_entities.length;
     char (*assigned)[ENTITY_NAME_SIZE] = calloc(count, sizeof(*assigned));
     if (!assigned) {
@@ -1109,7 +1419,7 @@ static void make_unique_selected_entity_names(App *app) {
 
         char candidate[ENTITY_NAME_SIZE] = {0};
         for (;;) {
-            if (suffix == 1) snprintf(candidate, sizeof(candidate), "%s", base);
+            if (!is_generic && suffix == 1) snprintf(candidate, sizeof(candidate), "%s", base);
             else snprintf(candidate, sizeof(candidate), "%s_%u", root, suffix);
             suffix++;
 
@@ -1459,7 +1769,9 @@ static void paste_clipboard_entities_at(App *app, Vector2 center) {
         PlacedEntity entity = item->entity;
         entity.pos = (Vector2){center.x + item->offset.x, center.y + item->offset.y};
         make_unique_entity_name(app, item->entity.name, entity.name, sizeof(entity.name));
+        if (entity.init_fn[0] != '\0') remember_init_fn(&app->init_fns, entity.init_fn, NULL, 0);
         if (entity.update_fn[0] != '\0') remember_update_fn(&app->update_fns, entity.update_fn, NULL, 0);
+        if (entity.cleanup_fn[0] != '\0') remember_cleanup_fn(&app->cleanup_fns, entity.cleanup_fn, NULL, 0);
 
         da_append(&app->entities, entity);
         da_append(&app->selected_entities, (int)app->entities.length - 1);
@@ -1607,10 +1919,16 @@ static void sync_selected_entity_from_editor(App *app) {
         entity->vmove = app->brush_vmove;
         entity->collision_threshold = app->brush_collision_threshold;
         entity->collision_mask = app->brush_collision_mask;
+        entity->kind = app->brush_kind;
         entity->disabled = app->brush_disabled;
         entity->exported = app->brush_exported;
+        snprintf(entity->init_fn, sizeof(entity->init_fn), "%s", app->brush_init_fn);
+        if (entity->init_fn[0] != '\0') remember_init_fn(&app->init_fns, entity->init_fn, NULL, 0);
         snprintf(entity->update_fn, sizeof(entity->update_fn), "%s", app->brush_update_fn);
         if (entity->update_fn[0] != '\0') remember_update_fn(&app->update_fns, entity->update_fn, NULL, 0);
+        snprintf(entity->cleanup_fn, sizeof(entity->cleanup_fn), "%s", app->brush_cleanup_fn);
+        if (entity->cleanup_fn[0] != '\0') remember_cleanup_fn(&app->cleanup_fns, entity->cleanup_fn, NULL, 0);
+        snprintf(entity->animation, sizeof(entity->animation), "%s", app->brush_animation);
     }
 
     make_unique_selected_entity_names(app);
@@ -1679,6 +1997,90 @@ static void apply_selected_entities_exported(App *app) {
     }
 }
 
+static bool entity_kind_exists(const App *app, const char *name) {
+    for (size_t i = 0; i < app->kinds.length; i++) {
+        if (strcmp(app->kinds.data[i].name, name) == 0) return true;
+    }
+    return false;
+}
+
+static int next_entity_kind_id(const App *app) {
+    int max_id = 0;
+    for (size_t i = 0; i < app->kinds.length; i++) {
+        if (app->kinds.data[i].id > max_id) max_id = app->kinds.data[i].id;
+    }
+    return max_id + 1;
+}
+
+static void add_entity_kind(App *app, const char *raw_name) {
+    char name[KIND_NAME_SIZE] = {0};
+    sanitize_identifier(name, sizeof(name), raw_name, "KIND", true);
+
+    if (entity_kind_exists(app, name)) {
+        set_status(app, "Kind %s already exists", name);
+        return;
+    }
+
+    if (app->kinds.length >= MAX_KINDS) {
+        set_status(app, "Kind limit reached");
+        return;
+    }
+
+    int id = next_entity_kind_id(app);
+    EntityKind g = {.id = id};
+    snprintf(g.name, sizeof(g.name), "%s", name);
+    da_append(&app->kinds, g);
+    app->brush_kind = id;
+    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
+    app->new_kind_edit = false;
+    set_status(app, "Added kind %s (%d)", name, id);
+}
+
+static void remove_entity_kind_at(App *app, size_t index) {
+    if (index >= app->kinds.length) return;
+
+    int id = app->kinds.data[index].id;
+    char name[KIND_NAME_SIZE] = {0};
+    snprintf(name, sizeof(name), "%s", app->kinds.data[index].name);
+
+    if (app->brush_kind == id) app->brush_kind = 0;
+
+    for (size_t i = 0; i < app->entities.length; i++) {
+        if (app->entities.data[i].kind == id) app->entities.data[i].kind = 0;
+    }
+
+    if (index + 1 < app->kinds.length) {
+        memmove(
+            &app->kinds.data[index],
+            &app->kinds.data[index + 1],
+            (app->kinds.length - index - 1) * sizeof(app->kinds.data[0]));
+    }
+    app->kinds.length--;
+    set_status(app, "Removed kind %s", name);
+}
+
+static void apply_selected_entities_kind(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_ENTITY) return;
+    for (size_t i = 0; i < app->selected_entities.length; i++) {
+        int entity_index = app->selected_entities.data[i];
+        if (selected_entity_is_valid(app, entity_index)) app->entities.data[entity_index].kind = app->brush_kind;
+    }
+}
+
+static void apply_selected_entities_init_fn(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_ENTITY) return;
+    for (size_t i = 0; i < app->selected_entities.length; i++) {
+        int entity_index = app->selected_entities.data[i];
+        if (!selected_entity_is_valid(app, entity_index)) continue;
+
+        PlacedEntity *entity = &app->entities.data[entity_index];
+        snprintf(entity->init_fn, sizeof(entity->init_fn), "%s", app->brush_init_fn);
+        if (entity->init_fn[0] != '\0') remember_init_fn(&app->init_fns, entity->init_fn, NULL, 0);
+    }
+}
+
 static void apply_selected_entities_update_fn(App *app) {
     prune_invalid_selection(app);
     if (app->selection_kind != SELECTION_ENTITY) return;
@@ -1689,6 +2091,31 @@ static void apply_selected_entities_update_fn(App *app) {
         PlacedEntity *entity = &app->entities.data[entity_index];
         snprintf(entity->update_fn, sizeof(entity->update_fn), "%s", app->brush_update_fn);
         if (entity->update_fn[0] != '\0') remember_update_fn(&app->update_fns, entity->update_fn, NULL, 0);
+    }
+}
+
+static void apply_selected_entities_cleanup_fn(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_ENTITY) return;
+    for (size_t i = 0; i < app->selected_entities.length; i++) {
+        int entity_index = app->selected_entities.data[i];
+        if (!selected_entity_is_valid(app, entity_index)) continue;
+
+        PlacedEntity *entity = &app->entities.data[entity_index];
+        snprintf(entity->cleanup_fn, sizeof(entity->cleanup_fn), "%s", app->brush_cleanup_fn);
+        if (entity->cleanup_fn[0] != '\0') remember_cleanup_fn(&app->cleanup_fns, entity->cleanup_fn, NULL, 0);
+    }
+}
+
+static void apply_selected_entities_animation(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_ENTITY) return;
+    for (size_t i = 0; i < app->selected_entities.length; i++) {
+        int entity_index = app->selected_entities.data[i];
+        if (!selected_entity_is_valid(app, entity_index)) continue;
+
+        PlacedEntity *entity = &app->entities.data[entity_index];
+        snprintf(entity->animation, sizeof(entity->animation), "%s", app->brush_animation);
     }
 }
 
@@ -2177,31 +2604,6 @@ static void append_float_literal(String *out, float value) {
     str_appendf(out, "%sf", buffer);
 }
 
-static void append_collision_mask_expression(String *out, const App *app, uint32_t mask) {
-    if (mask == 0) {
-        str_append(out, "YR_CMSK_NONE");
-        return;
-    }
-
-    bool first = true;
-    uint32_t known_bits = 0;
-    for (size_t i = 0; i < app->collision_layers.length; i++) {
-        const CollisionLayer *layer = &app->collision_layers.data[i];
-        known_bits |= layer->value;
-        if ((mask & layer->value) == 0) continue;
-
-        if (!first) str_append(out, " | ");
-        str_append(out, layer->symbol);
-        first = false;
-    }
-
-    uint32_t unknown_bits = mask & ~known_bits;
-    if (unknown_bits != 0) {
-        if (!first) str_append(out, " | ");
-        str_appendf(out, "0x%08Xu", unknown_bits);
-    }
-}
-
 static void append_player_collision_mask_expression(String *out, const App *app) {
     str_append(out, "YR_CMSK_ALL");
     for (size_t i = 0; i < app->collision_layers.length; i++) {
@@ -2211,13 +2613,7 @@ static void append_player_collision_mask_expression(String *out, const App *app)
     }
 }
 
-static uint32_t all_custom_collision_layer_bits(const CollisionLayers *layers) {
-    uint32_t mask = 0;
-    for (size_t i = 0; i < layers->length; i++) mask |= layers->data[i].value;
-    return mask;
-}
-
-static void append_map_builder_state(String *out, const App *app) {
+static void append_level_state(String *out, const App *app) {
     str_append(out, "// " MAP_BUILDER_STATE_BEGIN "\n");
     str_appendf(out, "// version %d\n", MAP_BUILDER_STATE_VERSION);
     str_appendf(out, "// size %d %d\n", app->map.cols, app->map.rows);
@@ -2225,23 +2621,12 @@ static void append_map_builder_state(String *out, const App *app) {
     str_appendf(out, "// surface ceil %s\n", asset_symbol_or_null(app, app->ceil_asset));
     str_appendf(
         out,
-        "// player %.9g %.9g %.9g %.9g %.9g 0x%08X\n",
+        "// player_pos %.9g %.9g %.9g %.9g\n",
         app->player_pos.x,
         app->player_pos.y,
         app->player_dir.x,
-        app->player_dir.y,
-        app->player_collision_threshold,
-        app->player_collision_mask);
-
-    for (size_t i = 0; i < app->collision_layers.length; i++) {
-        const CollisionLayer *layer = &app->collision_layers.data[i];
-        str_appendf(out, "// layer %s %u\n", layer->name, layer->shift);
-    }
-
-    for (size_t i = 0; i < app->update_fns.length; i++) {
-        const UpdateFn *update_fn = &app->update_fns.data[i];
-        str_appendf(out, "// update_fn %s\n", update_fn->name);
-    }
+        app->player_dir.y);
+    str_appendf(out, "// level_suffix %d\n", app->use_level_suffix ? 1 : 0);
 
     for (int y = 0; y < app->map.rows; y++) {
         for (int x = 0; x < app->map.cols; x++) {
@@ -2271,7 +2656,7 @@ static void append_map_builder_state(String *out, const App *app) {
         const PlacedEntity *entity = &app->entities.data[i];
         str_appendf(
             out,
-            "// entity %s %s %.9g %.9g %.9g %.9g %.9g %d %.9g 0x%08X %d %s\n",
+            "// entity %s %s %.9g %.9g %.9g %.9g %.9g %d %.9g 0x%08X %d %s %d %s %s %s\n",
             entity->name,
             asset_symbol_or_null(app, entity->asset_index),
             entity->pos.x,
@@ -2283,7 +2668,54 @@ static void append_map_builder_state(String *out, const App *app) {
             entity->collision_threshold,
             entity->collision_mask,
             entity->exported ? 1 : 0,
-            entity->update_fn[0] != '\0' ? entity->update_fn : "-");
+            entity->update_fn[0] != '\0' ? entity->update_fn : "-",
+            entity->kind,
+            entity->cleanup_fn[0] != '\0' ? entity->cleanup_fn : "-",
+            entity->init_fn[0] != '\0' ? entity->init_fn : "-",
+            entity->animation[0] != '\0' ? entity->animation : "-");
+    }
+
+    str_append(out, "// " MAP_BUILDER_STATE_END "\n\n");
+}
+
+/* level_gen.h's own metadata: settings shared across every level file that includes it. */
+static void append_level_gen_state(String *out, const App *app) {
+    str_append(out, "// " MAP_BUILDER_STATE_BEGIN "\n");
+    str_appendf(out, "// version %d\n", MAP_BUILDER_STATE_VERSION);
+    str_appendf(out, "// player_collision %.9g 0x%08X\n", app->player_collision_threshold, app->player_collision_mask);
+
+    for (size_t i = 0; i < app->collision_layers.length; i++) {
+        const CollisionLayer *layer = &app->collision_layers.data[i];
+        str_appendf(out, "// layer %s %u\n", layer->name, layer->shift);
+    }
+
+    for (size_t i = 0; i < app->init_fns.length; i++) {
+        const InitFn *init_fn = &app->init_fns.data[i];
+        str_appendf(out, "// init_fn %s\n", init_fn->name);
+    }
+
+    for (size_t i = 0; i < app->update_fns.length; i++) {
+        const UpdateFn *update_fn = &app->update_fns.data[i];
+        str_appendf(out, "// update_fn %s\n", update_fn->name);
+    }
+
+    for (size_t i = 0; i < app->cleanup_fns.length; i++) {
+        const CleanupFn *cleanup_fn = &app->cleanup_fns.data[i];
+        str_appendf(out, "// cleanup_fn %s\n", cleanup_fn->name);
+    }
+
+    for (size_t i = 0; i < app->kinds.length; i++) {
+        const EntityKind *g = &app->kinds.data[i];
+        str_appendf(out, "// kind_def %s %d\n", g->name, g->id);
+    }
+
+    for (size_t i = 0; i < app->animations.length; i++) {
+        const Animation *anim = &app->animations.data[i];
+        str_appendf(out, "// anim %s %.9g %d", anim->name, anim->speed, anim->frame_count);
+        for (int fi = 0; fi < anim->frame_count; fi++) {
+            str_appendf(out, " %s", asset_symbol_or_null(app, anim->frames[fi]));
+        }
+        str_append(out, "\n");
     }
 
     str_append(out, "// " MAP_BUILDER_STATE_END "\n\n");
@@ -2297,6 +2729,7 @@ static void loaded_level_init(LoadedLevel *loaded) {
     loaded->player_dir = (Vector2){0.0f, 1.0f};
     loaded->player_collision_threshold = 0.15f;
     loaded->player_collision_mask = UINT32_MAX;
+    loaded->use_level_suffix = false;
 }
 
 static void loaded_level_free(LoadedLevel *loaded) {
@@ -2307,7 +2740,11 @@ static void loaded_level_free(LoadedLevel *loaded) {
     }
     da_free(&loaded->entities);
     da_free(&loaded->collision_layers);
+    da_free(&loaded->init_fns);
     da_free(&loaded->update_fns);
+    da_free(&loaded->cleanup_fns);
+    da_free(&loaded->kinds);
+    da_free(&loaded->animations);
     loaded_level_init(loaded);
 }
 
@@ -2391,7 +2828,9 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
 
     int version = 0;
     if (sscanf(payload, "version %d", &version) == 1) {
-        return version == MAP_BUILDER_STATE_VERSION;
+        /* accept older versions too (e.g. pre level_gen.h split) so existing level headers can be
+           loaded and re-saved in the current format instead of being rejected outright. */
+        return version >= 1 && version <= MAP_BUILDER_STATE_VERSION;
     }
 
     int cols = 0;
@@ -2425,13 +2864,32 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
     float player_y = 0.0f;
     float dir_x = 0.0f;
     float dir_y = 0.0f;
+    if (sscanf(payload, "player_pos %f %f %f %f", &player_x, &player_y, &dir_x, &dir_y) == 4) {
+        loaded->player_pos = (Vector2){player_x, player_y};
+        loaded->player_dir = (Vector2){dir_x, dir_y};
+        return true;
+    }
+
     float threshold = 0.0f;
     unsigned int player_mask = UINT32_MAX;
+    if (sscanf(payload, "player_collision %f %x", &threshold, &player_mask) == 2) {
+        loaded->player_collision_threshold = threshold;
+        loaded->player_collision_mask = player_mask;
+        return true;
+    }
+
+    /* legacy (pre level_gen.h split) single-line format: pos, dir, threshold and mask together */
     if (sscanf(payload, "player %f %f %f %f %f %x", &player_x, &player_y, &dir_x, &dir_y, &threshold, &player_mask) == 6) {
         loaded->player_pos = (Vector2){player_x, player_y};
         loaded->player_dir = (Vector2){dir_x, dir_y};
         loaded->player_collision_threshold = threshold;
         loaded->player_collision_mask = player_mask;
+        return true;
+    }
+
+    int level_suffix = 0;
+    if (sscanf(payload, "level_suffix %d", &level_suffix) == 1) {
+        loaded->use_level_suffix = level_suffix != 0;
         return true;
     }
 
@@ -2441,9 +2899,28 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
         return loaded_level_add_collision_layer(loaded, layer_name, shift);
     }
 
+    char init_fn_name[ENTITY_NAME_SIZE] = {0};
+    if (sscanf(payload, "init_fn %63s", init_fn_name) == 1) {
+        return remember_init_fn(&loaded->init_fns, init_fn_name, NULL, 0);
+    }
+
     char update_fn_name[ENTITY_NAME_SIZE] = {0};
     if (sscanf(payload, "update_fn %63s", update_fn_name) == 1) {
         return remember_update_fn(&loaded->update_fns, update_fn_name, NULL, 0);
+    }
+
+    char cleanup_fn_name[ENTITY_NAME_SIZE] = {0};
+    if (sscanf(payload, "cleanup_fn %63s", cleanup_fn_name) == 1) {
+        return remember_cleanup_fn(&loaded->cleanup_fns, cleanup_fn_name, NULL, 0);
+    }
+
+    char kind_def_name[KIND_NAME_SIZE] = {0};
+    int kind_def_id = 0;
+    if (sscanf(payload, "kind_def %31s %d", kind_def_name, &kind_def_id) == 2) {
+        EntityKind g = {.id = kind_def_id};
+        snprintf(g.name, sizeof(g.name), "%s", kind_def_name);
+        da_append(&loaded->kinds, g);
+        return true;
     }
 
     int x = 0;
@@ -2487,13 +2964,17 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
     char entity_name[ENTITY_NAME_SIZE] = {0};
     char ignored_fn[64] = {0};
     char update_fn_buf[ENTITY_NAME_SIZE] = {0};
+    char cleanup_fn_buf[ENTITY_NAME_SIZE] = {0};
+    char init_fn_buf[ENTITY_NAME_SIZE] = {0};
+    char animation_buf[ANIM_NAME_SIZE] = {0};
     PlacedEntity entity = {0};
     int disabled = 0;
     unsigned int entity_mask = 0;
     int exported_val = 0;
+    int entity_kind = 0;
     int entity_fields = sscanf(
             payload,
-            "entity %63s %127s %f %f %f %f %f %d %f %x %63s %63s",
+            "entity %63s %127s %f %f %f %f %f %d %f %x %63s %63s %d %63s %63s %63s",
             entity_name,
             texture_symbol,
             &entity.pos.x,
@@ -2505,9 +2986,13 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
             &entity.collision_threshold,
             &entity_mask,
             ignored_fn,
-            update_fn_buf);
-    /* fields 11+: ignored_fn = exported (int as string), update_fn_buf = optional */
-    if (entity_fields == 12 || entity_fields == 11) {
+            update_fn_buf,
+            &entity_kind,
+            cleanup_fn_buf,
+            init_fn_buf,
+            animation_buf);
+    /* fields 11+: ignored_fn = exported (int as string), 12 = update_fn, 13 = kind, 14 = cleanup_fn, 15 = init_fn, 16 = animation */
+    if (entity_fields == 16 || entity_fields == 15 || entity_fields == 14 || entity_fields == 13 || entity_fields == 12 || entity_fields == 11) {
         exported_val = (ignored_fn[0] != '-') ? atoi(ignored_fn) : 0;
         sanitize_identifier(entity.name, sizeof(entity.name), entity_name, "entity", false);
         entity.asset_index = asset_index_from_symbol(app, texture_symbol);
@@ -2515,11 +3000,48 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
         entity.disabled = disabled != 0;
         entity.exported = exported_val != 0;
         entity.collision_mask = entity_mask;
-        if (entity_fields == 12 && update_fn_buf[0] != '\0' && strcmp(update_fn_buf, "-") != 0) {
+        entity.kind = (entity_fields >= 13) ? entity_kind : 0;
+        if (entity_fields >= 12 && update_fn_buf[0] != '\0' && strcmp(update_fn_buf, "-") != 0) {
             snprintf(entity.update_fn, sizeof(entity.update_fn), "%s", update_fn_buf);
             remember_update_fn(&loaded->update_fns, entity.update_fn, NULL, 0);
         }
+        if (entity_fields >= 14 && cleanup_fn_buf[0] != '\0' && strcmp(cleanup_fn_buf, "-") != 0) {
+            snprintf(entity.cleanup_fn, sizeof(entity.cleanup_fn), "%s", cleanup_fn_buf);
+            remember_cleanup_fn(&loaded->cleanup_fns, entity.cleanup_fn, NULL, 0);
+        }
+        if (entity_fields >= 15 && init_fn_buf[0] != '\0' && strcmp(init_fn_buf, "-") != 0) {
+            snprintf(entity.init_fn, sizeof(entity.init_fn), "%s", init_fn_buf);
+            remember_init_fn(&loaded->init_fns, entity.init_fn, NULL, 0);
+        }
+        if (entity_fields >= 16 && animation_buf[0] != '\0' && strcmp(animation_buf, "-") != 0) {
+            snprintf(entity.animation, sizeof(entity.animation), "%s", animation_buf);
+        }
         da_append(&loaded->entities, entity);
+        return true;
+    }
+
+    char anim_name_buf[ANIM_NAME_SIZE] = {0};
+    float anim_speed_val = 0.25f;
+    int anim_frame_count = 0;
+    int anim_consumed = 0;
+    if (sscanf(payload, "anim %63s %f %d%n", anim_name_buf, &anim_speed_val, &anim_frame_count, &anim_consumed) == 3) {
+        Animation anim = {0};
+        sanitize_identifier(anim.name, sizeof(anim.name), anim_name_buf, "anim", false);
+        anim.speed = anim_speed_val > 0.001f ? anim_speed_val : 0.001f;
+        const char *p = payload + anim_consumed;
+        for (int fi = 0; fi < anim_frame_count && fi < MAX_ANIM_FRAMES; fi++) {
+            while (*p && isspace((unsigned char)*p)) p++;
+            if (!*p) break;
+            char sym[128] = {0};
+            int sym_consumed = 0;
+            if (sscanf(p, "%127s%n", sym, &sym_consumed) != 1) break;
+            p += sym_consumed;
+            int asset_idx = asset_index_from_symbol(app, sym);
+            if (asset_idx < 0 && strcmp(sym, "NULL_ASSET") != 0 && strcmp(sym, "0") != 0) (*missing_assets)++;
+            anim.frames[fi] = asset_idx;
+            anim.frame_count++;
+        }
+        da_append(&loaded->animations, anim);
         return true;
     }
 
@@ -2532,20 +3054,36 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     wall_map_free(&app->ceil_map);
     da_free(&app->entities);
     da_free(&app->collision_layers);
+    da_free(&app->init_fns);
     da_free(&app->update_fns);
+    da_free(&app->cleanup_fns);
+    da_free(&app->kinds);
 
     app->map = loaded->map;
     app->floor_map = loaded->floor_map;
     app->ceil_map = loaded->ceil_map;
     app->entities = loaded->entities;
     app->collision_layers = loaded->collision_layers;
+    app->init_fns = loaded->init_fns;
     app->update_fns = loaded->update_fns;
+    app->cleanup_fns = loaded->cleanup_fns;
+    app->kinds = loaded->kinds;
+    da_free(&app->animations);
+    app->animations = loaded->animations;
+    app->selected_animation = app->animations.length > 0 ? 0 : -1;
+    if (app->selected_animation >= 0) {
+        snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
+    }
     loaded->map = (WallMap){0};
     loaded->floor_map = (WallMap){0};
     loaded->ceil_map = (WallMap){0};
     loaded->entities = (PlacedEntities){0};
     loaded->collision_layers = (CollisionLayers){0};
+    loaded->init_fns = (InitFns){0};
     loaded->update_fns = (UpdateFns){0};
+    loaded->cleanup_fns = (CleanupFns){0};
+    loaded->kinds = (EntityKinds){0};
+    loaded->animations = (Animations){0};
     loaded->has_size = false;
 
     app->pending_cols = app->map.cols;
@@ -2555,16 +3093,20 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     app->player_dir = loaded->player_dir;
     app->player_collision_threshold = loaded->player_collision_threshold < 0.0f ? 0.0f : loaded->player_collision_threshold;
     app->player_collision_mask = loaded->player_collision_mask;
+    app->use_level_suffix = loaded->use_level_suffix;
     set_player_pos(app, loaded->player_pos);
 
     app->brush = BRUSH_WALL;
     app->wall_mode = WALL_POINT;
+    app->entity_tab = ENTITY_TAB_PROPERTIES;
     app->brush_collision_threshold = DEFAULT_ENTITY_COLLISION_THRESHOLD;
-    app->brush_collision_mask = all_custom_collision_layer_bits(&app->collision_layers);
+    app->brush_collision_mask = 0;
     snprintf(app->brush_threshold_text, sizeof(app->brush_threshold_text), "%.3f", app->brush_collision_threshold);
     app->mask_scroll = 0.0f;
     app->player_mask_scroll = 0.0f;
+    app->init_fn_scroll = 0.0f;
     app->update_fn_scroll = 0.0f;
+    app->cleanup_fn_scroll = 0.0f;
     app->asset_scroll = 0.0f;
     app->cols_edit = false;
     app->rows_edit = false;
@@ -2574,48 +3116,96 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     app->threshold_edit = false;
     app->entity_name_edit = false;
     app->new_mask_edit = false;
+    app->init_fn_edit = false;
     app->update_fn_edit = false;
+    app->cleanup_fn_edit = false;
     app->player_pos_x_edit = false;
     app->player_pos_y_edit = false;
     app->player_dir_x_edit = false;
     app->player_dir_y_edit = false;
     app->player_threshold_edit = false;
+    app->brush_kind = 0;
+    app->kind_scroll = 0.0f;
+    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
+    snprintf(app->new_init_fn, sizeof(app->new_init_fn), "init_entity");
+    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
     snprintf(app->new_update_fn, sizeof(app->new_update_fn), "update_entity");
     snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+    snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "cleanup_entity");
+    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+    snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+    app->entity_anim_scroll = 0.0f;
+    sync_init_fns_from_entities(app);
     sync_update_fns_from_entities(app);
+    sync_cleanup_fns_from_entities(app);
     clear_edit_selection(app);
     if (!asset_index_is_valid(app, app->selected_asset)) app->selected_asset = app->assets.length > 0 ? 0 : -1;
     fit_camera(app, map_bounds);
 }
 
-static bool load_level_header(App *app, Rectangle map_bounds, bool report_status) {
-    String file = {0};
-    if (!read_file_null_terminated(app->output_path, &file)) {
-        if (report_status) set_status(app, "Cannot read %s", app->output_path);
-        return false;
+/* Applies only the shared level_gen.h state (collision masks, kinds, player collision
+   threshold/mask, init/update/cleanup function names, animations) without touching the map/entities/player
+   position. Used when the output file doesn't exist yet but shares an existing level_gen.h. */
+static void apply_loaded_level_gen(App *app, LoadedLevel *loaded) {
+    da_free(&app->collision_layers);
+    app->collision_layers = loaded->collision_layers;
+    loaded->collision_layers = (CollisionLayers){0};
+
+    da_free(&app->init_fns);
+    app->init_fns = loaded->init_fns;
+    loaded->init_fns = (InitFns){0};
+
+    da_free(&app->update_fns);
+    app->update_fns = loaded->update_fns;
+    loaded->update_fns = (UpdateFns){0};
+
+    da_free(&app->cleanup_fns);
+    app->cleanup_fns = loaded->cleanup_fns;
+    loaded->cleanup_fns = (CleanupFns){0};
+
+    da_free(&app->kinds);
+    app->kinds = loaded->kinds;
+    loaded->kinds = (EntityKinds){0};
+
+    da_free(&app->animations);
+    app->animations = loaded->animations;
+    loaded->animations = (Animations){0};
+    app->selected_animation = app->animations.length > 0 ? 0 : -1;
+    if (app->selected_animation >= 0) {
+        snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
     }
 
-    bool ok = false;
-    int missing_assets = 0;
-    LoadedLevel loaded = {0};
-    loaded_level_init(&loaded);
+    app->player_collision_threshold = loaded->player_collision_threshold < 0.0f ? 0.0f : loaded->player_collision_threshold;
+    app->player_collision_mask = loaded->player_collision_mask;
 
-    char *begin = strstr(file.data, MAP_BUILDER_STATE_BEGIN);
+    app->mask_scroll = 0.0f;
+    app->player_mask_scroll = 0.0f;
+    app->init_fn_scroll = 0.0f;
+    app->update_fn_scroll = 0.0f;
+    app->cleanup_fn_scroll = 0.0f;
+    app->kind_scroll = 0.0f;
+    app->anim_list_scroll = 0.0f;
+    app->anim_frames_scroll = 0.0f;
+}
+
+/* Parses one MAP_BUILDER_STATE_BEGIN/END block found anywhere in `data` (mutated in place). */
+static bool parse_state_block(App *app, LoadedLevel *loaded, char *data, const char *path, int *missing_assets, bool report_status) {
+    char *begin = strstr(data, MAP_BUILDER_STATE_BEGIN);
     if (!begin) {
-        if (report_status) set_status(app, "No saved builder state in %s", app->output_path);
-        goto cleanup;
+        if (report_status) set_status(app, "No saved builder state in %s", path);
+        return false;
     }
     begin = strchr(begin, '\n');
     if (!begin) {
-        if (report_status) set_status(app, "Invalid builder state in %s", app->output_path);
-        goto cleanup;
+        if (report_status) set_status(app, "Invalid builder state in %s", path);
+        return false;
     }
     begin++;
 
     char *end = strstr(begin, MAP_BUILDER_STATE_END);
     if (!end) {
-        if (report_status) set_status(app, "Invalid builder state in %s", app->output_path);
-        goto cleanup;
+        if (report_status) set_status(app, "Invalid builder state in %s", path);
+        return false;
     }
     *end = '\0';
 
@@ -2625,13 +3215,47 @@ static bool load_level_header(App *app, Rectangle map_bounds, bool report_status
         if (next) *next++ = '\0';
 
         char *payload = state_line_payload(line);
-        if (!parse_state_line(app, &loaded, payload, &missing_assets)) {
-            if (report_status) set_status(app, "Invalid builder state in %s", app->output_path);
-            goto cleanup;
+        if (!parse_state_line(app, loaded, payload, missing_assets)) {
+            if (report_status) set_status(app, "Invalid builder state in %s", path);
+            return false;
         }
 
         line = next;
     }
+
+    return true;
+}
+
+static bool load_level_header(App *app, Rectangle map_bounds, bool report_status) {
+    int missing_assets = 0;
+    LoadedLevel loaded = {0};
+    loaded_level_init(&loaded);
+
+    bool gen_exists = false;
+    bool gen_ok = true;
+    {
+        String gen_file = {0};
+        gen_exists = read_file_null_terminated(app->level_gen_path, &gen_file);
+        if (gen_exists) {
+            gen_ok = parse_state_block(app, &loaded, gen_file.data, app->level_gen_path, &missing_assets, report_status);
+        }
+        da_free(&gen_file);
+    }
+
+    String file = {0};
+    if (!read_file_null_terminated(app->output_path, &file)) {
+        /* new level: still pick up the shared level_gen.h state if it parsed cleanly */
+        if (gen_exists && gen_ok) apply_loaded_level_gen(app, &loaded);
+        if (report_status) set_status(app, "Cannot read %s", app->output_path);
+        loaded_level_free(&loaded);
+        da_free(&file);
+        return false;
+    }
+
+    bool ok = false;
+    if (gen_exists && !gen_ok) goto cleanup;
+
+    if (!parse_state_block(app, &loaded, file.data, app->output_path, &missing_assets, report_status)) goto cleanup;
 
     if (!loaded.has_size) {
         if (report_status) set_status(app, "Missing map size in %s", app->output_path);
@@ -2674,61 +3298,111 @@ static void append_map_array_data(String *out, const App *app, const WallMap *ma
     }
 }
 
-static void append_map_array_fn(String *out, const App *app, const char *fn_name, const WallMap *map) {
+static void append_map_array_fn(String *out, const App *app, const char *fn_name, const WallMap *map, const char *macro_suffix) {
     str_appendf(out, "static inline uint8_t *%s(void) {\n", fn_name);
-    str_append(out, "    static uint8_t data[YR_MAP_ROWS * YR_MAP_COLS] = {\n");
+    str_appendf(out, "    static uint8_t data[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", macro_suffix, macro_suffix);
     append_map_array_data(out, app, map);
     str_append(out, "    };\n");
     str_append(out, "    return data;\n");
     str_append(out, "}\n\n");
 }
 
-static void append_map_array_var(String *out, const App *app, const char *var_name, const WallMap *map) {
-    str_appendf(out, "static uint8_t %s[YR_MAP_ROWS * YR_MAP_COLS] = {\n", var_name);
+static void append_map_array_var(String *out, const App *app, const char *var_name, const WallMap *map, const char *macro_suffix) {
+    str_appendf(out, "static uint8_t %s[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", var_name, macro_suffix, macro_suffix);
     append_map_array_data(out, app, map);
     str_append(out, "};\n\n");
 }
 
+/* Derives an identifier from the level file name (output path basename without
+   extension) in both lower- and upper-case form, used to build the optional
+   per-level suffix so multiple generated level headers can coexist. */
+static void level_name_from_output_path(const char *output_path, char *lower_out, size_t lower_size, char *upper_out, size_t upper_size) {
+    const char *slash = strrchr(output_path, '/');
+    const char *backslash = strrchr(output_path, '\\');
+    const char *base = output_path;
+    if (backslash && (!slash || backslash > slash)) base = backslash + 1;
+    else if (slash) base = slash + 1;
+
+    char *name = basename_without_extension(base);
+    sanitize_identifier(lower_out, lower_size, name, "level", false);
+    sanitize_identifier(upper_out, upper_size, name, "LEVEL", true);
+    free(name);
+}
+
+/* Places level_gen.h next to the output file, e.g. "levels/level1.h" -> "levels/level_gen.h". */
+static void derive_level_gen_path(const char *output_path, char *out, size_t out_size) {
+    const char *slash = strrchr(output_path, '/');
+    const char *backslash = strrchr(output_path, '\\');
+    const char *base = output_path;
+    if (backslash && (!slash || backslash > slash)) base = backslash + 1;
+    else if (slash) base = slash + 1;
+
+    size_t dir_len = (size_t)(base - output_path);
+    if (dir_len >= out_size) dir_len = out_size - 1;
+    memcpy(out, output_path, dir_len);
+    snprintf(out + dir_len, out_size - dir_len, "%s", LEVEL_GEN_FILE_NAME);
+}
+
 static bool write_level_header(App *app) {
-    bool entity_name_was_editing = app->entity_name_edit;
-    app->entity_name_edit = false;
-    app->update_fn_edit = false;
-    if (app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 1) {
-        if (entity_name_was_editing) apply_selected_entities_name(app);
-    } else {
-        sync_selected_entity_from_editor(app);
+    char level_lower[80] = {0};
+    char level_upper[80] = {0};
+    level_name_from_output_path(app->output_path, level_lower, sizeof(level_lower), level_upper, sizeof(level_upper));
+
+    char fn_suffix[88] = "";
+    char macro_suffix[88] = "";
+    if (app->use_level_suffix) {
+        snprintf(fn_suffix, sizeof(fn_suffix), "_%s", level_lower);
+        snprintf(macro_suffix, sizeof(macro_suffix), "_%s", level_upper);
     }
-    sync_update_fns_from_entities(app);
+
+    char guard_name[96];
+    snprintf(guard_name, sizeof(guard_name), "YR_LEVEL_H%s", macro_suffix);
+    char map_get_fn[96];
+    snprintf(map_get_fn, sizeof(map_get_fn), "level_get_map%s", fn_suffix);
+    char map_floor_var[96];
+    snprintf(map_floor_var, sizeof(map_floor_var), "level_map_floor%s", fn_suffix);
+    char map_ceil_var[96];
+    snprintf(map_ceil_var, sizeof(map_ceil_var), "level_map_ceil%s", fn_suffix);
+    char init_camera_pos_fn[96];
+    snprintf(init_camera_pos_fn, sizeof(init_camera_pos_fn), "init_camera_pos%s", fn_suffix);
+    char init_camera_fn[96];
+    snprintf(init_camera_fn, sizeof(init_camera_fn), "init_camera%s", fn_suffix);
+    char append_entities_fn[96];
+    snprintf(append_entities_fn, sizeof(append_entities_fn), "level_append_exported_entities%s", fn_suffix);
+    char load_fn[96];
+    if (app->use_level_suffix) snprintf(load_fn, sizeof(load_fn), "load_%s", level_lower);
+    else snprintf(load_fn, sizeof(load_fn), "load_level");
+    char floor_macro[96];
+    char ceil_macro[96];
+    if (app->use_level_suffix) {
+        snprintf(floor_macro, sizeof(floor_macro), "YR_%s_FLOOR", level_upper);
+        snprintf(ceil_macro, sizeof(ceil_macro), "YR_%s_CEIL", level_upper);
+    } else {
+        snprintf(floor_macro, sizeof(floor_macro), "YR_LEVEL_FLOOR");
+        snprintf(ceil_macro, sizeof(ceil_macro), "YR_LEVEL_CEIL");
+    }
 
     String out = {0};
 
     str_append(&out, "// File generated automatically by map_builder.c. DO NOT EDIT.\n");
-    append_map_builder_state(&out, app);
-    str_append(&out, "#ifndef YR_LEVEL_H\n");
-    str_append(&out, "#define YR_LEVEL_H\n\n");
+    append_level_state(&out, app);
+    str_appendf(&out, "#ifndef %s\n", guard_name);
+    str_appendf(&out, "#define %s\n\n", guard_name);
     str_append(&out, "#include <stdint.h>\n");
     str_append(&out, "#include <stddef.h>\n");
     str_append(&out, "#include <stdbool.h>\n");
     str_append(&out, "#include <yari.h>\n");
-    str_append(&out, "#include \"assets.h\"\n\n");
-    str_appendf(&out, "#define YR_MAP_COLS %d\n", app->map.cols);
-    str_appendf(&out, "#define YR_MAP_ROWS %d\n\n", app->map.rows);
+    str_append(&out, "#include \"assets.h\"\n");
+    str_append(&out, "#include \"" LEVEL_GEN_FILE_NAME "\"\n\n");
+    str_appendf(&out, "#define YR_MAP_COLS%s %d\n", macro_suffix, app->map.cols);
+    str_appendf(&out, "#define YR_MAP_ROWS%s %d\n\n", macro_suffix, app->map.rows);
 
-    for (size_t i = 0; i < app->collision_layers.length; i++) {
-        CollisionLayer *layer = &app->collision_layers.data[i];
-        str_appendf(&out, "#define %s (1u << %u)\n", layer->symbol, layer->shift);
-    }
-    str_append(&out, "#define YR_CMSK_PLAYER (");
-    append_player_collision_mask_expression(&out, app);
-    str_append(&out, ")\n\n");
-
-    str_appendf(&out, "#define YR_LEVEL_FLOOR %s\n", asset_symbol_or_null(app, app->floor_asset));
-    str_appendf(&out, "#define YR_LEVEL_CEIL  %s\n", asset_symbol_or_null(app, app->ceil_asset));
-    str_appendf(&out, "#define YR_PLAYER_COLLISION_THRESHOLD %f\n\n", app->player_collision_threshold);
+    str_appendf(&out, "#define %s %s\n", floor_macro, asset_symbol_or_null(app, app->floor_asset));
+    str_appendf(&out, "#define %s %s\n\n", ceil_macro, asset_symbol_or_null(app, app->ceil_asset));
 
     {
         Vector2 player_dir_val = normalized_player_dir(app);
-        str_append(&out, "static inline YrCamera init_camera_pos(Vector2 pos) {\n");
+        str_appendf(&out, "static inline YrCamera %s(Vector2 pos) {\n", init_camera_pos_fn);
         str_append(&out, "    return (YrCamera){\n");
         str_append(&out, "        .pos = pos,\n");
         str_append(&out, "        .dir = (Vector2){");
@@ -2742,28 +3416,13 @@ static bool write_level_header(App *app) {
         str_append(&out, "}\n\n");
     }
 
-    str_append(&out, "static inline YrCamera init_camera(void) {\n");
-    str_append(&out, "    return init_camera_pos((Vector2){");
+    str_appendf(&out, "static inline YrCamera %s(void) {\n", init_camera_fn);
+    str_appendf(&out, "    return %s((Vector2){", init_camera_pos_fn);
     append_float_literal(&out, app->player_pos.x);
     str_append(&out, ", ");
     append_float_literal(&out, app->player_pos.y);
     str_append(&out, "});\n");
     str_append(&out, "}\n\n");
-
-    /* forward declarations for entity update functions (unique names only) */
-    for (size_t i = 0; i < app->entities.length; i++) {
-        const PlacedEntity *ei = &app->entities.data[i];
-        if (ei->update_fn[0] == '\0') continue;
-        /* check if already declared */
-        bool already = false;
-        for (size_t j = 0; j < i; j++) {
-            if (strcmp(app->entities.data[j].update_fn, ei->update_fn) == 0) { already = true; break; }
-        }
-        if (!already) {
-            str_appendf(&out, "void %s(YrGameState *state, YrEntity *self, size_t index);\n", ei->update_fn);
-        }
-    }
-    str_append(&out, "\n");
 
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
@@ -2772,13 +3431,29 @@ static bool write_level_header(App *app) {
             texture_symbol = app->assets.data[entity->asset_index].texture_symbol;
         }
 
-        if (entity->update_fn[0] != '\0') {
-            str_appendf(&out, "static inline YrEntity create_%s_pos(Vector2 pos, void *data) {\n", entity->name);
-        } else {
-            str_appendf(&out, "static inline YrEntity create_%s_pos(Vector2 pos, void *data, YrEntityUpdateFunc update) {\n", entity->name);
+        bool has_init = entity->init_fn[0] != '\0';
+        bool has_update = entity->update_fn[0] != '\0';
+        bool has_cleanup = entity->cleanup_fn[0] != '\0';
 
+        bool has_animation = false;
+        char anim_symbol[ANIM_NAME_SIZE] = {0};
+        if (entity->animation[0] != '\0') {
+            for (size_t ai = 0; ai < app->animations.length; ai++) {
+                if (strcmp(app->animations.data[ai].name, entity->animation) != 0) continue;
+                has_animation = true;
+                for (size_t c = 0; entity->animation[c] && c < ANIM_NAME_SIZE - 1; c++) {
+                    anim_symbol[c] = (char)toupper((unsigned char)entity->animation[c]);
+                }
+                break;
+            }
         }
-        str_append(&out, "    return (YrEntity){\n");
+
+        str_appendf(&out, "static inline YrEntity create_%s%s_pos(Vector2 pos, void *data", entity->name, fn_suffix);
+        if (!has_init) str_append(&out, ", YrEntityInitFunc init");
+        if (!has_update) str_append(&out, ", YrEntityUpdateFunc update");
+        if (!has_cleanup) str_append(&out, ", YrEntityCleanupFunc cleanup");
+        str_append(&out, ") {\n");
+        str_append(&out, "    YrEntity e = (YrEntity){\n");
         str_append(&out, "        .pos = pos,\n");
         str_appendf(&out, "        .texture_id = %s,\n", texture_symbol);
         str_append(&out, "        .vdiv = ");
@@ -2791,79 +3466,185 @@ static bool write_level_header(App *app) {
         append_float_literal(&out, entity->vmove);
         str_append(&out, ",\n");
         str_appendf(&out, "        .disabled = %s,\n", entity->disabled ? "true" : "false");
+        str_appendf(&out, "        .kind = %d,\n", entity->kind);
         str_appendf(&out, "        .entity_data = data,\n");
-        str_append(&out, "        .collision_mask = (uint32_t)(");
-        append_collision_mask_expression(&out, app, entity->collision_mask);
-        str_append(&out, "),\n");
+        str_appendf(&out, "        .collision_mask = 0x%08Xu,\n", entity->collision_mask);
         str_append(&out, "        .collision_threshold = ");
         append_float_literal(&out, entity->collision_threshold);
         str_append(&out, ",\n");
-        str_appendf(&out, "        .update = %s,\n", entity->update_fn[0] != '\0' ? entity->update_fn : "update");
+        str_appendf(&out, "        .init = %s,\n", has_init ? entity->init_fn : "init");
+        str_appendf(&out, "        .update = %s,\n", has_update ? entity->update_fn : "update");
+        str_appendf(&out, "        .cleanup = %s,\n", has_cleanup ? entity->cleanup_fn : "cleanup");
         str_append(&out, "    };\n");
+        if (has_animation) str_appendf(&out, "    yr_start_loop_animation(&e.animation, %s_ANIM);\n", anim_symbol);
+        str_append(&out, "    return e;\n");
         str_append(&out, "}\n\n");
 
-        if (entity->update_fn[0] != '\0') {
-            str_appendf(&out, "static inline YrEntity create_%s(void *data) {\n", entity->name);
-        } else {
-            str_appendf(&out, "static inline YrEntity create_%s(void *data, YrEntityUpdateFunc update) {\n", entity->name);
-        }
-        str_appendf(&out, "    return create_%s_pos((Vector2){", entity->name);
+        str_appendf(&out, "static inline YrEntity create_%s%s(void *data", entity->name, fn_suffix);
+        if (!has_init) str_append(&out, ", YrEntityInitFunc init");
+        if (!has_update) str_append(&out, ", YrEntityUpdateFunc update");
+        if (!has_cleanup) str_append(&out, ", YrEntityCleanupFunc cleanup");
+        str_append(&out, ") {\n");
+        str_appendf(&out, "    return create_%s%s_pos((Vector2){", entity->name, fn_suffix);
         append_float_literal(&out, entity->pos.x);
         str_append(&out, ", ");
         append_float_literal(&out, entity->pos.y);
-        if (entity->update_fn[0] != '\0') {
-            str_append(&out, "}, data);\n");
-        } else {
-            str_append(&out, "}, data, update);\n");
-        }
+        str_append(&out, "}, data");
+        if (!has_init) str_append(&out, ", init");
+        if (!has_update) str_append(&out, ", update");
+        if (!has_cleanup) str_append(&out, ", cleanup");
+        str_append(&out, ");\n");
         str_append(&out, "}\n\n");
     }
 
-    str_append(&out, "static inline void level_append_exported_entities(YrEntities *da) {\n");
+    str_appendf(&out, "static inline void %s(YrGameState *state) {\n", append_entities_fn);
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
         if (!entity->exported) continue;
-        if(entity->update_fn[0] == '\0') {
-            str_appendf(&out, "    yr_da_append(da, create_%s(NULL, NULL));\n", entity->name);
-        } else {
-            str_appendf(&out, "    yr_da_append(da, create_%s(NULL));\n", entity->name);
-        }
+        bool has_init = entity->init_fn[0] != '\0';
+        bool has_update = entity->update_fn[0] != '\0';
+        bool has_cleanup = entity->cleanup_fn[0] != '\0';
+        str_appendf(&out, "    yr_create_entity(state, create_%s%s(NULL", entity->name, fn_suffix);
+        if (!has_init) str_append(&out, ", NULL");
+        if (!has_update) str_append(&out, ", NULL");
+        if (!has_cleanup) str_append(&out, ", NULL");
+        str_append(&out, "));\n");
     }
     str_append(&out, "}\n\n");
 
-    append_map_array_fn(&out, app, "level_get_map", &app->map);
+    append_map_array_fn(&out, app, map_get_fn, &app->map, macro_suffix);
 
     bool has_floor_map = wall_map_has_any(app, &app->floor_map);
     bool has_ceil_map = wall_map_has_any(app, &app->ceil_map);
-    if (has_floor_map) append_map_array_var(&out, app, "level_map_floor", &app->floor_map);
-    if (has_ceil_map) append_map_array_var(&out, app, "level_map_ceil", &app->ceil_map);
+    if (has_floor_map) append_map_array_var(&out, app, map_floor_var, &app->floor_map, macro_suffix);
+    if (has_ceil_map) append_map_array_var(&out, app, map_ceil_var, &app->ceil_map, macro_suffix);
 
-    str_append(&out, "static inline void load_level(YrGameState *state) {\n");
+    str_appendf(&out, "static inline void %s(YrGameState *state) {\n", load_fn);
     str_append(&out, "    state->assets_map = assets_map;\n");
-    str_append(&out, "    state->map = level_get_map();\n");
-    if (has_floor_map) str_append(&out, "    state->map_floor = level_map_floor;\n");
+    str_appendf(&out, "    state->map = %s();\n", map_get_fn);
+    if (has_floor_map) str_appendf(&out, "    state->map_floor = %s;\n", map_floor_var);
     else str_append(&out, "    state->map_floor = NULL;\n");
-    if (has_ceil_map) str_append(&out, "    state->map_ceil = level_map_ceil;\n");
+    if (has_ceil_map) str_appendf(&out, "    state->map_ceil = %s;\n", map_ceil_var);
     else str_append(&out, "    state->map_ceil = NULL;\n");
-    str_append(&out, "    state->map_cols = YR_MAP_COLS;\n");
-    str_append(&out, "    state->map_rows = YR_MAP_ROWS;\n");
-    str_append(&out, "    state->floor_texture = YR_LEVEL_FLOOR;\n");
-    str_append(&out, "    state->ceil_texture = YR_LEVEL_CEIL;\n");
-    str_append(&out, "    state->camera = init_camera();\n");
-    str_append(&out, "    level_append_exported_entities(&state->entities);\n");
+    str_appendf(&out, "    state->map_cols = YR_MAP_COLS%s;\n", macro_suffix);
+    str_appendf(&out, "    state->map_rows = YR_MAP_ROWS%s;\n", macro_suffix);
+    str_appendf(&out, "    state->floor_texture = %s;\n", floor_macro);
+    str_appendf(&out, "    state->ceil_texture = %s;\n", ceil_macro);
+    str_appendf(&out, "    state->camera = %s();\n", init_camera_fn);
+    str_appendf(&out, "    %s(state);\n", append_entities_fn);
     str_append(&out, "}\n\n");
 
-    str_append(&out, "#endif // YR_LEVEL_H\n");
+    str_appendf(&out, "#endif // %s\n", guard_name);
 
     bool ok = write_entire_file(app->output_path, &out);
     da_free(&out);
-
-    if (ok) {
-        set_status(app, "Saved %s", app->output_path);
-    } else {
-        set_status(app, "Error writing %s", app->output_path);
-    }
     return ok;
+}
+
+/* level_gen.h: definitions shared across every level file that includes it (collision masks,
+   kinds, player collision threshold, update function declarations, animations). */
+static bool write_level_gen_header(App *app) {
+    String out = {0};
+
+    str_append(&out, "// File generated automatically by map_builder.c. DO NOT EDIT.\n");
+    append_level_gen_state(&out, app);
+    str_append(&out, "#ifndef YR_LEVEL_GEN_H\n");
+    str_append(&out, "#define YR_LEVEL_GEN_H\n\n");
+    str_append(&out, "#include <stdint.h>\n");
+    str_append(&out, "#include <stddef.h>\n");
+    str_append(&out, "#include <stdbool.h>\n");
+    str_append(&out, "#include <yari.h>\n");
+    str_append(&out, "#include \"assets.h\"\n\n");
+
+    for (size_t i = 0; i < app->collision_layers.length; i++) {
+        CollisionLayer *layer = &app->collision_layers.data[i];
+        str_appendf(&out, "#define %s (1u << %u)\n", layer->symbol, layer->shift);
+    }
+    str_append(&out, "#define YR_CMSK_PLAYER (");
+    append_player_collision_mask_expression(&out, app);
+    str_append(&out, ")\n\n");
+
+    str_append(&out, "#define YR_KIND_DEFAULT 0\n");
+    for (size_t i = 0; i < app->kinds.length; i++) {
+        const EntityKind *g = &app->kinds.data[i];
+        str_appendf(&out, "#define YR_KIND_%s %d\n", g->name, g->id);
+    }
+    str_append(&out, "\n");
+
+    str_appendf(&out, "#define YR_PLAYER_COLLISION_THRESHOLD %f\n\n", app->player_collision_threshold);
+
+    /* forward declarations for entity init functions (unique names only) */
+    for (size_t i = 0; i < app->init_fns.length; i++) {
+        str_appendf(&out, "void %s(YrEntity *self, void *data);\n", app->init_fns.data[i].name);
+    }
+    if (app->init_fns.length > 0) str_append(&out, "\n");
+
+    /* forward declarations for entity update functions (unique names only) */
+    for (size_t i = 0; i < app->update_fns.length; i++) {
+        str_appendf(&out, "void %s(YrGameState *state, YrEntity *self, size_t index);\n", app->update_fns.data[i].name);
+    }
+    if (app->update_fns.length > 0) str_append(&out, "\n");
+
+    /* forward declarations for entity cleanup functions (unique names only) */
+    for (size_t i = 0; i < app->cleanup_fns.length; i++) {
+        str_appendf(&out, "void %s(YrEntity *self);\n", app->cleanup_fns.data[i].name);
+    }
+    if (app->cleanup_fns.length > 0) str_append(&out, "\n");
+
+    for (size_t i = 0; i < app->animations.length; i++) {
+        const Animation *anim = &app->animations.data[i];
+        char upper[ANIM_NAME_SIZE] = {0};
+        for (size_t c = 0; anim->name[c] && c < ANIM_NAME_SIZE - 1; c++) {
+            upper[c] = (char)toupper((unsigned char)anim->name[c]);
+        }
+        str_appendf(&out, "static const int %s_ANIM_FRAMES[] = {", upper);
+        for (int fi = 0; fi < anim->frame_count; fi++) {
+            if (fi > 0) str_append(&out, ", ");
+            str_append(&out, asset_symbol_or_null(app, anim->frames[fi]));
+        }
+        str_append(&out, "};\n");
+        str_appendf(&out, "static const YrAnimation %s_ANIM = {\n", upper);
+        str_appendf(&out, "    .frames = %s_ANIM_FRAMES,\n", upper);
+        str_appendf(&out, "    .frame_count = %d,\n", anim->frame_count);
+        str_appendf(&out, "    .duration = %.6ff,\n", anim->speed);
+        str_append(&out, "};\n\n");
+    }
+
+    str_append(&out, "#endif // YR_LEVEL_GEN_H\n");
+
+    bool ok = write_entire_file(app->level_gen_path, &out);
+    da_free(&out);
+    return ok;
+}
+
+static bool save_level(App *app) {
+    bool entity_name_was_editing = app->entity_name_edit;
+    app->entity_name_edit = false;
+    app->init_fn_edit = false;
+    app->update_fn_edit = false;
+    app->cleanup_fn_edit = false;
+    if (app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 1) {
+        if (entity_name_was_editing) apply_selected_entities_name(app);
+    } else {
+        sync_selected_entity_from_editor(app);
+    }
+    sync_init_fns_from_entities(app);
+    sync_update_fns_from_entities(app);
+    sync_cleanup_fns_from_entities(app);
+
+    bool gen_ok = write_level_gen_header(app);
+    bool main_ok = write_level_header(app);
+
+    if (gen_ok && main_ok) {
+        set_status(app, "Saved %s and %s", app->output_path, app->level_gen_path);
+    } else if (!gen_ok && !main_ok) {
+        set_status(app, "Error writing %s and %s", app->output_path, app->level_gen_path);
+    } else if (!main_ok) {
+        set_status(app, "Error writing %s", app->output_path);
+    } else {
+        set_status(app, "Error writing %s", app->level_gen_path);
+    }
+    return gen_ok && main_ok;
 }
 
 static void place_entity(App *app, Vector2 pos) {
@@ -2885,10 +3666,16 @@ static void place_entity(App *app, Vector2 pos) {
         .exported = app->brush_exported,
         .collision_mask = app->brush_collision_mask,
         .collision_threshold = app->brush_collision_threshold,
+        .kind = app->brush_kind,
     };
     snprintf(entity.name, sizeof(entity.name), "%s", entity_name);
+    snprintf(entity.init_fn, sizeof(entity.init_fn), "%s", app->brush_init_fn);
+    if (entity.init_fn[0] != '\0') remember_init_fn(&app->init_fns, entity.init_fn, NULL, 0);
     snprintf(entity.update_fn, sizeof(entity.update_fn), "%s", app->brush_update_fn);
     if (entity.update_fn[0] != '\0') remember_update_fn(&app->update_fns, entity.update_fn, NULL, 0);
+    snprintf(entity.cleanup_fn, sizeof(entity.cleanup_fn), "%s", app->brush_cleanup_fn);
+    if (entity.cleanup_fn[0] != '\0') remember_cleanup_fn(&app->cleanup_fns, entity.cleanup_fn, NULL, 0);
+    snprintf(entity.animation, sizeof(entity.animation), "%s", app->brush_animation);
     da_append(&app->entities, entity);
     clear_edit_selection(app);
     app->selection_kind = SELECTION_ENTITY;
@@ -3335,7 +4122,7 @@ static void draw_map(App *app, Rectangle map_bounds) {
         } else {
             snprintf(coords, sizeof(coords), "pos %.2f,%.2f", world.x, world.y);
         }
-        DrawText(coords, 12, 12, 16, (Color){225, 230, 238, 230});
+        DrawText(coords, (int)(map_bounds.x + 12), (int)(map_bounds.y + 12), 16, (Color){225, 230, 238, 230});
     }
 }
 
@@ -3471,6 +4258,75 @@ static void draw_float_field(const char *label, Rectangle bounds, char *text, fl
     }
 }
 
+static void draw_init_fn_picker(App *app, float x, float *y, float w, float max_height) {
+    float label_w = 58.0f;
+    GuiLabel((Rectangle){x, *y, label_w, 20.0f}, "Init");
+    float add_button_w = 64.0f;
+    if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_button_w - 28.0f , 26.0f}, app->new_init_fn, (int)sizeof(app->new_init_fn), app->init_fn_edit)) {
+        app->init_fn_edit = !app->init_fn_edit;
+    }
+    if (GuiButton((Rectangle){x + w - add_button_w, *y, add_button_w, 26.0f}, "Add")) {
+        if (!text_is_empty(app->new_init_fn)) add_init_fn(app, app->new_init_fn);
+    }
+    *y += 34.0f;
+
+    Rectangle list = {x, *y, w, max_height};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float row_h = 24.0f;
+    float content_h = ((float)app->init_fns.length + 1.0f) * row_h;
+    float min_scroll = list.height - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+
+    Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->init_fn_scroll += wheel * row_h;
+    }
+    app->init_fn_scroll = clamp_float(app->init_fn_scroll, min_scroll, 0.0f);
+
+    size_t delete_index = (size_t)-1;
+    float delete_button_w = 42.0f;
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+
+    Rectangle default_row = {list.x + 8.0f, list.y + app->init_fn_scroll + 3.0f, list.width - 16.0f, 18.0f};
+    if (default_row.y + default_row.height >= list.y && default_row.y <= list.y + list.height) {
+        bool checked = app->brush_init_fn[0] == '\0';
+        bool before = checked;
+        GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
+        if (checked != before) snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+    }
+
+    for (size_t i = 0; i < app->init_fns.length; i++) {
+        const InitFn *init_fn = &app->init_fns.data[i];
+        Rectangle row = {list.x + 8.0f, list.y + app->init_fn_scroll + ((float)i + 1.0f) * row_h + 3.0f, list.width - 16.0f, 18.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+
+        bool checked = strcmp(app->brush_init_fn, init_fn->name) == 0;
+        bool before = checked;
+        GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - delete_button_w - 34.0f, row.height}, init_fn->name);
+        if (GuiButton((Rectangle){row.x + row.width - delete_button_w, row.y, delete_button_w, row.height}, "Del")) {
+            delete_index = i;
+        }
+        if (checked != before) {
+            if (checked) snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "%s", init_fn->name);
+            else snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+        }
+    }
+
+    EndScissorMode();
+
+    if (delete_index != (size_t)-1) {
+        remove_init_fn_at(app, delete_index);
+    }
+
+    *y += max_height + 10.0f;
+}
+
 static void draw_update_fn_picker(App *app, float x, float *y, float w, float max_height) {
     float label_w = 58.0f;
     GuiLabel((Rectangle){x, *y, label_w, 20.0f}, "Update");
@@ -3536,6 +4392,130 @@ static void draw_update_fn_picker(App *app, float x, float *y, float w, float ma
     if (delete_index != (size_t)-1) {
         remove_update_fn_at(app, delete_index);
     }
+
+    *y += max_height + 10.0f;
+}
+
+static void draw_cleanup_fn_picker(App *app, float x, float *y, float w, float max_height) {
+    float label_w = 58.0f;
+    GuiLabel((Rectangle){x, *y, label_w, 20.0f}, "Cleanup");
+    float add_button_w = 64.0f;
+    if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_button_w - 28.0f , 26.0f}, app->new_cleanup_fn, (int)sizeof(app->new_cleanup_fn), app->cleanup_fn_edit)) {
+        app->cleanup_fn_edit = !app->cleanup_fn_edit;
+    }
+    if (GuiButton((Rectangle){x + w - add_button_w, *y, add_button_w, 26.0f}, "Add")) {
+        if (!text_is_empty(app->new_cleanup_fn)) add_cleanup_fn(app, app->new_cleanup_fn);
+    }
+    *y += 34.0f;
+
+    Rectangle list = {x, *y, w, max_height};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float row_h = 24.0f;
+    float content_h = ((float)app->cleanup_fns.length + 1.0f) * row_h;
+    float min_scroll = list.height - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+
+    Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->cleanup_fn_scroll += wheel * row_h;
+    }
+    app->cleanup_fn_scroll = clamp_float(app->cleanup_fn_scroll, min_scroll, 0.0f);
+
+    size_t delete_index = (size_t)-1;
+    float delete_button_w = 42.0f;
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+
+    Rectangle default_row = {list.x + 8.0f, list.y + app->cleanup_fn_scroll + 3.0f, list.width - 16.0f, 18.0f};
+    if (default_row.y + default_row.height >= list.y && default_row.y <= list.y + list.height) {
+        bool checked = app->brush_cleanup_fn[0] == '\0';
+        bool before = checked;
+        GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
+        if (checked != before) snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+    }
+
+    for (size_t i = 0; i < app->cleanup_fns.length; i++) {
+        const CleanupFn *cleanup_fn = &app->cleanup_fns.data[i];
+        Rectangle row = {list.x + 8.0f, list.y + app->cleanup_fn_scroll + ((float)i + 1.0f) * row_h + 3.0f, list.width - 16.0f, 18.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+
+        bool checked = strcmp(app->brush_cleanup_fn, cleanup_fn->name) == 0;
+        bool before = checked;
+        GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - delete_button_w - 34.0f, row.height}, cleanup_fn->name);
+        if (GuiButton((Rectangle){row.x + row.width - delete_button_w, row.y, delete_button_w, row.height}, "Del")) {
+            delete_index = i;
+        }
+        if (checked != before) {
+            if (checked) snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "%s", cleanup_fn->name);
+            else snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+        }
+    }
+
+    EndScissorMode();
+
+    if (delete_index != (size_t)-1) {
+        remove_cleanup_fn_at(app, delete_index);
+    }
+
+    *y += max_height + 10.0f;
+}
+
+static void draw_entity_animation_picker(App *app, float x, float *y, float w, float max_height) {
+    GuiLabel((Rectangle){x, *y, w, 20.0f}, "Animation");
+    *y += 24.0f;
+
+    Rectangle list = {x, *y, w, max_height};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float row_h = 24.0f;
+    float content_h = ((float)app->animations.length + 1.0f) * row_h;
+    float min_scroll = list.height - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+
+    Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->entity_anim_scroll += wheel * row_h;
+    }
+    app->entity_anim_scroll = clamp_float(app->entity_anim_scroll, min_scroll, 0.0f);
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+
+    Rectangle default_row = {list.x + 8.0f, list.y + app->entity_anim_scroll + 3.0f, list.width - 16.0f, 18.0f};
+    if (default_row.y + default_row.height >= list.y && default_row.y <= list.y + list.height) {
+        bool checked = app->brush_animation[0] == '\0';
+        bool before = checked;
+        GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
+        if (checked != before) snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+    }
+
+    for (size_t i = 0; i < app->animations.length; i++) {
+        const Animation *anim = &app->animations.data[i];
+        Rectangle row = {list.x + 8.0f, list.y + app->entity_anim_scroll + ((float)i + 1.0f) * row_h + 3.0f, list.width - 16.0f, 18.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+
+        bool checked = strcmp(app->brush_animation, anim->name) == 0;
+        bool before = checked;
+        GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - 26.0f, row.height}, anim->name);
+        if (checked != before) {
+            if (checked) snprintf(app->brush_animation, sizeof(app->brush_animation), "%s", anim->name);
+            else snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+        }
+    }
+
+    if (app->animations.length == 0) {
+        GuiLabel((Rectangle){list.x + 8.0f, list.y + row_h + 3.0f, list.width - 16.0f, 20.0f}, "No animations (see Anim tool)");
+    }
+
+    EndScissorMode();
 
     *y += max_height + 10.0f;
 }
@@ -3609,6 +4589,306 @@ static void draw_collision_picker(App *app, float x, float *y, float w, float ma
     *y += max_height + 10.0f;
 }
 
+static void draw_kind_picker(App *app, float x, float *y, float w, float max_height) {
+    float label_w = 52.0f;
+    float add_button_w = 64.0f;
+    GuiLabel((Rectangle){x, *y, label_w, 20.0f}, "Kind");
+    if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_button_w - 28.0f, 26.0f}, app->new_kind_name, (int)sizeof(app->new_kind_name), app->new_kind_edit)) {
+        app->new_kind_edit = !app->new_kind_edit;
+    }
+    if (GuiButton((Rectangle){x + w - add_button_w, *y, add_button_w, 26.0f}, "Add")) {
+        if (!text_is_empty(app->new_kind_name)) add_entity_kind(app, app->new_kind_name);
+    }
+    *y += 34.0f;
+
+    Rectangle list = {x, *y, w, max_height};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float row_h = 24.0f;
+    float content_h = ((float)app->kinds.length + 1.0f) * row_h;
+    float min_scroll = list.height - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+
+    Vector2 mouse = GetMousePosition();
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->kind_scroll += wheel * row_h;
+    }
+    app->kind_scroll = clamp_float(app->kind_scroll, min_scroll, 0.0f);
+
+    size_t delete_index = (size_t)-1;
+    float delete_button_w = 42.0f;
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+
+    {
+        Rectangle row = {list.x + 8.0f, list.y + app->kind_scroll + 3.0f, list.width - 16.0f, 18.0f};
+        if (row.y + row.height >= list.y && row.y <= list.y + list.height) {
+            bool checked = app->brush_kind == 0;
+            bool before = checked;
+            GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
+            GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - 26.0f, row.height}, "default (0)");
+            if (checked != before && checked) app->brush_kind = 0;
+        }
+    }
+
+    for (size_t i = 0; i < app->kinds.length; i++) {
+        const EntityKind *g = &app->kinds.data[i];
+        Rectangle row = {list.x + 8.0f, list.y + app->kind_scroll + ((float)i + 1.0f) * row_h + 3.0f, list.width - 16.0f, 18.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+
+        bool checked = app->brush_kind == g->id;
+        bool before = checked;
+        char label[64];
+        snprintf(label, sizeof(label), "%s (%d)", g->name, g->id);
+        GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
+        GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - delete_button_w - 34.0f, row.height}, label);
+        if (GuiButton((Rectangle){row.x + row.width - delete_button_w, row.y, delete_button_w, row.height}, "Del")) {
+            delete_index = i;
+        }
+        if (checked != before && checked) app->brush_kind = g->id;
+    }
+
+    EndScissorMode();
+
+    if (delete_index != (size_t)-1) remove_entity_kind_at(app, delete_index);
+
+    *y += max_height + 10.0f;
+}
+
+static bool anim_name_exists(const App *app, const char *name) {
+    for (size_t i = 0; i < app->animations.length; i++) {
+        if (strcmp(app->animations.data[i].name, name) == 0) return true;
+    }
+    return false;
+}
+
+static void add_animation(App *app, const char *raw_name) {
+    char base[ANIM_NAME_SIZE] = {0};
+    sanitize_identifier(base, sizeof(base), raw_name, "anim", false);
+
+    char name[ANIM_NAME_SIZE] = {0};
+    snprintf(name, sizeof(name), "%s", base);
+    if (anim_name_exists(app, name)) {
+        for (unsigned int s = 2; s < 10000; s++) {
+            snprintf(name, sizeof(name), "%s_%u", base, s);
+            if (!anim_name_exists(app, name)) break;
+        }
+    }
+
+    Animation anim = {0};
+    snprintf(anim.name, sizeof(anim.name), "%s", name);
+    anim.speed = 0.25f;
+    da_append(&app->animations, anim);
+    app->selected_animation = (int)app->animations.length - 1;
+    snprintf(app->new_anim_name, sizeof(app->new_anim_name), "");
+    app->new_anim_edit = false;
+    snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", anim.speed);
+    set_status(app, "Added animation %s", name);
+}
+
+static void draw_anim_view(App *app, Rectangle bounds) {
+    DrawRectangleRec(bounds, (Color){25, 27, 31, 255});
+
+    if (app->selected_animation < 0 || app->selected_animation >= (int)app->animations.length) {
+        const char *msg = "Select or create an animation";
+        int tw = MeasureText(msg, 20);
+        DrawText(msg, (int)(bounds.x + (bounds.width - (float)tw) * 0.5f), (int)(bounds.y + bounds.height * 0.5f - 10), 20, (Color){120, 126, 138, 255});
+        return;
+    }
+
+    Animation *anim = &app->animations.data[app->selected_animation];
+    if (anim->frame_count == 0) {
+        const char *msg = "Add frames to preview";
+        int tw = MeasureText(msg, 20);
+        DrawText(msg, (int)(bounds.x + (bounds.width - (float)tw) * 0.5f), (int)(bounds.y + bounds.height * 0.5f - 10), 20, (Color){120, 126, 138, 255});
+        return;
+    }
+
+    float speed = anim->speed > 0.0001f ? anim->speed : 0.0001f;
+    int frame_idx = (int)(GetTime() / speed) % anim->frame_count;
+    int asset_index = anim->frames[frame_idx];
+    const Asset *asset = asset_index_is_valid(app, asset_index) ? &app->assets.data[asset_index] : NULL;
+
+    float size = fminf(bounds.width, bounds.height) * 0.7f;
+    if (size < 32.0f) size = 32.0f;
+    Rectangle dst = {
+        bounds.x + (bounds.width - size) * 0.5f,
+        bounds.y + (bounds.height - size) * 0.5f,
+        size, size,
+    };
+    DrawRectangleRec(dst, (Color){37, 39, 44, 255});
+    draw_texture_preview(asset, dst, WHITE);
+
+    char info[128];
+    snprintf(info, sizeof(info), "%s  frame %d/%d  speed %.3fs", anim->name, frame_idx + 1, anim->frame_count, anim->speed);
+    DrawText(info, (int)(bounds.x + 12), (int)(bounds.y + 12), 16, (Color){225, 230, 238, 200});
+}
+
+static void draw_anim_section(App *app, float x, float *y, float w) {
+    float gap = 8.0f;
+    float row_h = 26.0f;
+    float label_w = 58.0f;
+    float add_btn_w = 64.0f;
+    Vector2 mouse = GetMousePosition();
+
+    GuiLabel((Rectangle){x, *y, label_w, row_h}, "New anim");
+    if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_btn_w - 28.0f, row_h}, app->new_anim_name, (int)sizeof(app->new_anim_name), app->new_anim_edit)) {
+        app->new_anim_edit = !app->new_anim_edit;
+    }
+    if (GuiButton((Rectangle){x + w - add_btn_w, *y, add_btn_w, row_h}, "Add")) {
+        if (!text_is_empty(app->new_anim_name)) add_animation(app, app->new_anim_name);
+    }
+    *y += 34.0f;
+
+    float list_h = 90.0f;
+    Rectangle list = {x, *y, w, list_h};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float rh = 24.0f;
+    float content_h = (float)app->animations.length * rh;
+    float min_scroll = list_h - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->anim_list_scroll += wheel * rh;
+    }
+    app->anim_list_scroll = clamp_float(app->anim_list_scroll, min_scroll, 0.0f);
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+    size_t delete_anim_index = (size_t)-1;
+    float del_w = 42.0f;
+    for (size_t i = 0; i < app->animations.length; i++) {
+        Rectangle row = {list.x + 4.0f, list.y + app->anim_list_scroll + (float)i * rh + 3.0f, list.width - 8.0f, rh - 4.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+        bool sel = (int)i == app->selected_animation;
+        bool hov = CheckCollisionPointRec(mouse, row);
+        DrawRectangleRec(row, sel ? (Color){49, 83, 115, 255} : hov ? (Color){45, 48, 55, 255} : (Color){37, 39, 44, 255});
+        DrawRectangleLinesEx(row, sel ? 2.0f : 1.0f, sel ? (Color){113, 190, 255, 255} : (Color){69, 74, 84, 255});
+        GuiLabel((Rectangle){row.x + 8.0f, row.y + 2.0f, row.width - del_w - 16.0f, row.height - 4.0f}, app->animations.data[i].name);
+        if (GuiButton((Rectangle){row.x + row.width - del_w, row.y + 1.0f, del_w, row.height - 2.0f}, "Del")) {
+            delete_anim_index = i;
+        }
+        if (!sel && hov && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            app->selected_animation = (int)i;
+            snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[i].speed);
+        }
+    }
+    if (app->animations.length == 0) {
+        GuiLabel((Rectangle){list.x + 8.0f, list.y + 8.0f, list.width - 16.0f, 20.0f}, "No animations");
+    }
+    EndScissorMode();
+
+    if (delete_anim_index != (size_t)-1) {
+        if (delete_anim_index + 1 < app->animations.length) {
+            memmove(
+                &app->animations.data[delete_anim_index],
+                &app->animations.data[delete_anim_index + 1],
+                (app->animations.length - delete_anim_index - 1) * sizeof(app->animations.data[0]));
+        }
+        app->animations.length--;
+        if (app->selected_animation >= (int)app->animations.length) {
+            app->selected_animation = (int)app->animations.length - 1;
+        }
+        if (app->selected_animation >= 0) {
+            snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[app->selected_animation].speed);
+        }
+        set_status(app, "Removed animation");
+    }
+
+    *y += list_h + gap;
+
+    if (app->selected_animation < 0 || app->selected_animation >= (int)app->animations.length) return;
+    Animation *anim = &app->animations.data[app->selected_animation];
+
+    GuiLabel((Rectangle){x, *y, 52.0f, row_h}, "Name");
+    char name_buf[ANIM_NAME_SIZE];
+    snprintf(name_buf, sizeof(name_buf), "%s", anim->name);
+    if (GuiTextBox((Rectangle){x + 62.0f, *y, w - 62.0f, row_h}, name_buf, (int)sizeof(name_buf), app->anim_name_edit)) {
+        if (app->anim_name_edit) {
+            char sanitized[ANIM_NAME_SIZE] = {0};
+            sanitize_identifier(sanitized, sizeof(sanitized), name_buf, "anim", false);
+            if (sanitized[0] != '\0') snprintf(anim->name, sizeof(anim->name), "%s", sanitized);
+        }
+        app->anim_name_edit = !app->anim_name_edit;
+    }
+    *y += 32.0f;
+
+    draw_float_field("Speed", (Rectangle){x, *y, w, row_h}, app->anim_speed_text, &anim->speed, &app->anim_speed_edit);
+    if (!app->anim_speed_edit) {
+        if (anim->speed < 0.001f) {
+            anim->speed = 0.001f;
+            snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", anim->speed);
+        }
+    }
+    *y += 32.0f;
+
+    GuiLabel((Rectangle){x, *y, w, 20.0f}, "Frames");
+    *y += 22.0f;
+
+    float frame_thumb = 28.0f;
+    float frh = frame_thumb + 10.0f;
+    float frames_h = 80.0f;
+    Rectangle frames_rect = {x, *y, w, frames_h};
+    DrawRectangleRec(frames_rect, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(frames_rect, 1.0f, (Color){88, 94, 104, 255});
+
+    float frames_content_h = (float)anim->frame_count * frh;
+    float frames_min_scroll = frames_h - frames_content_h;
+    if (frames_min_scroll > 0.0f) frames_min_scroll = 0.0f;
+    if (CheckCollisionPointRec(mouse, frames_rect)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->anim_frames_scroll += wheel * frh;
+    }
+    app->anim_frames_scroll = clamp_float(app->anim_frames_scroll, frames_min_scroll, 0.0f);
+
+    int remove_frame_idx = -1;
+    BeginScissorMode((int)frames_rect.x, (int)frames_rect.y, (int)frames_rect.width, (int)frames_rect.height);
+    for (int fi = 0; fi < anim->frame_count; fi++) {
+        float ry = frames_rect.y + app->anim_frames_scroll + (float)fi * frh + 4.0f;
+        if (ry + frh < frames_rect.y || ry > frames_rect.y + frames_rect.height) continue;
+        int asset_idx = anim->frames[fi];
+        const Asset *asset = asset_index_is_valid(app, asset_idx) ? &app->assets.data[asset_idx] : NULL;
+        Rectangle thumb = {frames_rect.x + 8.0f, ry, frame_thumb, frame_thumb};
+        DrawRectangleRec(thumb, (Color){20, 22, 26, 255});
+        draw_texture_preview(asset, thumb, WHITE);
+        DrawRectangleLinesEx(thumb, 1.0f, (Color){88, 94, 104, 255});
+        const char *sym = asset_symbol_or_null(app, asset_idx);
+        GuiLabel((Rectangle){thumb.x + frame_thumb + 6.0f, ry + 6.0f, w - frame_thumb - 60.0f, 18.0f}, sym);
+        if (GuiButton((Rectangle){frames_rect.x + frames_rect.width - 42.0f, ry + 3.0f, 38.0f, 22.0f}, "Del")) {
+            remove_frame_idx = fi;
+        }
+    }
+    if (anim->frame_count == 0) {
+        GuiLabel((Rectangle){frames_rect.x + 8.0f, frames_rect.y + 8.0f, frames_rect.width - 16.0f, 20.0f}, "No frames");
+    }
+    EndScissorMode();
+    *y += frames_h + 4.0f;
+
+    if (remove_frame_idx >= 0 && remove_frame_idx < anim->frame_count) {
+        if (remove_frame_idx + 1 < anim->frame_count) {
+            memmove(
+                &anim->frames[remove_frame_idx],
+                &anim->frames[remove_frame_idx + 1],
+                (size_t)(anim->frame_count - remove_frame_idx - 1) * sizeof(anim->frames[0]));
+        }
+        anim->frame_count--;
+    }
+
+    if (GuiButton((Rectangle){x, *y, w, row_h}, "Add selected texture as frame")) {
+        if (!asset_index_is_valid(app, app->selected_asset)) {
+            set_status(app, "Select a texture first");
+        } else if (anim->frame_count >= MAX_ANIM_FRAMES) {
+            set_status(app, "Max frames reached (%d)", MAX_ANIM_FRAMES);
+        } else {
+            anim->frames[anim->frame_count++] = app->selected_asset;
+        }
+    }
+    *y += 34.0f;
+}
+
 static void apply_pending_map_size(App *app, Rectangle map_bounds) {
     app->pending_cols = app->pending_cols < MIN_MAP_SIZE ? MIN_MAP_SIZE : app->pending_cols;
     app->pending_rows = app->pending_rows < MIN_MAP_SIZE ? MIN_MAP_SIZE : app->pending_rows;
@@ -3623,43 +4903,59 @@ static void apply_pending_map_size(App *app, Rectangle map_bounds) {
     set_status(app, "Map resized to %dx%d", app->map.cols, app->map.rows);
 }
 
-static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bounds) {
-    GuiPanel(sidebar_bounds, "Map Builder");
+static void draw_topbar(App *app, Rectangle topbar_bounds, Rectangle map_bounds) {
+    DrawRectangleRec(topbar_bounds, (Color){37, 39, 44, 255});
+    DrawLineEx(
+        (Vector2){topbar_bounds.x, topbar_bounds.y + topbar_bounds.height - 1.0f},
+        (Vector2){topbar_bounds.x + topbar_bounds.width, topbar_bounds.y + topbar_bounds.height - 1.0f},
+        1.0f, (Color){88, 94, 104, 255});
 
-    float x = sidebar_bounds.x + 16.0f;
-    float y = 34.0f;
-    float w = sidebar_bounds.width - 32.0f;
-    float gap = 8.0f;
+    float x = topbar_bounds.x + 8.0f;
+    float y = topbar_bounds.y + (topbar_bounds.height - 26.0f) * 0.5f;
     float row_h = 26.0f;
 
-    GuiLabel((Rectangle){x, y, w, 20.0f}, "Size");
-    y += 24.0f;
-    float half_w = (w - gap) * 0.5f;
-    GuiLabel((Rectangle){x, y, 38.0f, row_h}, "Cols");
+    float col_label_w = 30.0f;
+    float col_input_w = 56.0f;
+    float gap_sm = 6.0f;
+
+    GuiLabel((Rectangle){x, y, col_label_w, row_h}, "Cols");
+    x += col_label_w + 2.0f;
     bool cols_was_editing = app->cols_edit;
-    if (GuiValueBox((Rectangle){x + 42.0f, y, half_w - 42.0f, row_h}, NULL, &app->pending_cols, MIN_MAP_SIZE, MAX_MAP_SIZE, app->cols_edit)) {
+    if (GuiValueBox((Rectangle){x, y, col_input_w, row_h}, NULL, &app->pending_cols, MIN_MAP_SIZE, MAX_MAP_SIZE, app->cols_edit)) {
         app->cols_edit = !app->cols_edit;
         if (cols_was_editing && !app->cols_edit) apply_pending_map_size(app, map_bounds);
     }
-    GuiLabel((Rectangle){x + half_w + gap, y, 38.0f, row_h}, "Rows");
+    x += col_input_w + gap_sm;
+
+    GuiLabel((Rectangle){x, y, col_label_w, row_h}, "Rows");
+    x += col_label_w + 2.0f;
     bool rows_was_editing = app->rows_edit;
-    if (GuiValueBox((Rectangle){x + half_w + gap + 42.0f, y, half_w - 42.0f, row_h}, NULL, &app->pending_rows, MIN_MAP_SIZE, MAX_MAP_SIZE, app->rows_edit)) {
+    if (GuiValueBox((Rectangle){x, y, col_input_w, row_h}, NULL, &app->pending_rows, MIN_MAP_SIZE, MAX_MAP_SIZE, app->rows_edit)) {
         app->rows_edit = !app->rows_edit;
         if (rows_was_editing && !app->rows_edit) apply_pending_map_size(app, map_bounds);
     }
-    y += 34.0f;
+    x += col_input_w + 16.0f;
 
-    float button_w = (w - gap * 2.0f) / 3.0f;
-    if (GuiButton((Rectangle){x, y, button_w, 28.0f}, "Load")) load_level_header(app, map_bounds, true);
-    if (GuiButton((Rectangle){x + button_w + gap, y, button_w, 28.0f}, "Fit")) fit_camera(app, map_bounds);
-    if (GuiButton((Rectangle){x + (button_w + gap) * 2.0f, y, button_w, 28.0f}, "Save")) write_level_header(app);
-    y += 42.0f;
+    float btn_w = 52.0f;
+    if (GuiButton((Rectangle){x, y, btn_w, row_h}, "Load")) load_level_header(app, map_bounds, true);
+    x += btn_w + gap_sm;
+    if (GuiButton((Rectangle){x, y, btn_w, row_h}, "Fit")) fit_camera(app, map_bounds);
+    x += btn_w + gap_sm;
+    if (GuiButton((Rectangle){x, y, btn_w, row_h}, "Save")) save_level(app);
+    x += btn_w + 16.0f;
 
-    float mode_w = (w - gap) * 0.5f;
-    Rectangle wall_toggle = {x, y, mode_w, 26.0f};
-    Rectangle entity_toggle = {x + mode_w + gap, y, mode_w, 26.0f};
-    Rectangle player_toggle = {x, y + 30.0f, mode_w, 26.0f};
-    Rectangle surface_toggle = {x + mode_w + gap, y + 30.0f, mode_w, 26.0f};
+    float toggle_w = 64.0f;
+    float toggle_gap = 4.0f;
+    Rectangle wall_toggle = {x, y, toggle_w, row_h};
+    x += toggle_w + toggle_gap;
+    Rectangle entity_toggle = {x, y, toggle_w + 6.0f, row_h};
+    x += toggle_w + 6.0f + toggle_gap;
+    Rectangle player_toggle = {x, y, toggle_w, row_h};
+    x += toggle_w + toggle_gap;
+    Rectangle surface_toggle = {x, y, toggle_w + 18.0f, row_h};
+    x += toggle_w + 18.0f + toggle_gap;
+    Rectangle anim_toggle = {x, y, toggle_w + 4.0f, row_h};
+
     Vector2 mouse = GetMousePosition();
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         if (CheckCollisionPointRec(mouse, wall_toggle) && app->brush != BRUSH_WALL) {
@@ -3674,6 +4970,9 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         } else if (CheckCollisionPointRec(mouse, surface_toggle) && app->brush != BRUSH_SURFACE) {
             clear_edit_selection(app);
             app->brush = BRUSH_SURFACE;
+        } else if (CheckCollisionPointRec(mouse, anim_toggle) && app->brush != BRUSH_ANIM) {
+            clear_edit_selection(app);
+            app->brush = BRUSH_ANIM;
         }
     }
 
@@ -3681,15 +4980,33 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
     bool entity_active = app->brush == BRUSH_ENTITY;
     bool player_active = app->brush == BRUSH_PLAYER;
     bool surface_active = app->brush == BRUSH_SURFACE;
+    bool anim_active = app->brush == BRUSH_ANIM;
     GuiLock();
     GuiToggle(wall_toggle, "Wall", &wall_active);
     GuiToggle(entity_toggle, "Entity", &entity_active);
     GuiToggle(player_toggle, "Player", &player_active);
     GuiToggle(surface_toggle, "Floor/Ceil", &surface_active);
+    GuiToggle(anim_toggle, "Anim", &anim_active);
     GuiUnlock();
-    y += 66.0f;
+}
 
-    bool uses_textures = app->brush == BRUSH_WALL || app->brush == BRUSH_ENTITY || app->brush == BRUSH_SURFACE;
+static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bounds) {
+    (void)map_bounds;
+    GuiPanel(sidebar_bounds, "Map Builder");
+
+    float x = sidebar_bounds.x + 16.0f;
+    float y = 34.0f;
+    float w = sidebar_bounds.width - 32.0f;
+    float gap = 8.0f;
+    float row_h = 26.0f;
+    float half_w = (w - gap) * 0.5f;
+    Vector2 mouse = GetMousePosition();
+
+    GuiCheckBox((Rectangle){x, y, 18.0f, 18.0f}, "Level name suffix", &app->use_level_suffix);
+    y += row_h;
+
+    bool uses_textures = app->brush == BRUSH_WALL || app->brush == BRUSH_SURFACE || app->brush == BRUSH_ANIM ||
+        (app->brush == BRUSH_ENTITY && app->entity_tab != ENTITY_TAB_FUNCTIONS);
 
     if (app->brush == BRUSH_WALL) {
         GuiLabel((Rectangle){x, y, w, 20.0f}, "Wall insert");
@@ -3722,39 +5039,74 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         float vmove_before = app->brush_vmove;
         float threshold_before = app->brush_collision_threshold;
         uint32_t mask_before = app->brush_collision_mask;
+        int kind_before = app->brush_kind;
         bool disabled_before = app->brush_disabled;
         bool exported_before = app->brush_exported;
+        char init_fn_before[ENTITY_NAME_SIZE] = {0};
+        snprintf(init_fn_before, sizeof(init_fn_before), "%s", app->brush_init_fn);
         char update_fn_before[ENTITY_NAME_SIZE] = {0};
         snprintf(update_fn_before, sizeof(update_fn_before), "%s", app->brush_update_fn);
+        char cleanup_fn_before[ENTITY_NAME_SIZE] = {0};
+        snprintf(cleanup_fn_before, sizeof(cleanup_fn_before), "%s", app->brush_cleanup_fn);
+        char animation_before[ANIM_NAME_SIZE] = {0};
+        snprintf(animation_before, sizeof(animation_before), "%s", app->brush_animation);
 
         GuiLabel((Rectangle){x, y, 52.0f, row_h}, "Name");
         if (GuiTextBox((Rectangle){x + 62.0f, y, w - 62.0f, row_h}, app->brush_entity_name, (int)sizeof(app->brush_entity_name), app->entity_name_edit)) app->entity_name_edit = !app->entity_name_edit;
         if (multi_entity_edit && name_was_editing && !app->entity_name_edit) apply_selected_entities_name(app);
         y += 32.0f;
 
-        draw_update_fn_picker(app, x, &y, w, 80.0f);
-        if (multi_entity_edit && strcmp(update_fn_before, app->brush_update_fn) != 0) apply_selected_entities_update_fn(app);
-
-        draw_float_field("vdiv", (Rectangle){x, y, half_w, row_h}, app->brush_vdiv_text, &app->brush_vdiv, &app->vdiv_edit);
-        draw_float_field("hdiv", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_hdiv_text, &app->brush_hdiv, &app->hdiv_edit);
-        if (multi_entity_edit && app->brush_vdiv != vdiv_before) apply_selected_entities_vdiv(app);
-        if (multi_entity_edit && app->brush_hdiv != hdiv_before) apply_selected_entities_hdiv(app);
-        y += 32.0f;
-
-        draw_float_field("vmove", (Rectangle){x, y, half_w, row_h}, app->brush_vmove_text, &app->brush_vmove, &app->vmove_edit);
-        draw_float_field("radius", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_threshold_text, &app->brush_collision_threshold, &app->threshold_edit);
-        if (multi_entity_edit && app->brush_vmove != vmove_before) apply_selected_entities_vmove(app);
-        if (multi_entity_edit && app->brush_collision_threshold != threshold_before) apply_selected_entities_threshold(app);
+        Rectangle properties_tab = {x, y, half_w, 24.0f};
+        Rectangle functions_tab = {x + half_w + gap, y, half_w, 24.0f};
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            if (CheckCollisionPointRec(mouse, properties_tab)) app->entity_tab = ENTITY_TAB_PROPERTIES;
+            else if (CheckCollisionPointRec(mouse, functions_tab)) app->entity_tab = ENTITY_TAB_FUNCTIONS;
+        }
+        bool properties_tab_active = app->entity_tab == ENTITY_TAB_PROPERTIES;
+        bool functions_tab_active = app->entity_tab == ENTITY_TAB_FUNCTIONS;
+        GuiLock();
+        GuiToggle(properties_tab, "Properties", &properties_tab_active);
+        GuiToggle(functions_tab, "Functions", &functions_tab_active);
+        GuiUnlock();
         y += 34.0f;
 
-        draw_collision_picker(app, x, &y, w, 80.0f, "YR_CMSK", &app->brush_collision_mask, &app->mask_scroll, true);
-        if (multi_entity_edit && app->brush_collision_mask != mask_before) apply_selected_entities_collision_mask(app);
+        if (app->entity_tab == ENTITY_TAB_FUNCTIONS) {
+            draw_init_fn_picker(app, x, &y, w, 130.0f);
+            if (multi_entity_edit && strcmp(init_fn_before, app->brush_init_fn) != 0) apply_selected_entities_init_fn(app);
 
-        GuiCheckBox((Rectangle){x, y + 2.0f, 18.0f, 18.0f}, "disabled", &app->brush_disabled);
-        GuiCheckBox((Rectangle){x + half_w + gap, y + 2.0f, 18.0f, 18.0f}, "exported", &app->brush_exported);
-        if (multi_entity_edit && app->brush_disabled != disabled_before) apply_selected_entities_disabled(app);
-        if (multi_entity_edit && app->brush_exported != exported_before) apply_selected_entities_exported(app);
-        y += 30.0f;
+            draw_update_fn_picker(app, x, &y, w, 130.0f);
+            if (multi_entity_edit && strcmp(update_fn_before, app->brush_update_fn) != 0) apply_selected_entities_update_fn(app);
+
+            draw_cleanup_fn_picker(app, x, &y, w, 130.0f);
+            if (multi_entity_edit && strcmp(cleanup_fn_before, app->brush_cleanup_fn) != 0) apply_selected_entities_cleanup_fn(app);
+
+            draw_entity_animation_picker(app, x, &y, w, 110.0f);
+            if (multi_entity_edit && strcmp(animation_before, app->brush_animation) != 0) apply_selected_entities_animation(app);
+        } else {
+            draw_float_field("vdiv", (Rectangle){x, y, half_w, row_h}, app->brush_vdiv_text, &app->brush_vdiv, &app->vdiv_edit);
+            draw_float_field("hdiv", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_hdiv_text, &app->brush_hdiv, &app->hdiv_edit);
+            if (multi_entity_edit && app->brush_vdiv != vdiv_before) apply_selected_entities_vdiv(app);
+            if (multi_entity_edit && app->brush_hdiv != hdiv_before) apply_selected_entities_hdiv(app);
+            y += 32.0f;
+
+            draw_float_field("vmove", (Rectangle){x, y, half_w, row_h}, app->brush_vmove_text, &app->brush_vmove, &app->vmove_edit);
+            draw_float_field("radius", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_threshold_text, &app->brush_collision_threshold, &app->threshold_edit);
+            if (multi_entity_edit && app->brush_vmove != vmove_before) apply_selected_entities_vmove(app);
+            if (multi_entity_edit && app->brush_collision_threshold != threshold_before) apply_selected_entities_threshold(app);
+            y += 34.0f;
+
+            draw_collision_picker(app, x, &y, w, 80.0f, "Collisions", &app->brush_collision_mask, &app->mask_scroll, true);
+            if (multi_entity_edit && app->brush_collision_mask != mask_before) apply_selected_entities_collision_mask(app);
+
+            draw_kind_picker(app, x, &y, w, 80.0f);
+            if (multi_entity_edit && app->brush_kind != kind_before) apply_selected_entities_kind(app);
+
+            GuiCheckBox((Rectangle){x, y + 2.0f, 18.0f, 18.0f}, "disabled", &app->brush_disabled);
+            GuiCheckBox((Rectangle){x + half_w + gap, y + 2.0f, 18.0f, 18.0f}, "exported", &app->brush_exported);
+            if (multi_entity_edit && app->brush_disabled != disabled_before) apply_selected_entities_disabled(app);
+            if (multi_entity_edit && app->brush_exported != exported_before) apply_selected_entities_exported(app);
+            y += 30.0f;
+        }
 
         if (!multi_entity_edit) sync_selected_entity_from_editor(app);
     } else if (app->brush == BRUSH_PLAYER) {
@@ -3787,6 +5139,8 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         draw_collision_picker(app, x, &y, w, 96.0f, "Player collision", &app->player_collision_mask, &app->player_mask_scroll, false);
     } else if (app->brush == BRUSH_SURFACE) {
         draw_floor_ceil_section(app, x, &y, w);
+    } else if (app->brush == BRUSH_ANIM) {
+        draw_anim_section(app, x, &y, w);
     }
 
     float status_height = 34.0f;
@@ -3802,15 +5156,21 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
     if (GetTime() <= app->status_until && app->status[0] != '\0') {
         GuiStatusBar((Rectangle){x, sidebar_bounds.height - status_height, w, 24.0f}, app->status);
     } else {
-        char output[256];
-        snprintf(output, sizeof(output), "%s", app->output_path);
+        char output[512];
+        snprintf(output, sizeof(output), "%s + %s", app->output_path, app->level_gen_path);
         GuiStatusBar((Rectangle){x, sidebar_bounds.height - status_height, w, 24.0f}, output);
     }
 }
 
-static void init_app(App *app, const char *asset_dir, const char *output_path) {
+static void init_app(App *app, const char *asset_dir, const char *output_path, const char *level_gen_path) {
     app->asset_dir = asset_dir;
     app->output_path = output_path;
+    if (level_gen_path && level_gen_path[0] != '\0') {
+        snprintf(app->level_gen_path, sizeof(app->level_gen_path), "%s", level_gen_path);
+    } else {
+        derive_level_gen_path(output_path, app->level_gen_path, sizeof(app->level_gen_path));
+    }
+    app->use_level_suffix = false;
     app->selected_asset = -1;
     app->floor_asset = -1;
     app->ceil_asset = -1;
@@ -3854,9 +5214,17 @@ static void init_app(App *app, const char *asset_dir, const char *output_path) {
     snprintf(app->brush_threshold_text, sizeof(app->brush_threshold_text), "%.3f", app->brush_collision_threshold);
     snprintf(app->brush_entity_name, sizeof(app->brush_entity_name), "entity");
     snprintf(app->new_collision_layer, sizeof(app->new_collision_layer), "ENTITY");
+    snprintf(app->new_init_fn, sizeof(app->new_init_fn), "init_entity");
+    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
     snprintf(app->new_update_fn, sizeof(app->new_update_fn), "update_entity");
     snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+    snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "cleanup_entity");
+    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+    snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+    app->entity_anim_scroll = 0.0f;
     app->brush_exported = true;
+    app->brush_kind = 0;
+    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
     app->player_pos = (Vector2){DEFAULT_MAP_COLS * 0.5f, DEFAULT_MAP_ROWS * 0.5f};
     app->player_dir = (Vector2){0.0f, 1.0f};
     app->player_collision_threshold = 0.15f;
@@ -3864,28 +5232,34 @@ static void init_app(App *app, const char *asset_dir, const char *output_path) {
     refresh_player_text(app);
 
     app->surface_target = SURFACE_FLOOR;
+    app->entity_tab = ENTITY_TAB_PROPERTIES;
     wall_map_init(&app->map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     wall_map_init(&app->floor_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     wall_map_init(&app->ceil_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
+    app->selected_animation = -1;
+    snprintf(app->new_anim_name, sizeof(app->new_anim_name), "");
+    snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "0.250");
     scan_assets(&app->assets, asset_dir);
 }
 
 int main(int argc, char **argv) {
-    if (argc > 3) {
-        fprintf(stderr, "Usage: %s [assets_dir] [output_file]\n", argv[0]);
+    if (argc > 4) {
+        fprintf(stderr, "Usage: %s [assets_dir] [output_file] [level_gen_file]\n", argv[0]);
         return 1;
     }
 
     const char *asset_dir = argc > 1 ? argv[1] : "assets";
     const char *output_path = argc > 2 ? argv[2] : "level.h";
+    const char *level_gen_path = argc > 3 ? argv[3] : NULL;
 
     App app = {0};
-    init_app(&app, asset_dir, output_path);
+    init_app(&app, asset_dir, output_path, level_gen_path);
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "map_builder");
     SetTargetFPS(60);
     GuiSetStyle(DEFAULT, TEXT_SIZE, 14);
+    SetExitKey(KEY_NULL);
 
     load_asset_textures(&app.assets);
     filter_assets_by_size(&app.assets, 64, 64);
@@ -3896,25 +5270,53 @@ int main(int argc, char **argv) {
     fit_camera(&app, map_bounds);
     load_level_header(&app, map_bounds, false);
 
-    while (!WindowShouldClose()) {
+    bool running = true;
+    while (running) {
         map_bounds = get_map_bounds();
         Rectangle sidebar_bounds = get_sidebar_bounds();
         update_camera_offset(&app, map_bounds);
 
-        bool ctrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER) || IsKeyDown(KEY_RIGHT_SUPER);
-        if (ctrl && IsKeyPressed(KEY_S)) write_level_header(&app);
-        if (!app_is_editing(&app)) {
-            if (ctrl && IsKeyPressed(KEY_C)) copy_active_selection(&app);
-            if (ctrl && IsKeyPressed(KEY_V)) paste_clipboard_at_mouse(&app, map_bounds);
-            if (IsKeyPressed(KEY_DELETE) || IsKeyPressed(KEY_BACKSPACE)) delete_active_selection(&app);
+        if (WindowShouldClose() || (!app_is_editing(&app) && !app.show_exit_dialog && IsKeyPressed(KEY_ESCAPE))) {
+            app.show_exit_dialog = true;
         }
 
-        handle_map_input(&app, map_bounds);
+        if (!app.show_exit_dialog) {
+            bool ctrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER) || IsKeyDown(KEY_RIGHT_SUPER);
+            if (ctrl && IsKeyPressed(KEY_S)) save_level(&app);
+            if (!app_is_editing(&app) && app.brush != BRUSH_ANIM) {
+                if (ctrl && IsKeyPressed(KEY_C)) copy_active_selection(&app);
+                if (ctrl && IsKeyPressed(KEY_V)) paste_clipboard_at_mouse(&app, map_bounds);
+                if (IsKeyPressed(KEY_DELETE) || IsKeyPressed(KEY_BACKSPACE)) delete_active_selection(&app);
+            }
+            if (app.brush != BRUSH_ANIM) handle_map_input(&app, map_bounds);
+        }
 
+        Rectangle topbar_bounds = get_topbar_bounds();
         BeginDrawing();
         ClearBackground((Color){25, 27, 31, 255});
-        draw_map(&app, map_bounds);
+        if (app.brush == BRUSH_ANIM) draw_anim_view(&app, map_bounds);
+        else draw_map(&app, map_bounds);
+        draw_topbar(&app, topbar_bounds, map_bounds);
         draw_sidebar(&app, sidebar_bounds, map_bounds);
+
+        if (app.show_exit_dialog) {
+            int sw = GetScreenWidth();
+            int sh = GetScreenHeight();
+            DrawRectangle(0, 0, sw, sh, (Color){0, 0, 0, 110});
+            float dw = 320.0f;
+            float dh = 130.0f;
+            Rectangle dialog = {(sw - dw) * 0.5f, (sh - dh) * 0.5f, dw, dh};
+            int result = GuiMessageBox(dialog, "Exit", "Exit the map builder?", "Yes;No;Save & Exit");
+            if (result == 1) {
+                running = false;
+            } else if (result == 0 || result == 2) {
+                app.show_exit_dialog = false;
+            } else if (result == 3) {
+                save_level(&app);
+                running = false;
+            }
+        }
+
         EndDrawing();
     }
 
@@ -3928,7 +5330,11 @@ int main(int argc, char **argv) {
     da_free(&app.clipboard_entities);
     da_free(&app.clipboard_walls);
     da_free(&app.collision_layers);
+    da_free(&app.init_fns);
     da_free(&app.update_fns);
+    da_free(&app.cleanup_fns);
+    da_free(&app.kinds);
+    da_free(&app.animations);
     CloseWindow();
     tmp_free();
     return 0;

@@ -1,5 +1,6 @@
 #ifndef YR_RENDERER_H
 #define YR_RENDERER_H
+#include <stddef.h>
 #include <stdbool.h>
 #include "colors.h"
 
@@ -42,6 +43,13 @@ float yr_get_time();
 void yr_clear_screen(yr_pixel_t color);
 
 void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color);
+#define yr_draw_pixel(x, y, color) yr_draw_rectangle(x, y, 1, 1, color)
+void yr_draw_rectangle_line(int x, int y, int width, int height, int thickness, yr_pixel_t color);
+void yr_draw_line(int x0, int y0, int x1, int y1, int thickness, yr_pixel_t color);
+void yr_draw_circle(int x, int y, int radius, yr_pixel_t color);
+void yr_draw_circle_line(int x, int y, int radius, int thickness, yr_pixel_t color);
+void yr_draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, yr_pixel_t color);
+void yr_draw_triangle_line(int x0, int y0, int x1, int y1, int x2, int y2, int thickness, yr_pixel_t color);
 
 void yr_renderer_init(int width, int height, const char *title, unsigned int target_fps);
 
@@ -55,6 +63,20 @@ void yr_end_drawing();
 
 float yr_get_fps();
 
+yr_pixel_t *get_framebuffer();
+
+typedef void (*YrColorFilterCallback)(int x, int y, yr_pixel_t *color, void *user_data);
+void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data);
+
+#ifdef ESP32_MULTITHREAD
+// Runs job over [0, total) split across the two ESP32 cores (defined in
+// yari.c): the worker runs [0, total/2) while the caller runs the rest.
+// The job runs concurrently on both cores, so it must only write data
+// disjoint per range. Call from the main task only, never from inside
+// another split job.
+void yr_run_split(void (*job)(void *ctx, int start, int end), void *ctx, int total);
+#endif
+
 #ifdef YARI_NO_PREFIX
 #define draw_texture yr_draw_texture
 #define draw_text yr_draw_text
@@ -62,12 +84,21 @@ float yr_get_fps();
 #define get_time yr_get_time
 #define clear_screen yr_clear_screen
 #define draw_rectangle yr_draw_rectangle
+#define draw_pixel yr_draw_pixel
+#define draw_rectangle_line yr_draw_rectangle_line
+#define draw_line yr_draw_line
+#define draw_circle yr_draw_circle
+#define draw_circle_line yr_draw_circle_line
+#define draw_triangle yr_draw_triangle
+#define draw_triangle_line yr_draw_triangle_line
 #define renderer_init yr_renderer_init
 #define game_should_close yr_game_should_close
 #define begin_drawing yr_begin_drawing
 #define render_screen yr_render_screen
 #define end_drawing yr_end_drawing
 #define get_fps yr_get_fps
+#define ColorFilter YrColorFilter
+#define apply_color_filter yr_apply_color_filter
 #endif
 
 #endif // YR_RENDERER_H

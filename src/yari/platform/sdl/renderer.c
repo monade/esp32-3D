@@ -173,3 +173,18 @@ void yr_clear_screen(yr_pixel_t color) {
     int count = framebuffer_width * framebuffer_height;
     for (int i = 0; i < count; i++) framebuffer[i] = color;
 }
+
+void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data) {
+    if (!apply || !framebuffer) return;
+
+    yr_pixel_t *px = framebuffer;
+    for (int y = 0; y < framebuffer_height; y++) {
+        for (int x = 0; x < framebuffer_width; x++, px++) {
+            apply(x, y, px, user_data);
+        }
+    }
+}
+
+yr_pixel_t *get_framebuffer(void) {
+    return framebuffer;
+}

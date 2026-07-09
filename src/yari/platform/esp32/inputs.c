@@ -20,8 +20,8 @@ struct joystick_config_t {
   int center;
 };
 
-static bool key_state[350] = {0};
-__attribute__((section(".iram1"))) static int key_maps[350] = {0};
+static bool key_state[YR_KEYS_COUNT] = {0};
+__attribute__((section(".iram1"))) static int key_maps[YR_KEYS_COUNT] = {0};
 static adc_oneshot_unit_handle_t adc_unit_handles[SOC_ADC_PERIPH_NUM] = {0};
 static struct joystick_config_t joysticks[YR_ESP_MAX_JOYSTICKS][YR_JOYSTICK_AXIS_COUNT] = {0};
 static int joystick_count = 0;
