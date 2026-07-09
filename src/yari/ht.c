@@ -100,19 +100,18 @@ void yr__ht_free_cstr_keys(void *ht, size_t entry_size) {
 }
 
 void yr__table_resize(struct yr__ht *ht, size_t entry_size, size_t key_size, yr_entry_hash_fn hash_fn, size_t new_capacity) {
-    size_t *new_data = YR_ALLOC(new_capacity * sizeof(size_t));
-    assert(new_data != NULL);
-    memset(new_data, 0, new_capacity * sizeof(size_t));
+    YR_FREE(ht->table.data);
+    ht->table.data = YR_ALLOC(new_capacity * sizeof(size_t));
+    assert(ht->table.data != NULL);
+    memset(ht->table.data, 0, new_capacity * sizeof(size_t));
     for (size_t i = 0; i < ht->length; i++) {
         const void *entry = (const char *)ht->data + i * entry_size;
         size_t h = hash_fn(entry, key_size, ht->seed) % new_capacity;
-        while (new_data[h] != 0) {
+        while (ht->table.data[h] != 0) {
             h = (h + 1) % new_capacity;
         }
-        new_data[h] = i + 1;
+        ht->table.data[h] = i + 1;
     }
-    YR_FREE(ht->table.data);
-    ht->table.data = new_data;
     ht->table.capacity = new_capacity;
 }
 
