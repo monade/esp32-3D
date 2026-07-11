@@ -622,7 +622,7 @@ void _yr_init_game() {
     state.screen_width = 100;
     state.screen_height = 100;
     state.game_title = "Yari";
-    state.target_fps = 30;
+    state.target_fps = 0;
     state.ray_res = 1;
     state.next_entity_id = 0;
     yr_init_game(&state);

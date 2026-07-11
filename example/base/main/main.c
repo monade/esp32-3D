@@ -8,8 +8,8 @@
 #define COLS 20
 #define ROWS 20
 
-#define PLAYER_ROTATION_SPEED 1.25
-#define PLAYER_SPEED 2.5
+#define PLAYER_ROTATION_SPEED 2
+#define PLAYER_SPEED 4.5
 #define PLAYER_COLLISION_THRESHOLD 0.15f
 
 // 0 null, 1-127 texture_id, 128-255 color_id
