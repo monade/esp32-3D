@@ -210,6 +210,7 @@ Generic macros over any struct shaped `{ Type *data; size_t length; size_t capac
 YR_ARRAY_LEN(array);                    // Number of elements in a fixed-size C array
 yr_da_reserve(da, expected_capacity);   // Grows da->data to fit at least expected_capacity items
 yr_da_append(da, item);                 // Appends item, growing storage as needed
+yr_da_pop(da);                          // Removes the last element of the array and return a pointer to it (it does not auto-shrink the capacity)
 yr_da_remove_unordered(da, idx);        // Removes item at idx by swapping in the last element — O(1), reorders; auto-shrinks storage if underfilled
 yr_da_remove(da, idx, del);             // Removes `del` items at idx, preserving order (memmove); auto-shrinks storage if underfilled
 yr_da_shrink(da);                       // Shrinks capacity by YR_DA_GROWTH_FACTOR (never below YR_DA_INIT_CAPACITY or length + 1); called automatically by the removals above

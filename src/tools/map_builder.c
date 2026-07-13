@@ -49,6 +49,7 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 800
 #define SIDEBAR_WIDTH 420.0f
+#define STATUS_BAR_HEIGHT 28.0f
 #define ASSET_ROW_HEIGHT 42.0f
 #define ENTITY_NAME_SIZE 64
 #define MASK_NAME_SIZE 32
@@ -188,6 +189,44 @@ da_declare(ClipboardEntities, ClipboardEntity);
 da_declare(ClipboardWalls, ClipboardWall);
 da_declare(Animations, Animation);
 
+typedef enum {
+    STATUS_INFO = 0,
+    STATUS_SUCCESS = 1,
+    STATUS_WARNING = 2,
+    STATUS_ERROR = 3,
+} StatusKind;
+
+// Deep copy of everything undo/redo can restore: the map layers, entities, shared
+// definitions (collision layers, fn names, kinds, animations) and the player.
+typedef struct {
+    WallMap map;
+    WallMap floor_map;
+    WallMap ceil_map;
+    PlacedEntities entities;
+    CollisionLayers collision_layers;
+    InitFns init_fns;
+    UpdateFns update_fns;
+    CleanupFns cleanup_fns;
+    EntityKinds kinds;
+    Animations animations;
+    int floor_asset;
+    int ceil_asset;
+    Vector2 player_pos;
+    Vector2 player_dir;
+    float player_collision_threshold;
+    uint32_t player_collision_mask;
+    char label[64];
+    // Where the sidebar should jump to when this snapshot is restored, captured from
+    // the app's UI state at push time (i.e. wherever the user was when they made the change).
+    BrushKind target_brush;
+    EntityTab target_entity_tab;
+    SurfaceTarget target_surface;
+    char target_entity_name[ENTITY_NAME_SIZE];
+    char target_animation_name[ANIM_NAME_SIZE];
+} UndoState;
+
+da_declare(UndoStates, UndoState);
+
 typedef struct {
     Assets assets;
     PlacedEntities entities;
@@ -310,6 +349,7 @@ typedef struct {
     bool use_level_suffix;
     char status[256];
     double status_until;
+    StatusKind status_kind;
     bool pinching;
     float pinch_distance;
     bool suppress_left_drag;
@@ -324,6 +364,10 @@ typedef struct {
     bool anim_name_edit;
     bool anim_speed_edit;
     char anim_speed_text[32];
+
+    UndoStates undo_stack;
+    UndoStates redo_stack;
+    bool selection_move_snapshotted;
 } App;
 
 typedef struct {
@@ -348,6 +392,7 @@ typedef struct {
 } LoadedLevel;
 
 static void set_status(App *app, const char *fmt, ...);
+static void set_status_kind(App *app, StatusKind kind, const char *fmt, ...);
 
 static char *copy_string(const char *text) {
     size_t len = strlen(text);
@@ -511,6 +556,86 @@ static void wall_map_free(WallMap *map) {
     map->rows = 0;
 }
 
+#define MAX_UNDO_HISTORY 100
+
+static void wall_map_clone(const WallMap *src, WallMap *dst) {
+    dst->cols = src->cols;
+    dst->rows = src->rows;
+    size_t count = (size_t)src->cols * (size_t)src->rows;
+    dst->data = malloc(count * sizeof(dst->data[0]));
+    if (!dst->data) {
+        log_error("Out of memory\n");
+        exit(1);
+    }
+    memcpy(dst->data, src->data, count * sizeof(dst->data[0]));
+}
+
+static void free_undo_state(UndoState *state) {
+    wall_map_free(&state->map);
+    wall_map_free(&state->floor_map);
+    wall_map_free(&state->ceil_map);
+    da_free(&state->entities);
+    da_free(&state->collision_layers);
+    da_free(&state->init_fns);
+    da_free(&state->update_fns);
+    da_free(&state->cleanup_fns);
+    da_free(&state->kinds);
+    da_free(&state->animations);
+}
+
+static UndoState capture_undo_state(App *app) {
+    UndoState state = {0};
+    wall_map_clone(&app->map, &state.map);
+    wall_map_clone(&app->floor_map, &state.floor_map);
+    wall_map_clone(&app->ceil_map, &state.ceil_map);
+    da_append_many(&state.entities, app->entities.data, app->entities.length);
+    da_append_many(&state.collision_layers, app->collision_layers.data, app->collision_layers.length);
+    da_append_many(&state.init_fns, app->init_fns.data, app->init_fns.length);
+    da_append_many(&state.update_fns, app->update_fns.data, app->update_fns.length);
+    da_append_many(&state.cleanup_fns, app->cleanup_fns.data, app->cleanup_fns.length);
+    da_append_many(&state.kinds, app->kinds.data, app->kinds.length);
+    da_append_many(&state.animations, app->animations.data, app->animations.length);
+    state.floor_asset = app->floor_asset;
+    state.ceil_asset = app->ceil_asset;
+    state.player_pos = app->player_pos;
+    state.player_dir = app->player_dir;
+    state.player_collision_threshold = app->player_collision_threshold;
+    state.player_collision_mask = app->player_collision_mask;
+
+    // Where the sidebar should jump back to if this snapshot is later restored.
+    state.target_brush = app->brush;
+    state.target_entity_tab = app->entity_tab;
+    state.target_surface = app->surface_target;
+    bool has_single_entity_focus = app->selection_kind == SELECTION_ENTITY && app->selected_entities.length == 1;
+    snprintf(state.target_entity_name, sizeof(state.target_entity_name), "%s", has_single_entity_focus ? app->brush_entity_name : "");
+    bool has_animation_focus = app->selected_animation >= 0 && app->selected_animation < (int)app->animations.length;
+    snprintf(state.target_animation_name, sizeof(state.target_animation_name), "%s",
+        has_animation_focus ? app->animations.data[app->selected_animation].name : "");
+    return state;
+}
+
+static void clear_undo_history(UndoStates *stack) {
+    for (size_t i = 0; i < stack->length; i++) free_undo_state(&stack->data[i]);
+    stack->length = 0;
+}
+
+// Records the current document state so it can be restored by a later undo, and drops
+// the redo history since it no longer follows from the state we're about to change.
+static void push_undo_snapshot(App *app, const char *label_fmt, ...) {
+    UndoState state = capture_undo_state(app);
+    va_list args;
+    va_start(args, label_fmt);
+    vsnprintf(state.label, sizeof(state.label), label_fmt, args);
+    va_end(args);
+
+    da_append(&app->undo_stack, state);
+    while (app->undo_stack.length > MAX_UNDO_HISTORY) {
+        free_undo_state(&app->undo_stack.data[0]);
+        da_remove(&app->undo_stack, 0, 1);
+    }
+    clear_undo_history(&app->redo_stack);
+}
+
 static bool wall_map_inside(const WallMap *map, int x, int y) {
     return x >= 0 && y >= 0 && x < map->cols && y < map->rows;
 }
@@ -606,10 +731,11 @@ static void stroke_wall_circle(App *app, int cx, int cy, int edge_x, int edge_y)
 
 static void apply_wall_drag(App *app) {
     if (!selected_wall_asset_is_valid(app)) {
-        set_status(app, "Select a texture first");
+        set_status_kind(app, STATUS_WARNING, "Select a texture first");
         return;
     }
 
+    push_undo_snapshot(app, app->wall_mode == WALL_CIRCLE ? "paint wall (circle)" : "paint wall (rect)");
     if (app->wall_mode == WALL_CIRCLE) {
         stroke_wall_circle(app, app->wall_drag_start_x, app->wall_drag_start_y, app->wall_drag_end_x, app->wall_drag_end_y);
     } else {
@@ -645,9 +771,10 @@ static void stroke_surface_rect(App *app, int x0, int y0, int x1, int y1) {
 
 static void apply_surface_drag(App *app) {
     if (!selected_wall_asset_is_valid(app)) {
-        set_status(app, "Select a texture first");
+        set_status_kind(app, STATUS_WARNING, "Select a texture first");
         return;
     }
+    push_undo_snapshot(app, app->surface_target == SURFACE_CEIL ? "paint ceil" : "paint floor");
     stroke_surface_rect(app, app->wall_drag_start_x, app->wall_drag_start_y, app->wall_drag_end_x, app->wall_drag_end_y);
 }
 
@@ -712,7 +839,15 @@ static Rectangle get_map_bounds(void) {
     int screen_h = GetScreenHeight();
     float map_width = (float)screen_w - SIDEBAR_WIDTH;
     if (map_width < 160.0f) map_width = 160.0f;
-    return (Rectangle){0.0f, TOPBAR_HEIGHT, map_width, (float)screen_h - TOPBAR_HEIGHT};
+    return (Rectangle){0.0f, TOPBAR_HEIGHT, map_width, (float)screen_h - TOPBAR_HEIGHT - STATUS_BAR_HEIGHT};
+}
+
+static Rectangle get_status_bar_bounds(void) {
+    int screen_w = GetScreenWidth();
+    int screen_h = GetScreenHeight();
+    float map_width = (float)screen_w - SIDEBAR_WIDTH;
+    if (map_width < 160.0f) map_width = 160.0f;
+    return (Rectangle){0.0f, (float)screen_h - STATUS_BAR_HEIGHT, map_width, STATUS_BAR_HEIGHT};
 }
 
 static void update_camera_offset(App *app, Rectangle map_bounds) {
@@ -757,6 +892,16 @@ static void set_status(App *app, const char *fmt, ...) {
     vsnprintf(app->status, sizeof(app->status), fmt, args);
     va_end(args);
     app->status_until = GetTime() + 4.0;
+    app->status_kind = STATUS_INFO;
+}
+
+static void set_status_kind(App *app, StatusKind kind, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(app->status, sizeof(app->status), fmt, args);
+    va_end(args);
+    app->status_until = GetTime() + 4.0;
+    app->status_kind = kind;
 }
 
 static void draw_texture_preview(const Asset *asset, Rectangle dst, Color tint) {
@@ -929,28 +1074,30 @@ static bool remember_init_fn(InitFns *init_fns, const char *raw_name, char *stor
 }
 
 static void add_init_fn(App *app, const char *raw_name) {
+    push_undo_snapshot(app, "add init fn %s", raw_name);
     char name[ENTITY_NAME_SIZE] = {0};
     if (!remember_init_fn(&app->init_fns, raw_name, name, sizeof(name))) return;
 
     snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "%s", name);
-    snprintf(app->new_init_fn, sizeof(app->new_init_fn), "");
+    app->new_init_fn[0] = '\0';
     app->init_fn_edit = false;
 }
 
 static void remove_init_fn_at(App *app, size_t index) {
     if (index >= app->init_fns.length) return;
 
+    push_undo_snapshot(app, "remove init fn %s", app->init_fns.data[index].name);
     char name[ENTITY_NAME_SIZE] = {0};
     snprintf(name, sizeof(name), "%s", app->init_fns.data[index].name);
 
     if (strcmp(app->brush_init_fn, name) == 0) {
-        snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+        app->brush_init_fn[0] = '\0';
     }
 
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
         if (strcmp(entity->init_fn, name) == 0) {
-            snprintf(entity->init_fn, sizeof(entity->init_fn), "");
+            entity->init_fn[0] = '\0';
         }
     }
 
@@ -961,7 +1108,7 @@ static void remove_init_fn_at(App *app, size_t index) {
             (app->init_fns.length - index - 1) * sizeof(app->init_fns.data[0]));
     }
     app->init_fns.length--;
-    set_status(app, "Removed init fn %s", name);
+    set_status_kind(app, STATUS_SUCCESS, "Removed init fn %s", name);
 }
 
 static void sync_init_fns_from_entities(App *app) {
@@ -988,28 +1135,30 @@ static bool remember_update_fn(UpdateFns *update_fns, const char *raw_name, char
 }
 
 static void add_update_fn(App *app, const char *raw_name) {
+    push_undo_snapshot(app, "add update fn %s", raw_name);
     char name[ENTITY_NAME_SIZE] = {0};
     if (!remember_update_fn(&app->update_fns, raw_name, name, sizeof(name))) return;
 
     snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "%s", name);
-    snprintf(app->new_update_fn, sizeof(app->new_update_fn), "");
+    app->new_update_fn[0] = '\0';
     app->update_fn_edit = false;
 }
 
 static void remove_update_fn_at(App *app, size_t index) {
     if (index >= app->update_fns.length) return;
 
+    push_undo_snapshot(app, "remove update fn %s", app->update_fns.data[index].name);
     char name[ENTITY_NAME_SIZE] = {0};
     snprintf(name, sizeof(name), "%s", app->update_fns.data[index].name);
 
     if (strcmp(app->brush_update_fn, name) == 0) {
-        snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+        app->brush_update_fn[0] = '\0';
     }
 
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
         if (strcmp(entity->update_fn, name) == 0) {
-            snprintf(entity->update_fn, sizeof(entity->update_fn), "");
+            entity->update_fn[0] = '\0';
         }
     }
 
@@ -1020,7 +1169,7 @@ static void remove_update_fn_at(App *app, size_t index) {
             (app->update_fns.length - index - 1) * sizeof(app->update_fns.data[0]));
     }
     app->update_fns.length--;
-    set_status(app, "Removed update fn %s", name);
+    set_status_kind(app, STATUS_SUCCESS, "Removed update fn %s", name);
 }
 
 static void sync_update_fns_from_entities(App *app) {
@@ -1047,28 +1196,30 @@ static bool remember_cleanup_fn(CleanupFns *cleanup_fns, const char *raw_name, c
 }
 
 static void add_cleanup_fn(App *app, const char *raw_name) {
+    push_undo_snapshot(app, "add cleanup fn %s", raw_name);
     char name[ENTITY_NAME_SIZE] = {0};
     if (!remember_cleanup_fn(&app->cleanup_fns, raw_name, name, sizeof(name))) return;
 
     snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "%s", name);
-    snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "");
+    app->new_cleanup_fn[0] = '\0';
     app->cleanup_fn_edit = false;
 }
 
 static void remove_cleanup_fn_at(App *app, size_t index) {
     if (index >= app->cleanup_fns.length) return;
 
+    push_undo_snapshot(app, "remove cleanup fn %s", app->cleanup_fns.data[index].name);
     char name[ENTITY_NAME_SIZE] = {0};
     snprintf(name, sizeof(name), "%s", app->cleanup_fns.data[index].name);
 
     if (strcmp(app->brush_cleanup_fn, name) == 0) {
-        snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+        app->brush_cleanup_fn[0] = '\0';
     }
 
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
         if (strcmp(entity->cleanup_fn, name) == 0) {
-            snprintf(entity->cleanup_fn, sizeof(entity->cleanup_fn), "");
+            entity->cleanup_fn[0] = '\0';
         }
     }
 
@@ -1079,7 +1230,7 @@ static void remove_cleanup_fn_at(App *app, size_t index) {
             (app->cleanup_fns.length - index - 1) * sizeof(app->cleanup_fns.data[0]));
     }
     app->cleanup_fns.length--;
-    set_status(app, "Removed cleanup fn %s", name);
+    set_status_kind(app, STATUS_SUCCESS, "Removed cleanup fn %s", name);
 }
 
 static void sync_cleanup_fns_from_entities(App *app) {
@@ -1209,10 +1360,11 @@ static void add_collision_layer(App *app, const char *raw_name) {
 
     unsigned int shift = next_collision_layer_shift(app);
     if (shift == 0) {
-        set_status(app, "Collision layer limit reached");
+        set_status_kind(app, STATUS_WARNING, "Collision layer limit reached");
         return;
     }
 
+    push_undo_snapshot(app, "add collision layer %s", name);
     CollisionLayer layer = {
         .value = 1u << shift,
         .shift = shift,
@@ -1223,12 +1375,13 @@ static void add_collision_layer(App *app, const char *raw_name) {
 
     app->brush_collision_mask |= layer.value;
     app->player_collision_mask |= layer.value;
-    snprintf(app->new_collision_layer, sizeof(app->new_collision_layer), "");
+    app->new_collision_layer[0] = '\0';
 }
 
 static void remove_collision_layer_at(App *app, size_t index) {
     if (index >= app->collision_layers.length) return;
 
+    push_undo_snapshot(app, "remove collision layer %s", app->collision_layers.data[index].name);
     CollisionLayer layer = app->collision_layers.data[index];
     app->brush_collision_mask &= ~layer.value;
     app->player_collision_mask &= ~layer.value;
@@ -1244,7 +1397,7 @@ static void remove_collision_layer_at(App *app, size_t index) {
             (app->collision_layers.length - index - 1) * sizeof(app->collision_layers.data[0]));
     }
     app->collision_layers.length--;
-    set_status(app, "Removed collision mask %s", layer.symbol);
+    set_status_kind(app, STATUS_SUCCESS, "Removed collision mask %s", layer.symbol);
 }
 
 static bool editing_entity_is_valid(const App *app) {
@@ -1284,6 +1437,33 @@ static bool wall_is_selected(const App *app, int x, int y) {
 
 static bool selection_has_items(const App *app) {
     return app->selected_entities.length > 0 || app->selected_walls.length > 0;
+}
+
+static int entity_index_by_name(const App *app, const char *name) {
+    if (!name || name[0] == '\0') return -1;
+    for (size_t i = 0; i < app->entities.length; i++) {
+        if (strcmp(app->entities.data[i].name, name) == 0) return (int)i;
+    }
+    return -1;
+}
+
+static int animation_index_by_name(const App *app, const char *name) {
+    if (!name || name[0] == '\0') return -1;
+    for (size_t i = 0; i < app->animations.length; i++) {
+        if (strcmp(app->animations.data[i].name, name) == 0) return (int)i;
+    }
+    return -1;
+}
+
+// Names the entity (or "N entities") whose properties draw_sidebar is currently editing,
+// for undo/redo labels like "change enemy_anim vdiv".
+static const char *entity_edit_subject(App *app) {
+    static char label[32];
+    if (app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 1) {
+        snprintf(label, sizeof(label), "%u entities", (unsigned int)app->selected_entities.length);
+        return label;
+    }
+    return app->brush_entity_name;
 }
 
 static void clear_edit_selection(App *app) {
@@ -1659,7 +1839,7 @@ static bool selected_walls_bounds(App *app, int *min_x, int *min_y, int *max_x, 
 static void copy_active_selection(App *app) {
     prune_invalid_selection(app);
     if (!selection_has_items(app)) {
-        set_status(app, "Nothing selected to copy");
+        set_status_kind(app, STATUS_WARNING, "Nothing selected to copy");
         return;
     }
 
@@ -1668,7 +1848,7 @@ static void copy_active_selection(App *app) {
     if (app->selection_kind == SELECTION_ENTITY) {
         Vector2 center = {0.0f, 0.0f};
         if (!selected_entities_center(app, &center)) {
-            set_status(app, "Nothing selected to copy");
+            set_status_kind(app, STATUS_WARNING, "Nothing selected to copy");
             return;
         }
 
@@ -1685,7 +1865,7 @@ static void copy_active_selection(App *app) {
             da_append(&app->clipboard_entities, item);
         }
 
-        set_status(app, "Copied %u entities", (unsigned int)app->clipboard_entities.length);
+        set_status_kind(app, STATUS_SUCCESS, "Copied %u entities", (unsigned int)app->clipboard_entities.length);
         return;
     }
 
@@ -1695,7 +1875,7 @@ static void copy_active_selection(App *app) {
         int max_x = 0;
         int max_y = 0;
         if (!selected_walls_bounds(app, &min_x, &min_y, &max_x, &max_y)) {
-            set_status(app, "Nothing selected to copy");
+            set_status_kind(app, STATUS_WARNING, "Nothing selected to copy");
             return;
         }
 
@@ -1716,7 +1896,7 @@ static void copy_active_selection(App *app) {
             da_append(&app->clipboard_walls, item);
         }
 
-        set_status(app, "Copied %u walls", (unsigned int)app->clipboard_walls.length);
+        set_status_kind(app, STATUS_SUCCESS, "Copied %u walls", (unsigned int)app->clipboard_walls.length);
     }
 }
 
@@ -1743,7 +1923,7 @@ static void paste_clipboard_entities_at(App *app, Vector2 center) {
     float max_offset_x = 0.0f;
     float max_offset_y = 0.0f;
     if (!clipboard_entity_offset_bounds(app, &min_offset_x, &min_offset_y, &max_offset_x, &max_offset_y)) {
-        set_status(app, "Nothing copied to paste");
+        set_status_kind(app, STATUS_WARNING, "Nothing copied to paste");
         return;
     }
 
@@ -1754,13 +1934,14 @@ static void paste_clipboard_entities_at(App *app, Vector2 center) {
     float min_center_y = -min_offset_y;
     float max_center_y = max_map_y - max_offset_y;
     if (min_center_x > max_center_x || min_center_y > max_center_y) {
-        set_status(app, "Copied entities do not fit in map");
+        set_status_kind(app, STATUS_WARNING, "Copied entities do not fit in map");
         return;
     }
 
     center.x = clamp_float(center.x, min_center_x, max_center_x);
     center.y = clamp_float(center.y, min_center_y, max_center_y);
 
+    push_undo_snapshot(app, "paste %u entities", (unsigned int)app->clipboard_entities.length);
     clear_edit_selection(app);
     app->selection_kind = SELECTION_ENTITY;
 
@@ -1778,12 +1959,12 @@ static void paste_clipboard_entities_at(App *app, Vector2 center) {
     }
 
     refresh_entity_editor_primary(app);
-    set_status(app, "Pasted %u entities", (unsigned int)app->clipboard_entities.length);
+    set_status_kind(app, STATUS_SUCCESS, "Pasted %u entities", (unsigned int)app->clipboard_entities.length);
 }
 
 static void paste_clipboard_walls_at(App *app, int center_x, int center_y) {
     if (app->clipboard_kind != SELECTION_WALL || app->clipboard_walls.length == 0) {
-        set_status(app, "Nothing copied to paste");
+        set_status_kind(app, STATUS_WARNING, "Nothing copied to paste");
         return;
     }
 
@@ -1791,7 +1972,7 @@ static void paste_clipboard_walls_at(App *app, int center_x, int center_y) {
         app->clipboard_wall_height <= 0 ||
         app->clipboard_wall_width > app->map.cols ||
         app->clipboard_wall_height > app->map.rows) {
-        set_status(app, "Copied walls do not fit in map");
+        set_status_kind(app, STATUS_WARNING, "Copied walls do not fit in map");
         return;
     }
 
@@ -1800,6 +1981,7 @@ static void paste_clipboard_walls_at(App *app, int center_x, int center_y) {
     min_x = clamp_int(min_x, 0, app->map.cols - app->clipboard_wall_width);
     min_y = clamp_int(min_y, 0, app->map.rows - app->clipboard_wall_height);
 
+    push_undo_snapshot(app, "paste %u walls", (unsigned int)app->clipboard_walls.length);
     clear_edit_selection(app);
     app->selection_kind = SELECTION_WALL;
 
@@ -1815,18 +1997,18 @@ static void paste_clipboard_walls_at(App *app, int center_x, int center_y) {
     }
 
     refresh_wall_editor_primary(app);
-    set_status(app, "Pasted %u walls", (unsigned int)app->selected_walls.length);
+    set_status_kind(app, STATUS_SUCCESS, "Pasted %u walls", (unsigned int)app->selected_walls.length);
 }
 
 static void paste_clipboard_at_mouse(App *app, Rectangle map_bounds) {
     if (app->clipboard_kind == SELECTION_NONE) {
-        set_status(app, "Nothing copied to paste");
+        set_status_kind(app, STATUS_WARNING, "Nothing copied to paste");
         return;
     }
 
     Vector2 mouse = GetMousePosition();
     if (!CheckCollisionPointRec(mouse, map_bounds)) {
-        set_status(app, "Move mouse over the map to paste");
+        set_status_kind(app, STATUS_WARNING, "Move mouse over the map to paste");
         return;
     }
 
@@ -1845,10 +2027,14 @@ static void paste_clipboard_at_mouse(App *app, Rectangle map_bounds) {
 static void delete_active_selection(App *app) {
     prune_invalid_selection(app);
     if (!selection_has_items(app)) {
-        set_status(app, "Nothing selected to delete");
+        set_status_kind(app, STATUS_WARNING, "Nothing selected to delete");
         return;
     }
 
+    push_undo_snapshot(app,
+        app->selection_kind == SELECTION_ENTITY ? "delete %u entities" :
+        app->selection_kind == SELECTION_SURFACE ? "erase %u cells" : "delete %u walls",
+        app->selection_kind == SELECTION_ENTITY ? (unsigned int)app->selected_entities.length : (unsigned int)app->selected_walls.length);
     if (app->selection_kind == SELECTION_ENTITY) {
         bool *remove = calloc(app->entities.length, sizeof(*remove));
         if (!remove) {
@@ -1874,7 +2060,7 @@ static void delete_active_selection(App *app) {
         free(remove);
 
         clear_edit_selection(app);
-        set_status(app, "Deleted %u entities", (unsigned int)delete_count);
+        set_status_kind(app, STATUS_SUCCESS, "Deleted %u entities", (unsigned int)delete_count);
         return;
     }
 
@@ -1891,7 +2077,7 @@ static void delete_active_selection(App *app) {
         }
 
         clear_edit_selection(app);
-        set_status(app, "Deleted %u %s", (unsigned int)delete_count, surface ? "cells" : "walls");
+        set_status_kind(app, STATUS_SUCCESS, "Deleted %u %s", (unsigned int)delete_count, surface ? "cells" : "walls");
     }
 }
 
@@ -2017,28 +2203,30 @@ static void add_entity_kind(App *app, const char *raw_name) {
     sanitize_identifier(name, sizeof(name), raw_name, "KIND", true);
 
     if (entity_kind_exists(app, name)) {
-        set_status(app, "Kind %s already exists", name);
+        set_status_kind(app, STATUS_WARNING, "Kind %s already exists", name);
         return;
     }
 
     if (app->kinds.length >= MAX_KINDS) {
-        set_status(app, "Kind limit reached");
+        set_status_kind(app, STATUS_WARNING, "Kind limit reached");
         return;
     }
 
+    push_undo_snapshot(app, "add kind %s", name);
     int id = next_entity_kind_id(app);
     EntityKind g = {.id = id};
     snprintf(g.name, sizeof(g.name), "%s", name);
     da_append(&app->kinds, g);
     app->brush_kind = id;
-    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
+    app->new_kind_name[0] = '\0';
     app->new_kind_edit = false;
-    set_status(app, "Added kind %s (%d)", name, id);
+    set_status_kind(app, STATUS_SUCCESS, "Added kind %s (%d)", name, id);
 }
 
 static void remove_entity_kind_at(App *app, size_t index) {
     if (index >= app->kinds.length) return;
 
+    push_undo_snapshot(app, "remove kind %s", app->kinds.data[index].name);
     int id = app->kinds.data[index].id;
     char name[KIND_NAME_SIZE] = {0};
     snprintf(name, sizeof(name), "%s", app->kinds.data[index].name);
@@ -2056,7 +2244,7 @@ static void remove_entity_kind_at(App *app, size_t index) {
             (app->kinds.length - index - 1) * sizeof(app->kinds.data[0]));
     }
     app->kinds.length--;
-    set_status(app, "Removed kind %s", name);
+    set_status_kind(app, STATUS_SUCCESS, "Removed kind %s", name);
 }
 
 static void apply_selected_entities_kind(App *app) {
@@ -2128,6 +2316,7 @@ static void apply_selected_entities_name(App *app) {
 static void apply_selected_asset_to_edit(App *app) {
     if (app->selected_asset < 0 || app->selected_asset >= (int)app->assets.length) return;
 
+    push_undo_snapshot(app, "retexture selection (%s)", app->assets.data[app->selected_asset].name);
     prune_invalid_selection(app);
 
     if (app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 0) {
@@ -2185,6 +2374,104 @@ static void set_player_pos(App *app, Vector2 pos) {
     app->player_pos.x = clamp_float(pos.x, 0.0f, (float)app->map.cols - 0.001f);
     app->player_pos.y = clamp_float(pos.y, 0.0f, (float)app->map.rows - 0.001f);
     refresh_player_text(app);
+}
+
+// Swaps the live document state for `state` (taking ownership of its buffers) and
+// leaves the camera, brush and UI edit-mode fields untouched so undo/redo doesn't
+// disrupt whatever the user is currently looking at.
+static void apply_undo_state(App *app, UndoState *state) {
+    wall_map_free(&app->map);
+    wall_map_free(&app->floor_map);
+    wall_map_free(&app->ceil_map);
+    da_free(&app->entities);
+    da_free(&app->collision_layers);
+    da_free(&app->init_fns);
+    da_free(&app->update_fns);
+    da_free(&app->cleanup_fns);
+    da_free(&app->kinds);
+    da_free(&app->animations);
+
+    app->map = state->map;
+    app->floor_map = state->floor_map;
+    app->ceil_map = state->ceil_map;
+    app->entities = state->entities;
+    app->collision_layers = state->collision_layers;
+    app->init_fns = state->init_fns;
+    app->update_fns = state->update_fns;
+    app->cleanup_fns = state->cleanup_fns;
+    app->kinds = state->kinds;
+    app->animations = state->animations;
+    app->floor_asset = state->floor_asset;
+    app->ceil_asset = state->ceil_asset;
+    app->player_dir = state->player_dir;
+    app->player_collision_threshold = state->player_collision_threshold;
+    app->player_collision_mask = state->player_collision_mask;
+    set_player_pos(app, state->player_pos);
+
+    app->pending_cols = app->map.cols;
+    app->pending_rows = app->map.rows;
+    app->selected_animation = app->animations.length > 0 ? 0 : -1;
+    if (app->selected_animation >= 0) {
+        snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
+    }
+    if (!asset_index_is_valid(app, app->selected_asset)) app->selected_asset = app->assets.length > 0 ? 0 : -1;
+    clear_edit_selection(app);
+
+    // Jump the sidebar to wherever the user was when they made the change being
+    // undone/redone, re-selecting the specific entity/animation when we can find it.
+    app->brush = state->target_brush;
+    app->entity_tab = state->target_entity_tab;
+    app->surface_target = state->target_surface;
+    if (app->brush == BRUSH_ENTITY) {
+        int idx = entity_index_by_name(app, state->target_entity_name);
+        if (idx >= 0) load_entity_into_editor(app, idx);
+    } else if (app->brush == BRUSH_ANIM) {
+        int idx = animation_index_by_name(app, state->target_animation_name);
+        if (idx >= 0) {
+            app->selected_animation = idx;
+            snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[idx].speed);
+        }
+    }
+}
+
+static void perform_undo(App *app) {
+    if (app->wall_dragging || app->selection_dragging || app->selection_move_dragging) return;
+    if (app->undo_stack.length == 0) {
+        set_status_kind(app, STATUS_WARNING, "Nothing to undo");
+        return;
+    }
+
+    UndoState previous = app->undo_stack.data[app->undo_stack.length - 1];
+    da_remove(&app->undo_stack, app->undo_stack.length - 1, 1);
+
+    // The redo entry carries the same label: redoing re-applies the very action we're
+    // about to undo.
+    UndoState current = capture_undo_state(app);
+    snprintf(current.label, sizeof(current.label), "%s", previous.label);
+    da_append(&app->redo_stack, current);
+
+    apply_undo_state(app, &previous);
+    if (previous.label[0] != '\0') set_status_kind(app, STATUS_SUCCESS, "Undo: %s", previous.label);
+    else set_status_kind(app, STATUS_SUCCESS, "Undo");
+}
+
+static void perform_redo(App *app) {
+    if (app->wall_dragging || app->selection_dragging || app->selection_move_dragging) return;
+    if (app->redo_stack.length == 0) {
+        set_status_kind(app, STATUS_WARNING, "Nothing to redo");
+        return;
+    }
+
+    UndoState next = app->redo_stack.data[app->redo_stack.length - 1];
+    da_remove(&app->redo_stack, app->redo_stack.length - 1, 1);
+
+    UndoState current = capture_undo_state(app);
+    snprintf(current.label, sizeof(current.label), "%s", next.label);
+    da_append(&app->undo_stack, current);
+
+    apply_undo_state(app, &next);
+    if (next.label[0] != '\0') set_status_kind(app, STATUS_SUCCESS, "Redo: %s", next.label);
+    else set_status_kind(app, STATUS_SUCCESS, "Redo");
 }
 
 static bool player_marker_hit_at(const App *app, Vector2 pos) {
@@ -2414,6 +2701,7 @@ static bool selection_move_hit_at(const App *app, Vector2 world, int cell_x, int
 static void begin_selection_move_drag(App *app, Vector2 world, int cell_x, int cell_y) {
     app->selection_move_dragging = true;
     app->selection_move_moved = false;
+    app->selection_move_snapshotted = false;
     app->selection_move_start = world;
     app->selection_move_last = world;
     app->selection_move_start_x = cell_x;
@@ -2547,6 +2835,13 @@ static bool move_selected_walls_by(App *app, int dx, int dy) {
 static void update_selection_move_drag(App *app, Vector2 world, int cell_x, int cell_y) {
     if (!app->selection_move_moved && !selection_move_threshold_reached(app, world, cell_x, cell_y)) return;
 
+    if (!app->selection_move_snapshotted) {
+        push_undo_snapshot(app,
+            app->selection_kind == SELECTION_ENTITY ? "move %u entities" : "move %u walls",
+            app->selection_kind == SELECTION_ENTITY ? (unsigned int)app->selected_entities.length : (unsigned int)app->selected_walls.length);
+        app->selection_move_snapshotted = true;
+    }
+
     if (app->selection_kind == SELECTION_ENTITY) {
         Vector2 delta = {
             world.x - app->selection_move_last.x,
@@ -2580,9 +2875,9 @@ static void finish_selection_move_drag(App *app) {
     if (!moved) return;
 
     if (app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 0) {
-        set_status(app, "Moved %u entities", (unsigned int)app->selected_entities.length);
+        set_status_kind(app, STATUS_SUCCESS, "Moved %u entities", (unsigned int)app->selected_entities.length);
     } else if (app->selection_kind == SELECTION_WALL && app->selected_walls.length > 0) {
-        set_status(app, "Moved %u walls", (unsigned int)app->selected_walls.length);
+        set_status_kind(app, STATUS_SUCCESS, "Moved %u walls", (unsigned int)app->selected_walls.length);
     }
 }
 
@@ -3049,6 +3344,9 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
 }
 
 static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_bounds) {
+    clear_undo_history(&app->undo_stack);
+    clear_undo_history(&app->redo_stack);
+
     wall_map_free(&app->map);
     wall_map_free(&app->floor_map);
     wall_map_free(&app->ceil_map);
@@ -3126,14 +3424,14 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     app->player_threshold_edit = false;
     app->brush_kind = 0;
     app->kind_scroll = 0.0f;
-    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
+    app->new_kind_name[0] = '\0';
     snprintf(app->new_init_fn, sizeof(app->new_init_fn), "init_entity");
-    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+    app->brush_init_fn[0] = '\0';
     snprintf(app->new_update_fn, sizeof(app->new_update_fn), "update_entity");
-    snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+    app->brush_update_fn[0] = '\0';
     snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "cleanup_entity");
-    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
-    snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+    app->brush_cleanup_fn[0] = '\0';
+    app->brush_animation[0] = '\0';
     app->entity_anim_scroll = 0.0f;
     sync_init_fns_from_entities(app);
     sync_update_fns_from_entities(app);
@@ -3147,6 +3445,9 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
    threshold/mask, init/update/cleanup function names, animations) without touching the map/entities/player
    position. Used when the output file doesn't exist yet but shares an existing level_gen.h. */
 static void apply_loaded_level_gen(App *app, LoadedLevel *loaded) {
+    clear_undo_history(&app->undo_stack);
+    clear_undo_history(&app->redo_stack);
+
     da_free(&app->collision_layers);
     app->collision_layers = loaded->collision_layers;
     loaded->collision_layers = (CollisionLayers){0};
@@ -3192,19 +3493,19 @@ static void apply_loaded_level_gen(App *app, LoadedLevel *loaded) {
 static bool parse_state_block(App *app, LoadedLevel *loaded, char *data, const char *path, int *missing_assets, bool report_status) {
     char *begin = strstr(data, MAP_BUILDER_STATE_BEGIN);
     if (!begin) {
-        if (report_status) set_status(app, "No saved builder state in %s", path);
+        if (report_status) set_status_kind(app, STATUS_WARNING, "No saved builder state in %s", path);
         return false;
     }
     begin = strchr(begin, '\n');
     if (!begin) {
-        if (report_status) set_status(app, "Invalid builder state in %s", path);
+        if (report_status) set_status_kind(app, STATUS_ERROR, "Invalid builder state in %s", path);
         return false;
     }
     begin++;
 
     char *end = strstr(begin, MAP_BUILDER_STATE_END);
     if (!end) {
-        if (report_status) set_status(app, "Invalid builder state in %s", path);
+        if (report_status) set_status_kind(app, STATUS_ERROR, "Invalid builder state in %s", path);
         return false;
     }
     *end = '\0';
@@ -3216,7 +3517,7 @@ static bool parse_state_block(App *app, LoadedLevel *loaded, char *data, const c
 
         char *payload = state_line_payload(line);
         if (!parse_state_line(app, loaded, payload, missing_assets)) {
-            if (report_status) set_status(app, "Invalid builder state in %s", path);
+            if (report_status) set_status_kind(app, STATUS_ERROR, "Invalid builder state in %s", path);
             return false;
         }
 
@@ -3246,7 +3547,7 @@ static bool load_level_header(App *app, Rectangle map_bounds, bool report_status
     if (!read_file_null_terminated(app->output_path, &file)) {
         /* new level: still pick up the shared level_gen.h state if it parsed cleanly */
         if (gen_exists && gen_ok) apply_loaded_level_gen(app, &loaded);
-        if (report_status) set_status(app, "Cannot read %s", app->output_path);
+        if (report_status) set_status_kind(app, STATUS_ERROR, "Cannot read %s", app->output_path);
         loaded_level_free(&loaded);
         da_free(&file);
         return false;
@@ -3258,14 +3559,14 @@ static bool load_level_header(App *app, Rectangle map_bounds, bool report_status
     if (!parse_state_block(app, &loaded, file.data, app->output_path, &missing_assets, report_status)) goto cleanup;
 
     if (!loaded.has_size) {
-        if (report_status) set_status(app, "Missing map size in %s", app->output_path);
+        if (report_status) set_status_kind(app, STATUS_ERROR, "Missing map size in %s", app->output_path);
         goto cleanup;
     }
 
     apply_loaded_level(app, &loaded, map_bounds);
     if (report_status) {
-        if (missing_assets > 0) set_status(app, "Loaded %s (%d missing assets)", app->output_path, missing_assets);
-        else set_status(app, "Loaded %s", app->output_path);
+        if (missing_assets > 0) set_status_kind(app, STATUS_WARNING, "Loaded %s (%d missing assets)", app->output_path, missing_assets);
+        else set_status_kind(app, STATUS_SUCCESS, "Loaded %s", app->output_path);
     }
     ok = true;
 
@@ -3636,25 +3937,26 @@ static bool save_level(App *app) {
     bool main_ok = write_level_header(app);
 
     if (gen_ok && main_ok) {
-        set_status(app, "Saved %s and %s", app->output_path, app->level_gen_path);
+        set_status_kind(app, STATUS_SUCCESS, "Saved %s and %s", app->output_path, app->level_gen_path);
     } else if (!gen_ok && !main_ok) {
-        set_status(app, "Error writing %s and %s", app->output_path, app->level_gen_path);
+        set_status_kind(app, STATUS_ERROR, "Error writing %s and %s", app->output_path, app->level_gen_path);
     } else if (!main_ok) {
-        set_status(app, "Error writing %s", app->output_path);
+        set_status_kind(app, STATUS_ERROR, "Error writing %s", app->output_path);
     } else {
-        set_status(app, "Error writing %s", app->level_gen_path);
+        set_status_kind(app, STATUS_ERROR, "Error writing %s", app->level_gen_path);
     }
     return gen_ok && main_ok;
 }
 
 static void place_entity(App *app, Vector2 pos) {
     if (app->selected_asset < 0 || app->selected_asset >= (int)app->assets.length) {
-        set_status(app, "Select a texture first");
+        set_status_kind(app, STATUS_WARNING, "Select a texture first");
         return;
     }
 
     char entity_name[ENTITY_NAME_SIZE] = {0};
     make_unique_entity_name(app, app->brush_entity_name, entity_name, sizeof(entity_name));
+    push_undo_snapshot(app, "add entity %s", entity_name);
 
     PlacedEntity entity = {
         .pos = pos,
@@ -3761,17 +4063,20 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
         app->selection_dragging = false;
         app->selection_move_dragging = false;
         if (app->brush == BRUSH_SURFACE) {
+            push_undo_snapshot(app, app->surface_target == SURFACE_CEIL ? "erase ceil cell" : "erase floor cell");
             int *cell = wall_map_cell(active_surface_map(app), cell_x, cell_y);
             if (cell) *cell = -1;
             return;
         }
         int entity_index = nearest_entity_at(app, world, fmaxf(0.25f, 8.0f / app->camera.zoom));
         if (entity_index >= 0) {
+            push_undo_snapshot(app, "delete entity %s", app->entities.data[entity_index].name);
             da_remove_unordered(&app->entities, (size_t)entity_index);
             clear_edit_selection(app);
             return;
         }
 
+        push_undo_snapshot(app, "erase wall");
         int *cell = wall_map_cell(&app->map, cell_x, cell_y);
         if (cell) *cell = -1;
         clear_edit_selection(app);
@@ -3813,12 +4118,15 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
         }
 
         if (!selected_wall_asset_is_valid(app)) {
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) set_status(app, "Select a texture first");
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) set_status_kind(app, STATUS_WARNING, "Select a texture first");
             return;
         }
 
         if (app->wall_mode == WALL_POINT) {
             if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && mouse_in_map) {
+                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+                    push_undo_snapshot(app, app->surface_target == SURFACE_CEIL ? "paint ceil" : "paint floor");
+                }
                 int *cell = wall_map_cell(active_surface_map(app), cell_x, cell_y);
                 if (cell) *cell = app->selected_asset;
             }
@@ -3948,9 +4256,10 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
     }
 
     if (app->brush == BRUSH_PLAYER && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        push_undo_snapshot(app, "move player");
         clear_edit_selection(app);
         set_player_pos(app, world);
-        set_status(app, "Player position %.2f, %.2f", app->player_pos.x, app->player_pos.y);
+        set_status_kind(app, STATUS_SUCCESS, "Player position %.2f, %.2f", app->player_pos.x, app->player_pos.y);
         app->suppress_left_drag = true;
         return;
     }
@@ -3959,10 +4268,11 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
 
     if (app->brush == BRUSH_WALL && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         if (app->selected_asset < 0 || app->selected_asset >= (int)app->assets.length) {
-            set_status(app, "Select a texture first");
+            set_status_kind(app, STATUS_WARNING, "Select a texture first");
             return;
         }
 
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) push_undo_snapshot(app, "paint wall");
         int *cell = wall_map_cell(&app->map, cell_x, cell_y);
         if (cell) *cell = app->selected_asset;
     } else if (app->brush == BRUSH_ENTITY && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -4174,12 +4484,13 @@ static void draw_asset_list(App *app, Rectangle list_bounds) {
 
 static void set_selected_asset_for_surface(App *app, int *surface_asset, const char *surface_name) {
     if (!asset_index_is_valid(app, app->selected_asset)) {
-        set_status(app, "Select a texture first");
+        set_status_kind(app, STATUS_WARNING, "Select a texture first");
         return;
     }
 
+    push_undo_snapshot(app, "set %s texture", surface_name);
     *surface_asset = app->selected_asset;
-    set_status(app, "%s texture = %s", surface_name, asset_symbol_or_null(app, *surface_asset));
+    set_status_kind(app, STATUS_SUCCESS, "%s texture = %s", surface_name, asset_symbol_or_null(app, *surface_asset));
 }
 
 static void draw_surface_asset_row(App *app, float x, float y, float w, const char *label, int *surface_asset) {
@@ -4251,10 +4562,14 @@ static void draw_floor_ceil_section(App *app, float x, float *y, float w) {
     *y += 38.0f;
 }
 
-static void draw_float_field(const char *label, Rectangle bounds, char *text, float *value, bool *edit) {
+// Pushes an undo snapshot the moment the field enters edit mode (before any keystroke
+// changes `*value`), so a whole typing session collapses into a single undo step.
+static void draw_float_field(App *app, const char *subject, const char *label, Rectangle bounds, char *text, float *value, bool *edit) {
     GuiLabel((Rectangle){bounds.x, bounds.y, 58.0f, bounds.height}, label);
+    bool was_editing = *edit;
     if (GuiValueBoxFloat((Rectangle){bounds.x + 62.0f, bounds.y, bounds.width - 62.0f, bounds.height}, NULL, text, value, *edit)) {
         *edit = !*edit;
+        if (!was_editing && *edit) push_undo_snapshot(app, "change %s %s", subject, label);
     }
 }
 
@@ -4297,7 +4612,10 @@ static void draw_init_fn_picker(App *app, float x, float *y, float w, float max_
         bool before = checked;
         GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
         GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
-        if (checked != before) snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+        if (checked != before) {
+            push_undo_snapshot(app, "change %s init fn", entity_edit_subject(app));
+            app->brush_init_fn[0] = '\0';
+        }
     }
 
     for (size_t i = 0; i < app->init_fns.length; i++) {
@@ -4313,8 +4631,9 @@ static void draw_init_fn_picker(App *app, float x, float *y, float w, float max_
             delete_index = i;
         }
         if (checked != before) {
+            push_undo_snapshot(app, "change %s init fn", entity_edit_subject(app));
             if (checked) snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "%s", init_fn->name);
-            else snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+            else app->brush_init_fn[0] = '\0';
         }
     }
 
@@ -4366,7 +4685,10 @@ static void draw_update_fn_picker(App *app, float x, float *y, float w, float ma
         bool before = checked;
         GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
         GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
-        if (checked != before) snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+        if (checked != before) {
+            push_undo_snapshot(app, "change %s update fn", entity_edit_subject(app));
+            app->brush_update_fn[0] = '\0';
+        }
     }
 
     for (size_t i = 0; i < app->update_fns.length; i++) {
@@ -4382,8 +4704,9 @@ static void draw_update_fn_picker(App *app, float x, float *y, float w, float ma
             delete_index = i;
         }
         if (checked != before) {
+            push_undo_snapshot(app, "change %s update fn", entity_edit_subject(app));
             if (checked) snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "%s", update_fn->name);
-            else snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+            else app->brush_update_fn[0] = '\0';
         }
     }
 
@@ -4435,7 +4758,10 @@ static void draw_cleanup_fn_picker(App *app, float x, float *y, float w, float m
         bool before = checked;
         GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
         GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
-        if (checked != before) snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+        if (checked != before) {
+            push_undo_snapshot(app, "change %s cleanup fn", entity_edit_subject(app));
+            app->brush_cleanup_fn[0] = '\0';
+        }
     }
 
     for (size_t i = 0; i < app->cleanup_fns.length; i++) {
@@ -4451,8 +4777,9 @@ static void draw_cleanup_fn_picker(App *app, float x, float *y, float w, float m
             delete_index = i;
         }
         if (checked != before) {
+            push_undo_snapshot(app, "change %s cleanup fn", entity_edit_subject(app));
             if (checked) snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "%s", cleanup_fn->name);
-            else snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
+            else app->brush_cleanup_fn[0] = '\0';
         }
     }
 
@@ -4493,7 +4820,10 @@ static void draw_entity_animation_picker(App *app, float x, float *y, float w, f
         bool before = checked;
         GuiCheckBox((Rectangle){default_row.x, default_row.y, 18.0f, 18.0f}, NULL, &checked);
         GuiLabel((Rectangle){default_row.x + 26.0f, default_row.y, default_row.width - 26.0f, default_row.height}, "none");
-        if (checked != before) snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+        if (checked != before) {
+            push_undo_snapshot(app, "change %s animation", entity_edit_subject(app));
+            app->brush_animation[0] = '\0';
+        }
     }
 
     for (size_t i = 0; i < app->animations.length; i++) {
@@ -4506,8 +4836,9 @@ static void draw_entity_animation_picker(App *app, float x, float *y, float w, f
         GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
         GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - 26.0f, row.height}, anim->name);
         if (checked != before) {
+            push_undo_snapshot(app, "change %s animation", entity_edit_subject(app));
             if (checked) snprintf(app->brush_animation, sizeof(app->brush_animation), "%s", anim->name);
-            else snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+            else app->brush_animation[0] = '\0';
         }
     }
 
@@ -4520,7 +4851,7 @@ static void draw_entity_animation_picker(App *app, float x, float *y, float w, f
     *y += max_height + 10.0f;
 }
 
-static void draw_collision_picker(App *app, float x, float *y, float w, float max_height, const char *title, uint32_t *mask, float *scroll, bool allow_add) {
+static void draw_collision_picker(App *app, const char *subject, float x, float *y, float w, float max_height, const char *title, uint32_t *mask, float *scroll, bool allow_add) {
     if (allow_add) {
         float label_w = 58.0f;
         float add_button_w = 64.0f;
@@ -4572,6 +4903,7 @@ static void draw_collision_picker(App *app, float x, float *y, float w, float ma
             delete_index = i;
         }
         if (checked != before) {
+            push_undo_snapshot(app, "change %s collision (%s)", subject, layer->name);
             if (checked) *mask |= layer->value;
             else *mask &= ~layer->value;
         }
@@ -4629,7 +4961,10 @@ static void draw_kind_picker(App *app, float x, float *y, float w, float max_hei
             bool before = checked;
             GuiCheckBox((Rectangle){row.x, row.y, 18.0f, 18.0f}, NULL, &checked);
             GuiLabel((Rectangle){row.x + 26.0f, row.y, row.width - 26.0f, row.height}, "default (0)");
-            if (checked != before && checked) app->brush_kind = 0;
+            if (checked != before && checked) {
+                push_undo_snapshot(app, "change %s kind", entity_edit_subject(app));
+                app->brush_kind = 0;
+            }
         }
     }
 
@@ -4647,7 +4982,10 @@ static void draw_kind_picker(App *app, float x, float *y, float w, float max_hei
         if (GuiButton((Rectangle){row.x + row.width - delete_button_w, row.y, delete_button_w, row.height}, "Del")) {
             delete_index = i;
         }
-        if (checked != before && checked) app->brush_kind = g->id;
+        if (checked != before && checked) {
+            push_undo_snapshot(app, "change %s kind", entity_edit_subject(app));
+            app->brush_kind = g->id;
+        }
     }
 
     EndScissorMode();
@@ -4665,6 +5003,7 @@ static bool anim_name_exists(const App *app, const char *name) {
 }
 
 static void add_animation(App *app, const char *raw_name) {
+    push_undo_snapshot(app, "add animation %s", raw_name);
     char base[ANIM_NAME_SIZE] = {0};
     sanitize_identifier(base, sizeof(base), raw_name, "anim", false);
 
@@ -4682,10 +5021,10 @@ static void add_animation(App *app, const char *raw_name) {
     anim.speed = 0.25f;
     da_append(&app->animations, anim);
     app->selected_animation = (int)app->animations.length - 1;
-    snprintf(app->new_anim_name, sizeof(app->new_anim_name), "");
+    app->new_anim_name[0] = '\0';
     app->new_anim_edit = false;
     snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", anim.speed);
-    set_status(app, "Added animation %s", name);
+    set_status_kind(app, STATUS_SUCCESS, "Added animation %s", name);
 }
 
 static void draw_anim_view(App *app, Rectangle bounds) {
@@ -4782,6 +5121,7 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
     EndScissorMode();
 
     if (delete_anim_index != (size_t)-1) {
+        push_undo_snapshot(app, "remove animation %s", app->animations.data[delete_anim_index].name);
         if (delete_anim_index + 1 < app->animations.length) {
             memmove(
                 &app->animations.data[delete_anim_index],
@@ -4795,7 +5135,7 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
         if (app->selected_animation >= 0) {
             snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[app->selected_animation].speed);
         }
-        set_status(app, "Removed animation");
+        set_status_kind(app, STATUS_SUCCESS, "Removed animation");
     }
 
     *y += list_h + gap;
@@ -4806,7 +5146,9 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
     GuiLabel((Rectangle){x, *y, 52.0f, row_h}, "Name");
     char name_buf[ANIM_NAME_SIZE];
     snprintf(name_buf, sizeof(name_buf), "%s", anim->name);
+    bool anim_name_was_editing = app->anim_name_edit;
     if (GuiTextBox((Rectangle){x + 62.0f, *y, w - 62.0f, row_h}, name_buf, (int)sizeof(name_buf), app->anim_name_edit)) {
+        if (!anim_name_was_editing) push_undo_snapshot(app, "rename animation %s", anim->name);
         if (app->anim_name_edit) {
             char sanitized[ANIM_NAME_SIZE] = {0};
             sanitize_identifier(sanitized, sizeof(sanitized), name_buf, "anim", false);
@@ -4816,7 +5158,7 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
     }
     *y += 32.0f;
 
-    draw_float_field("Speed", (Rectangle){x, *y, w, row_h}, app->anim_speed_text, &anim->speed, &app->anim_speed_edit);
+    draw_float_field(app, anim->name, "Speed", (Rectangle){x, *y, w, row_h}, app->anim_speed_text, &anim->speed, &app->anim_speed_edit);
     if (!app->anim_speed_edit) {
         if (anim->speed < 0.001f) {
             anim->speed = 0.001f;
@@ -4868,6 +5210,7 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
     *y += frames_h + 4.0f;
 
     if (remove_frame_idx >= 0 && remove_frame_idx < anim->frame_count) {
+        push_undo_snapshot(app, "remove frame from %s", anim->name);
         if (remove_frame_idx + 1 < anim->frame_count) {
             memmove(
                 &anim->frames[remove_frame_idx],
@@ -4879,10 +5222,11 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
 
     if (GuiButton((Rectangle){x, *y, w, row_h}, "Add selected texture as frame")) {
         if (!asset_index_is_valid(app, app->selected_asset)) {
-            set_status(app, "Select a texture first");
+            set_status_kind(app, STATUS_WARNING, "Select a texture first");
         } else if (anim->frame_count >= MAX_ANIM_FRAMES) {
-            set_status(app, "Max frames reached (%d)", MAX_ANIM_FRAMES);
+            set_status_kind(app, STATUS_WARNING, "Max frames reached (%d)", MAX_ANIM_FRAMES);
         } else {
+            push_undo_snapshot(app, "add frame to %s", anim->name);
             anim->frames[anim->frame_count++] = app->selected_asset;
         }
     }
@@ -4896,11 +5240,12 @@ static void apply_pending_map_size(App *app, Rectangle map_bounds) {
     app->pending_rows = app->pending_rows > MAX_MAP_SIZE ? MAX_MAP_SIZE : app->pending_rows;
     if (app->pending_cols == app->map.cols && app->pending_rows == app->map.rows) return;
 
+    push_undo_snapshot(app, "resize map to %dx%d", app->pending_cols, app->pending_rows);
     wall_map_resize(app, app->pending_cols, app->pending_rows);
     clear_edit_selection(app);
     refresh_player_text(app);
     fit_camera(app, map_bounds);
-    set_status(app, "Map resized to %dx%d", app->map.cols, app->map.rows);
+    set_status_kind(app, STATUS_SUCCESS, "Map resized to %dx%d", app->map.cols, app->map.rows);
 }
 
 static void draw_topbar(App *app, Rectangle topbar_bounds, Rectangle map_bounds) {
@@ -4990,6 +5335,52 @@ static void draw_topbar(App *app, Rectangle topbar_bounds, Rectangle map_bounds)
     GuiUnlock();
 }
 
+static void status_kind_colors(StatusKind kind, Color *bg, Color *border, Color *text) {
+    switch (kind) {
+        case STATUS_SUCCESS:
+            *bg = (Color){30, 78, 50, 255};
+            *border = (Color){70, 170, 110, 255};
+            *text = (Color){190, 240, 205, 255};
+            break;
+        case STATUS_WARNING:
+            *bg = (Color){92, 72, 22, 255};
+            *border = (Color){205, 155, 45, 255};
+            *text = (Color){255, 224, 150, 255};
+            break;
+        case STATUS_ERROR:
+            *bg = (Color){96, 32, 32, 255};
+            *border = (Color){205, 75, 75, 255};
+            *text = (Color){255, 190, 190, 255};
+            break;
+        case STATUS_INFO:
+        default:
+            *bg = (Color){45, 48, 55, 255};
+            *border = (Color){88, 94, 104, 255};
+            *text = (Color){225, 230, 238, 255};
+            break;
+    }
+}
+
+static void draw_event_status_bar(Rectangle bounds, const char *text, StatusKind kind) {
+    Color bg, border, text_color;
+    status_kind_colors(kind, &bg, &border, &text_color);
+    DrawRectangleRec(bounds, bg);
+    DrawRectangleLinesEx(bounds, 1.0f, border);
+    int font_size = 14;
+    float text_y = bounds.y + (bounds.height - (float)font_size) * 0.5f;
+    DrawText(text, (int)(bounds.x + 10.0f), (int)text_y, font_size, text_color);
+}
+
+static void draw_map_status_bar(App *app, Rectangle bounds) {
+    if (GetTime() <= app->status_until && app->status[0] != '\0') {
+        draw_event_status_bar(bounds, app->status, app->status_kind);
+    } else {
+        char output[2048];
+        snprintf(output, sizeof(output), "%s + %s", app->output_path, app->level_gen_path);
+        draw_event_status_bar(bounds, output, STATUS_INFO);
+    }
+}
+
 static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bounds) {
     (void)map_bounds;
     GuiPanel(sidebar_bounds, "Map Builder");
@@ -5052,7 +5443,10 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         snprintf(animation_before, sizeof(animation_before), "%s", app->brush_animation);
 
         GuiLabel((Rectangle){x, y, 52.0f, row_h}, "Name");
-        if (GuiTextBox((Rectangle){x + 62.0f, y, w - 62.0f, row_h}, app->brush_entity_name, (int)sizeof(app->brush_entity_name), app->entity_name_edit)) app->entity_name_edit = !app->entity_name_edit;
+        if (GuiTextBox((Rectangle){x + 62.0f, y, w - 62.0f, row_h}, app->brush_entity_name, (int)sizeof(app->brush_entity_name), app->entity_name_edit)) {
+            app->entity_name_edit = !app->entity_name_edit;
+            if (!name_was_editing && app->entity_name_edit) push_undo_snapshot(app, "rename %s", entity_edit_subject(app));
+        }
         if (multi_entity_edit && name_was_editing && !app->entity_name_edit) apply_selected_entities_name(app);
         y += 32.0f;
 
@@ -5083,19 +5477,19 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
             draw_entity_animation_picker(app, x, &y, w, 110.0f);
             if (multi_entity_edit && strcmp(animation_before, app->brush_animation) != 0) apply_selected_entities_animation(app);
         } else {
-            draw_float_field("vdiv", (Rectangle){x, y, half_w, row_h}, app->brush_vdiv_text, &app->brush_vdiv, &app->vdiv_edit);
-            draw_float_field("hdiv", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_hdiv_text, &app->brush_hdiv, &app->hdiv_edit);
+            draw_float_field(app, entity_edit_subject(app), "vdiv", (Rectangle){x, y, half_w, row_h}, app->brush_vdiv_text, &app->brush_vdiv, &app->vdiv_edit);
+            draw_float_field(app, entity_edit_subject(app), "hdiv", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_hdiv_text, &app->brush_hdiv, &app->hdiv_edit);
             if (multi_entity_edit && app->brush_vdiv != vdiv_before) apply_selected_entities_vdiv(app);
             if (multi_entity_edit && app->brush_hdiv != hdiv_before) apply_selected_entities_hdiv(app);
             y += 32.0f;
 
-            draw_float_field("vmove", (Rectangle){x, y, half_w, row_h}, app->brush_vmove_text, &app->brush_vmove, &app->vmove_edit);
-            draw_float_field("radius", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_threshold_text, &app->brush_collision_threshold, &app->threshold_edit);
+            draw_float_field(app, entity_edit_subject(app), "vmove", (Rectangle){x, y, half_w, row_h}, app->brush_vmove_text, &app->brush_vmove, &app->vmove_edit);
+            draw_float_field(app, entity_edit_subject(app), "radius", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_threshold_text, &app->brush_collision_threshold, &app->threshold_edit);
             if (multi_entity_edit && app->brush_vmove != vmove_before) apply_selected_entities_vmove(app);
             if (multi_entity_edit && app->brush_collision_threshold != threshold_before) apply_selected_entities_threshold(app);
             y += 34.0f;
 
-            draw_collision_picker(app, x, &y, w, 80.0f, "Collisions", &app->brush_collision_mask, &app->mask_scroll, true);
+            draw_collision_picker(app, entity_edit_subject(app), x, &y, w, 80.0f, "Collisions", &app->brush_collision_mask, &app->mask_scroll, true);
             if (multi_entity_edit && app->brush_collision_mask != mask_before) apply_selected_entities_collision_mask(app);
 
             draw_kind_picker(app, x, &y, w, 80.0f);
@@ -5103,6 +5497,8 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
 
             GuiCheckBox((Rectangle){x, y + 2.0f, 18.0f, 18.0f}, "disabled", &app->brush_disabled);
             GuiCheckBox((Rectangle){x + half_w + gap, y + 2.0f, 18.0f, 18.0f}, "exported", &app->brush_exported);
+            if (app->brush_disabled != disabled_before) push_undo_snapshot(app, "change %s disabled", entity_edit_subject(app));
+            if (app->brush_exported != exported_before) push_undo_snapshot(app, "change %s exported", entity_edit_subject(app));
             if (multi_entity_edit && app->brush_disabled != disabled_before) apply_selected_entities_disabled(app);
             if (multi_entity_edit && app->brush_exported != exported_before) apply_selected_entities_exported(app);
             y += 30.0f;
@@ -5113,15 +5509,15 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         GuiLabel((Rectangle){x, y, w, 20.0f}, "Player");
         y += 24.0f;
 
-        draw_float_field("pos x", (Rectangle){x, y, half_w, row_h}, app->player_pos_x_text, &app->player_pos.x, &app->player_pos_x_edit);
-        draw_float_field("pos y", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->player_pos_y_text, &app->player_pos.y, &app->player_pos_y_edit);
+        draw_float_field(app, "player", "pos x", (Rectangle){x, y, half_w, row_h}, app->player_pos_x_text, &app->player_pos.x, &app->player_pos_x_edit);
+        draw_float_field(app, "player", "pos y", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->player_pos_y_text, &app->player_pos.y, &app->player_pos_y_edit);
         y += 34.0f;
 
-        draw_float_field("dir x", (Rectangle){x, y, half_w, row_h}, app->player_dir_x_text, &app->player_dir.x, &app->player_dir_x_edit);
-        draw_float_field("dir y", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->player_dir_y_text, &app->player_dir.y, &app->player_dir_y_edit);
+        draw_float_field(app, "player", "dir x", (Rectangle){x, y, half_w, row_h}, app->player_dir_x_text, &app->player_dir.x, &app->player_dir_x_edit);
+        draw_float_field(app, "player", "dir y", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->player_dir_y_text, &app->player_dir.y, &app->player_dir_y_edit);
         y += 34.0f;
 
-        draw_float_field("radius", (Rectangle){x, y, w, row_h}, app->player_threshold_text, &app->player_collision_threshold, &app->player_threshold_edit);
+        draw_float_field(app, "player", "radius", (Rectangle){x, y, w, row_h}, app->player_threshold_text, &app->player_collision_threshold, &app->player_threshold_edit);
         if (!app->player_pos_x_edit) {
             app->player_pos.x = clamp_float(app->player_pos.x, 0.0f, (float)app->map.cols - 0.001f);
             snprintf(app->player_pos_x_text, sizeof(app->player_pos_x_text), "%.3f", app->player_pos.x);
@@ -5136,29 +5532,20 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         }
         y += 34.0f;
 
-        draw_collision_picker(app, x, &y, w, 96.0f, "Player collision", &app->player_collision_mask, &app->player_mask_scroll, false);
+        draw_collision_picker(app, "player", x, &y, w, 96.0f, "Player collision", &app->player_collision_mask, &app->player_mask_scroll, false);
     } else if (app->brush == BRUSH_SURFACE) {
         draw_floor_ceil_section(app, x, &y, w);
     } else if (app->brush == BRUSH_ANIM) {
         draw_anim_section(app, x, &y, w);
     }
 
-    float status_height = 34.0f;
     if (uses_textures) {
         GuiLabel((Rectangle){x, y, w, 20.0f}, "Textures");
         y += 24.0f;
 
-        Rectangle list_bounds = {x, y, w, sidebar_bounds.height - y - status_height - 12.0f};
+        Rectangle list_bounds = {x, y, w, sidebar_bounds.height - y - 12.0f};
         if (list_bounds.height < 80.0f) list_bounds.height = 80.0f;
         draw_asset_list(app, list_bounds);
-    }
-
-    if (GetTime() <= app->status_until && app->status[0] != '\0') {
-        GuiStatusBar((Rectangle){x, sidebar_bounds.height - status_height, w, 24.0f}, app->status);
-    } else {
-        char output[512];
-        snprintf(output, sizeof(output), "%s + %s", app->output_path, app->level_gen_path);
-        GuiStatusBar((Rectangle){x, sidebar_bounds.height - status_height, w, 24.0f}, output);
     }
 }
 
@@ -5215,16 +5602,16 @@ static void init_app(App *app, const char *asset_dir, const char *output_path, c
     snprintf(app->brush_entity_name, sizeof(app->brush_entity_name), "entity");
     snprintf(app->new_collision_layer, sizeof(app->new_collision_layer), "ENTITY");
     snprintf(app->new_init_fn, sizeof(app->new_init_fn), "init_entity");
-    snprintf(app->brush_init_fn, sizeof(app->brush_init_fn), "");
+    app->brush_init_fn[0] = '\0';
     snprintf(app->new_update_fn, sizeof(app->new_update_fn), "update_entity");
-    snprintf(app->brush_update_fn, sizeof(app->brush_update_fn), "");
+    app->brush_update_fn[0] = '\0';
     snprintf(app->new_cleanup_fn, sizeof(app->new_cleanup_fn), "cleanup_entity");
-    snprintf(app->brush_cleanup_fn, sizeof(app->brush_cleanup_fn), "");
-    snprintf(app->brush_animation, sizeof(app->brush_animation), "");
+    app->brush_cleanup_fn[0] = '\0';
+    app->brush_animation[0] = '\0';
     app->entity_anim_scroll = 0.0f;
     app->brush_exported = true;
     app->brush_kind = 0;
-    snprintf(app->new_kind_name, sizeof(app->new_kind_name), "");
+    app->new_kind_name[0] = '\0';
     app->player_pos = (Vector2){DEFAULT_MAP_COLS * 0.5f, DEFAULT_MAP_ROWS * 0.5f};
     app->player_dir = (Vector2){0.0f, 1.0f};
     app->player_collision_threshold = 0.15f;
@@ -5237,7 +5624,7 @@ static void init_app(App *app, const char *asset_dir, const char *output_path, c
     wall_map_init(&app->floor_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     wall_map_init(&app->ceil_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     app->selected_animation = -1;
-    snprintf(app->new_anim_name, sizeof(app->new_anim_name), "");
+    app->new_anim_name[0] = '\0';
     snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "0.250");
     scan_assets(&app->assets, asset_dir);
 }
@@ -5282,7 +5669,12 @@ int main(int argc, char **argv) {
 
         if (!app.show_exit_dialog) {
             bool ctrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL) || IsKeyDown(KEY_LEFT_SUPER) || IsKeyDown(KEY_RIGHT_SUPER);
+            bool shift_mod = IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
             if (ctrl && IsKeyPressed(KEY_S)) save_level(&app);
+            if (ctrl && IsKeyPressed(KEY_Z) && !app_is_editing(&app)) {
+                if (shift_mod) perform_redo(&app);
+                else perform_undo(&app);
+            }
             if (!app_is_editing(&app) && app.brush != BRUSH_ANIM) {
                 if (ctrl && IsKeyPressed(KEY_C)) copy_active_selection(&app);
                 if (ctrl && IsKeyPressed(KEY_V)) paste_clipboard_at_mouse(&app, map_bounds);
@@ -5298,6 +5690,7 @@ int main(int argc, char **argv) {
         else draw_map(&app, map_bounds);
         draw_topbar(&app, topbar_bounds, map_bounds);
         draw_sidebar(&app, sidebar_bounds, map_bounds);
+        draw_map_status_bar(&app, get_status_bar_bounds());
 
         if (app.show_exit_dialog) {
             int sw = GetScreenWidth();
@@ -5306,7 +5699,7 @@ int main(int argc, char **argv) {
             float dw = 320.0f;
             float dh = 130.0f;
             Rectangle dialog = {(sw - dw) * 0.5f, (sh - dh) * 0.5f, dw, dh};
-            int result = GuiMessageBox(dialog, "Exit", "Exit the map builder?", "Yes;No;Save & Exit");
+            int result = GuiMessageBox(dialog, "Exit", "Exit the map builder without saving?", "Yes;No;Save & Exit");
             if (result == 1) {
                 running = false;
             } else if (result == 0 || result == 2) {
@@ -5335,6 +5728,10 @@ int main(int argc, char **argv) {
     da_free(&app.cleanup_fns);
     da_free(&app.kinds);
     da_free(&app.animations);
+    clear_undo_history(&app.undo_stack);
+    clear_undo_history(&app.redo_stack);
+    da_free(&app.undo_stack);
+    da_free(&app.redo_stack);
     CloseWindow();
     tmp_free();
     return 0;

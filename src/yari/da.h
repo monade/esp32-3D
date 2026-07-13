@@ -72,21 +72,21 @@
 #define yr_da_should_shrink(da) \
     ((da)->capacity > YR_DA_INIT_CAPACITY && (da)->length <= (da)->capacity / YR_DA_SHRINK_FACTOR)
 
-#define yr_da_shrink(da)                                                               \
+#define yr_da_shrink(da)                                                              \
     do {                                                                              \
-        size_t _new_cap = (size_t)((da)->capacity / YR_DA_GROWTH_FACTOR);            \
+        size_t _new_cap = (size_t)((da)->capacity / YR_DA_GROWTH_FACTOR);             \
         if (_new_cap < YR_DA_INIT_CAPACITY) _new_cap = YR_DA_INIT_CAPACITY;           \
-        if (_new_cap <= (da)->length) _new_cap = (da)->length + 1;                   \
+        if (_new_cap <= (da)->length) _new_cap = (da)->length + 1;                    \
         (da)->capacity = _new_cap;                                                    \
         (da)->data = YR_DA_REALLOC((da)->data, (da)->capacity * sizeof(*(da)->data)); \
-        YR_DA_ASSERT((da)->data != NULL);                                            \
+        YR_DA_ASSERT((da)->data != NULL);                                             \
     } while (0)
 
-#define yr_da_remove_unordered(da, idx)                    \
-    do {                                                   \
-        (da)->data[(idx)] = (da)->data[(da)->length - 1];  \
-        (da)->length--;                                    \
-        if (yr_da_should_shrink(da)) yr_da_shrink(da);      \
+#define yr_da_remove_unordered(da, idx)                   \
+    do {                                                  \
+        (da)->data[(idx)] = (da)->data[(da)->length - 1]; \
+        (da)->length--;                                   \
+        if (yr_da_should_shrink(da)) yr_da_shrink(da);    \
     } while (0)
 
 #define yr_da_remove(da, idx, del)                                             \
@@ -99,6 +99,8 @@
             if (yr_da_should_shrink(da)) yr_da_shrink(da);                     \
         }                                                                      \
     } while (0)
+
+#define yr_da_pop(da) ((da)->length > 0 ? &(da)->data[--(da)->length] : NULL)
 
 #define yr_da_free(da)          \
     do {                        \
@@ -118,6 +120,7 @@
 #define da_reserve yr_da_reserve
 #define da_append yr_da_append
 #define da_remove_unordered yr_da_remove_unordered
+#define da_pop yr_da_pop
 #define da_free yr_da_free
 #define da_foreach yr_da_foreach
 #define da_foreach_idx yr_da_foreach_idx
