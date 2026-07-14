@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdbool.h>
-#include "../../inputs.h"
+#include "inputs.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "soc/soc_caps.h"

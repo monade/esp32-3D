@@ -88,15 +88,15 @@ size_t yr_create_entity_ex(YrGameState *state, YrEntity e, void *data);
 void yr_remove_entity(YrGameState *state, size_t id);
 size_t yr_get_entity_id(YrEntity *e);
 
-void _yr_init_game();
+void yr__init_game();
 
 void yr_init_game(YrGameState *state);
 
-void _yr_update_game();
+void yr__update_game();
 
 void yr_update_game(YrGameState *state);
 
-void _yr_free_game();
+void yr__free_game();
 
 #include "physics.h"
 
@@ -131,15 +131,15 @@ int app_main()
 int main()
 #endif
 {
-    _yr_init_game();
+    yr__init_game();
 #ifdef PLATFORM_WEB
-    emscripten_set_main_loop(_yr_update_game, 0, 1);
+    emscripten_set_main_loop(yr__update_game, 0, 1);
 #else
     while (!yr_game_should_close()) {
-        _yr_update_game();
+        yr__update_game();
     }
 #endif
-    _yr_free_game();
+    yr__free_game();
     return 0;
 }
 

@@ -198,7 +198,7 @@ size_t yr_get_entity_id(YrEntity *e);                     // Recovers the id of 
 
 `data` in `yr_create_entity_ex` is a spawn-time payload forwarded to `e.init`, separate from `entity_data` (which factories set directly from their own `data` parameter) — see README § Entities.
 
-`state->entities` is a `yr_Hm(size_t, YrEntity)`; iterate with `yr_hm_foreach(&state->entities, kv)` (`kv->key` is the id, `kv->value` the `YrEntity`). See [Hash Map & Hash Set](#hash-map--hash-set-hth) and README § Entities.
+`state->entities` is a `yr_Hm(size_t, YrEntity)`; iterate with `yr_foreach(&state->entities, kv)` (`kv->key` is the id, `kv->value` the `YrEntity`). See [Hash Map & Hash Set](#hash-map--hash-set-hth) and README § Entities.
 
 ## Dynamic Array (`da.h`)
 
@@ -231,7 +231,6 @@ void *yr_hm_try(hm, key);          // Pointer to the value for key, or NULL if a
 bool  yr_hm_has(hm, key);          // True if key is present
 val_t yr_hm_get(hm, key);          // Value for key, or {0} if absent (use yr_hm_try when absence matters)
 val_t *yr_hm_remove(hm, key);      // Removes key, returns a pointer to its (relocated) value, or NULL if absent
-yr_hm_foreach(hm, kv);             // [macro] for-loop over entries; kv->key / kv->value
 yr_hm_free(hm);                    // Frees the map; does not free keys/values you own
 yr_hm_shrink(hm);                  // Shrinks storage to fit length (fully frees if empty)
 
@@ -240,7 +239,7 @@ yr_hs_declare(name, val_t);        // [macro] typedefs a named yr_Hs(val_t)
 bool yr_hs_has(set, val);          // True if val is present
 yr_hs_add(set, val);               // Adds val if not already present
 bool yr_hs_remove(set, val);       // Removes val, returns true if it was present
-yr_hs_foreach(set, v);             // [macro] for-loop over values
+yr_foreach(set, v);                // [macro] for-loop over entries; kv->key / kv->value or value for sets
 yr_hs_cat(set, other_set);         // Adds every value of other_set into set
 yr_hs_cat_da(set, da);             // Adds every value of a dynamic array into set
 yr_hs_sub(set, other_set);         // Removes every value of other_set from set

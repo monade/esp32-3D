@@ -618,9 +618,9 @@ static void yr_draw_half_job(void *ctx, int start, int end) {
 }
 #endif // ESP32_MULTITHREAD
 
-void _yr_init_game() {
-    state.screen_width = 100;
-    state.screen_height = 100;
+void yr__init_game() {
+    state.screen_width = YR_LCD_W;
+    state.screen_height = YR_LCD_H;
     state.game_title = "Yari";
     state.target_fps = 0;
     state.ray_res = 1;
@@ -678,7 +678,7 @@ void yr_draw_game() {
 }
 
 
-void _yr_update_game() {
+void yr__update_game() {
 #if YR_PROFILE
   float f0 = yr_get_time();
   yr_begin_drawing();
@@ -713,7 +713,7 @@ void _yr_update_game() {
   yr_end_drawing();
 }
 
-void _yr_free_game() {
+void yr__free_game() {
     free(state.zbuffer);
     yr_da_free(&state.entities);
 }

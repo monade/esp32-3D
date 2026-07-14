@@ -110,10 +110,10 @@
         (da)->capacity = 0;     \
     } while (0)
 
-#define yr_da_foreach(da, var) \
+#define yr_foreach(da, var) \
     for (__typeof__((da)->data) var = (da)->data; var < (da)->data + (da)->length; var++)
 
-#define yr_da_foreach_idx(da, idx) \
+#define yr_foreach_idx(da, idx) \
     for (size_t idx = 0; idx < (da)->length; idx++)
 
 #ifdef YARI_NO_PREFIX
@@ -122,8 +122,8 @@
 #define da_remove_unordered yr_da_remove_unordered
 #define da_pop yr_da_pop
 #define da_free yr_da_free
-#define da_foreach yr_da_foreach
-#define da_foreach_idx yr_da_foreach_idx
+#define foreach yr_foreach
+#define foreach_idx yr_foreach_idx
 #define ARRAY_LEN YR_ARRAY_LEN
 #endif
 #endif // YR_DA_H

@@ -11,10 +11,8 @@ idf_component_register(
     INCLUDE_DIRS
         "./"
     REQUIRES
-        esp_lcd
         driver
         esp_timer
-        esp_driver_gpio
         esp_adc
 )
 

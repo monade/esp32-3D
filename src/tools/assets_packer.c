@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
         strcat(cfile, "/");
         strcat(cfile, dir->d_name);
         uint8_t *bitmap = stbi_load(cfile, &x, &y, &ch, 0);
-        log_info("Packing asset %s (size: %dx%d, channels: %d)\n", dir->d_name, x, y, ch);
+        log_info("Packing asset %s (size: %dx%d, channels: %d)", dir->d_name, x, y, ch);
         if (!bitmap) {
           log_error("Error loading image %s\n", cfile);
           exit(1);
@@ -107,14 +107,14 @@ int main(int argc, char **argv) {
 
     str_append(&out, "typedef enum {\n");
     str_append(&out, "    NULL_ASSET,\n");
-    da_foreach_idx(&assets, i) {
+    foreach_idx(&assets, i) {
         str_appendf(&out, "    tx_%s,\n", assets.data[i]);
     }
     str_append(&out, "} TextureId;\n\n");
 
     str_append(&out, "const yr_pixel_t *assets_map[] = {\n");
     str_append(&out, "    NULL,\n");
-    da_foreach_idx(&assets, i) {
+    foreach_idx(&assets, i) {
         str_appendf(&out, "    %s,\n", assets.data[i]);
     }
     str_append(&out, "};\n");

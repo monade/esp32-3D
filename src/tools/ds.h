@@ -836,6 +836,12 @@ ds_hs_foreach(&set, value) {
     } while (0)
 
 /**
+ * Iterates array map and sets
+ */
+#define ds_foreach ds_da_foreach
+#define ds_foreach_idx ds_da_foreach_idx
+
+/**
  * Declare a linked list.
  * The linked list will store elements of the specified type.
  * Example:
@@ -1450,6 +1456,7 @@ void ds__ht_free_cstr_keys(void *ht, size_t entry_size) {
 
 void ds__table_resize(struct ds__ht *ht, size_t entry_size, size_t key_size, ds_entry_hash_fn hash_fn, size_t new_capacity) {
     assert((new_capacity & (new_capacity - 1)) == 0); /* must be power of 2 */
+    DS_FREE(ht->table.data);
     size_t mask = new_capacity - 1;
     size_t *new_data = DS_ALLOC(new_capacity * sizeof(size_t));
     assert(new_data != NULL);
@@ -1462,7 +1469,6 @@ void ds__table_resize(struct ds__ht *ht, size_t entry_size, size_t key_size, ds_
         }
         new_data[h] = i + 1;
     }
-    DS_FREE(ht->table.data);
     ht->table.data = new_data;
     ht->table.capacity = new_capacity;
 }
@@ -1805,6 +1811,7 @@ DIR *opendir(const char *path) {
     snprintf(buffer, MAX_PATH, "%s\\*", path);
     DIR *dir = (DIR *)DS_ALLOC(sizeof(DIR));
     if (!dir) return NULL;
+    dir->dirent = NULL;
 
     dir->dirent = NULL;
     dir->hFind = FindFirstFile(buffer, &dir->data);
@@ -1927,6 +1934,8 @@ int closedir(DIR *dir) {
 #define hs_free ds_hs_free
 #define hs_shrink ds_hs_shrink
 #define hs_clear ds_hs_free
+#define foreach ds_foreach
+#define foreach_idx ds_foreach_idx
 #define ll_declare ds_ll_declare
 #define ll_push ds_ll_push
 #define ll_append ds_ll_append

@@ -75,7 +75,7 @@ static void bake_font(String *out, const char *name, unsigned char *ttf_data) {
         }
         free(gray);
 
-        log_info("  %s: atlas %dx%d → %d bytes\n",
+        log_info("  %s: atlas %dx%d → %d bytes",
                  SIZE_NAMES[s], w, h, nbytes);
 
         emit_atlas(out, name, SIZE_NAMES[s], packed, w, h);
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
             log_error("Cannot read font: %s\n", path);
             exit(1);
         }
-        log_info("Baking %s (%.1f KB)\n", dir->d_name, ttf_buf.length / 1024.0f);
+        log_info("Baking %s (%.1f KB)", dir->d_name, ttf_buf.length / 1024.0f);
 
         char *name = tmp_strdup(dir->d_name);
         *strrchr(name, '.') = '\0';

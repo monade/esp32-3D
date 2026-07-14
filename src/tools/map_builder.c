@@ -505,7 +505,7 @@ static bool scan_assets(Assets *assets, const char *asset_dir) {
 }
 
 static void load_asset_textures(Assets *assets) {
-    da_foreach(assets, asset) {
+    foreach(assets, asset) {
         asset->texture = LoadTexture(asset->path);
         if (asset->texture.id != 0) SetTextureFilter(asset->texture, TEXTURE_FILTER_POINT);
     }
@@ -529,7 +529,7 @@ static void filter_assets_by_size(Assets *assets, int w, int h) {
 }
 
 static void free_assets(Assets *assets) {
-    da_foreach(assets, asset) {
+    foreach(assets, asset) {
         if (asset->texture.id != 0) UnloadTexture(asset->texture);
         free(asset->name);
         free(asset->path);

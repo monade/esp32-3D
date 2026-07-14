@@ -265,17 +265,6 @@ yr_hm_declare(my_map, int, const char *);
     })
 
 /**
- * Loop over all key-value pairs in the hash map.
- * Example:
-```c
-yr_hm_foreach(&hm, kv) {
-    printf("Key: %d, Value: %s\n", kv->key, kv->value);
-}
-```
- */
-#define yr_hm_foreach yr_da_foreach
-
-/**
  * Free the hash map.
  * It will not free the keys or values themselves.
  * You should free the keys and values separately if needed.
@@ -379,22 +368,11 @@ yr_hs_declare(my_set, int);
     })
 
 /**
- * Loop over all the values in the set.
- * Example:
-```c
-yr_hs_foreach(&set, value) {
-    printf("Value: %d\n", value);
-}
-```
- */
-#define yr_hs_foreach yr_da_foreach
-
-/**
  * Concatenate the second hash set into the first one.
  */
 #define yr_hs_cat(set, hs2)        \
     do {                           \
-        yr_hs_foreach((hs2), _v) { \
+        yr_foreach((hs2), _v) { \
             yr_hs_add((set), *_v); \
         }                          \
     } while (0)
@@ -404,7 +382,7 @@ yr_hs_foreach(&set, value) {
  */
 #define yr_hs_cat_da(set, da)      \
     do {                           \
-        yr_da_foreach((da), _v) {  \
+        yr_foreach((da), _v) {  \
             yr_hs_add((set), *_v); \
         }                          \
     } while (0)
@@ -414,7 +392,7 @@ yr_hs_foreach(&set, value) {
  */
 #define yr_hs_sub(set, hs2)           \
     do {                              \
-        yr_hs_foreach((hs2), _v) {    \
+        yr_foreach((hs2), _v) {    \
             yr_hs_remove((set), *_v); \
         }                             \
     } while (0)
@@ -424,7 +402,7 @@ yr_hs_foreach(&set, value) {
  */
 #define yr_hs_sub_da(set, da)         \
     do {                              \
-        yr_da_foreach((da), _v) {     \
+        yr_foreach((da), _v) {     \
             yr_hs_remove((set), *_v); \
         }                             \
     } while (0)
@@ -435,7 +413,7 @@ yr_hs_foreach(&set, value) {
 #define yr_hs_to_da(set, da)         \
     do {                             \
         (da)->count = 0;             \
-        yr_hs_foreach((set), _v) {   \
+        yr_foreach((set), _v) {   \
             yr_da_append((da), *_v); \
         }                            \
     } while (0)
@@ -460,7 +438,7 @@ yr_hs_foreach(&set, value) {
 #define yr_da_to_hs(da, set)       \
     do {                           \
         yr_hs_free(set);           \
-        yr_da_foreach((da), _v) {  \
+        yr_foreach((da), _v) {  \
             yr_hs_add((set), *_v); \
         }                          \
     } while (0)
@@ -474,7 +452,6 @@ yr_hs_foreach(&set, value) {
 #define hm_try yr_hm_try
 #define hm_set yr_hm_set
 #define hm_remove yr_hm_remove
-#define hm_foreach yr_hm_foreach
 #define hm_free yr_hm_free
 #define hm_clear yr_hm_free
 #define Hs yr_Hs
@@ -482,7 +459,6 @@ yr_hs_foreach(&set, value) {
 #define hs_has yr_hs_has
 #define hs_add yr_hs_add
 #define hs_remove yr_hs_remove
-#define hs_foreach yr_hs_foreach
 #define hs_cat yr_hs_cat
 #define hs_cat_da yr_hs_cat_da
 #define hs_sub yr_hs_sub

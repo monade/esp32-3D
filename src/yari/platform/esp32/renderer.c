@@ -7,16 +7,9 @@
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "renderer.h"
-#include "inputs.h"
 #include "colors.h"
 
 // Panel size (T-Display active area)
-#ifndef LCD_W
-#define LCD_W 240
-#endif
-#ifndef LCD_H
-#define LCD_H 136
-#endif
 #ifndef LCD_X_OFF
 #define LCD_X_OFF 40
 #endif
@@ -47,8 +40,12 @@
 #define SPI_CLOCK_SPEED (80 * 1000 * 1000)
 #endif
 
-#define SCREEN_BUFFER_SIZE (LCD_W * LCD_H * sizeof(uint16_t))
-#define SCREEN_PIXEL_COUNT (LCD_W * LCD_H)
+#ifndef ESP32_MADCTL
+#define ESP32_MADCTL 0x60
+#endif
+
+#define SCREEN_BUFFER_SIZE (YR_LCD_W * YR_LCD_H * sizeof(uint16_t))
+#define SCREEN_PIXEL_COUNT (YR_LCD_W * YR_LCD_H)
 
 static int64_t last_frame_start_us = 0;
 static int64_t frame_start_time_us = 0;
@@ -69,7 +66,11 @@ static spi_transaction_t fb_trans = {
 // by every write path in this file.
 static inline uint16_t lcd_color(yr_pixel_t color) {
     uint16_t c = (uint16_t)color;
+    #ifdef ESP32_DISPLAY_NOBYTESWAP
+    return c;
+    #else
     return (uint16_t)((c << 8) | (c >> 8));
+    #endif
 }
 
 static inline void fill_pixels(uint16_t *dst, int count, uint16_t color) {
@@ -182,11 +183,13 @@ static void lcd_init(void) {
     lcd_data(&colmod, 1);
 
     // Rotation landscape
-    uint8_t madctl = 0x60;
+    uint8_t madctl = ESP32_MADCTL;
     lcd_cmd(0x36);
     lcd_data(&madctl, 1);
 
+    #ifndef ESP32_DISPLAY_NOINVON
     lcd_cmd(0x21); // INVON
+    #endif
     lcd_cmd(0x13); // NORON
     lcd_cmd(0x29); // DISPON
 
@@ -195,8 +198,8 @@ static void lcd_init(void) {
 
 void IRAM_ATTR yr_draw_rectangle(int posX, int posY, int width, int height, yr_pixel_t color) {
     if (width == 1 && height == 1) {
-        if ((unsigned)posX < LCD_W && (unsigned)posY < LCD_H) {
-            fb_back[posY * LCD_W + posX] = lcd_color(color);
+        if ((unsigned)posX < YR_LCD_W && (unsigned)posY < YR_LCD_H) {
+            fb_back[posY * YR_LCD_W + posX] = lcd_color(color);
         }
         return;
     }
@@ -212,24 +215,24 @@ void IRAM_ATTR yr_draw_rectangle(int posX, int posY, int width, int height, yr_p
         height += posY;
         posY = 0;
     }
-    if (posX + width > LCD_W) width = LCD_W - posX;
-    if (posY + height > LCD_H) height = LCD_H - posY;
+    if (posX + width > YR_LCD_W) width = YR_LCD_W - posX;
+    if (posY + height > YR_LCD_H) height = YR_LCD_H - posY;
     if (width <= 0 || height <= 0) return;
 
     uint16_t native_color = lcd_color(color);
-    uint16_t *dst = fb_back + posY * LCD_W + posX;
+    uint16_t *dst = fb_back + posY * YR_LCD_W + posX;
 
     if (width == 1) {
         for (int y = 0; y < height; y++) {
             *dst = native_color;
-            dst += LCD_W;
+            dst += YR_LCD_W;
         }
         return;
     }
 
     for (int y = 0; y < height; y++) {
         fill_pixels(dst, width, native_color);
-        dst += LCD_W;
+        dst += YR_LCD_W;
     }
 }
 
@@ -248,9 +251,9 @@ typedef struct {
 static void IRAM_ATTR yr_filter_rows(void *arg, int y_start, int y_end) {
     const yr_filter_job_ctx *ctx = (const yr_filter_job_ctx *)arg;
 
-    uint16_t *px = fb_back + y_start * LCD_W;
+    uint16_t *px = fb_back + y_start * YR_LCD_W;
     for (int y = y_start; y < y_end; y++) {
-        for (int x = 0; x < LCD_W; x++, px++) {
+        for (int x = 0; x < YR_LCD_W; x++, px++) {
             // The framebuffer holds panel-order (byte-swapped) pixels; the swap
             // is its own inverse, so lcd_color converts in both directions.
             yr_pixel_t color = (yr_pixel_t)lcd_color(*px);
@@ -265,9 +268,9 @@ void IRAM_ATTR yr_apply_color_filter(YrColorFilterCallback apply, void *user_dat
 
     yr_filter_job_ctx ctx = { .apply = apply, .user_data = user_data };
 #ifdef ESP32_MULTITHREAD
-    yr_run_split(yr_filter_rows, &ctx, LCD_H);
+    yr_run_split(yr_filter_rows, &ctx, YR_LCD_H);
 #else
-    yr_filter_rows(&ctx, 0, LCD_H);
+    yr_filter_rows(&ctx, 0, YR_LCD_H);
 #endif
 }
 
@@ -287,7 +290,6 @@ void yr_renderer_init(int width, int height, const char *title, unsigned int tar
     (void)title;
     memset(framebuffer0, 0, sizeof(framebuffer0));
     lcd_init();
-    yr_inputs_init();
     set_target_fps(target_fps);
     lcd_frame_window_set = false;
 }
@@ -307,7 +309,7 @@ void yr_begin_drawing() {
 
 void yr_render_screen() {
   if (!lcd_frame_window_set) {
-    lcd_set_window(0, 0, LCD_W - 1, LCD_H - 1);
+    lcd_set_window(0, 0, YR_LCD_W - 1, YR_LCD_H - 1);
     lcd_frame_window_set = true;
   } else {
     lcd_cmd(0x2C);

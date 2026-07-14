@@ -1,7 +1,7 @@
 
 # yari
 
-**Yet Another Raycast Implementation**
+**Yet Another Raycasting Implementation**
 
 A small C game engine for building vintage first-person games in the spirit of
 Wolfenstein 3D. YARI is focused on ESP32 hardware, but the same game code also
@@ -327,7 +327,7 @@ The `id`/`index` argument passed to `update` callbacks, and `YrCollisionInfo.ent
 To iterate all entities:
 
 ```c
-yr_hm_foreach(&state->entities, kv) {
+yr_foreach(&state->entities, kv) {
     YrEntity *e = &kv->value; // kv->key is the entity id
 }
 ```
@@ -587,8 +587,8 @@ Main configuration macros:
 ```c
 // Framebuffer
 // Display
-#define LCD_W 240
-#define LCD_H 136
+#define YR_LCD_W 240
+#define YR_LCD_H 136
 #define LCD_X_OFF 40
 #define LCD_Y_OFF 53
 

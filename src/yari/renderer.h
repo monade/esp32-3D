@@ -4,6 +4,15 @@
 #include <stdbool.h>
 #include "colors.h"
 
+// Default screen/window size
+// use ESP32 TTGO size by default
+#ifndef YR_LCD_W
+#define YR_LCD_W 240
+#endif
+#ifndef YR_LCD_H
+#define YR_LCD_H 136
+#endif
+
 #define YR_FOV_ANGLE (PI / 3.5)
 #ifndef YR_MAX_RENDER_DIST
 #define YR_MAX_RENDER_DIST 20.0
