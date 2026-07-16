@@ -64,15 +64,15 @@ void init_mummy2(YrEntity *self, void *data);
 void init_boss(YrEntity *self, void *data);
 void init_boss_projectile(YrEntity *self, void *data);
 
-void pickup_key(YrGameState *state, YrEntity *self, size_t index);
-void trigger_end(YrGameState *state, YrEntity *self, size_t index);
-void pickup_gun(YrGameState *state, YrEntity *self, size_t index);
-void update_mummy(YrGameState *state, YrEntity *self, size_t index);
-void pickup_shotgun(YrGameState *state, YrEntity *self, size_t index);
-void update_boss(YrGameState *state, YrEntity *self, size_t index);
-void update_boss_projectile(YrGameState *state, YrEntity *self, size_t index);
-void pickup_medikit(YrGameState *state, YrEntity *self, size_t index);
-void update_explosion(YrGameState *state, YrEntity *self, size_t index);
+void pickup_key(YrContext *ctx, YrEntity *self, size_t index);
+void trigger_end(YrContext *ctx, YrEntity *self, size_t index);
+void pickup_gun(YrContext *ctx, YrEntity *self, size_t index);
+void update_mummy(YrContext *ctx, YrEntity *self, size_t index);
+void pickup_shotgun(YrContext *ctx, YrEntity *self, size_t index);
+void update_boss(YrContext *ctx, YrEntity *self, size_t index);
+void update_boss_projectile(YrContext *ctx, YrEntity *self, size_t index);
+void pickup_medikit(YrContext *ctx, YrEntity *self, size_t index);
+void update_explosion(YrContext *ctx, YrEntity *self, size_t index);
 
 void cleanup_data(YrEntity *self);
 

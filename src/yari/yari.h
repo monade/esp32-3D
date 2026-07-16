@@ -13,16 +13,18 @@
 
 
 
-typedef struct YrGameState YrGameState;
 
 #define YR_CMSK_NONE    0
 #define YR_CMSK_WALL    1
 #define YR_CMSK_ALL    -1
 
+typedef struct YrContext YrContext;
 typedef struct YrEntity YrEntity;
-typedef void (*YrEntityUpdateFunc)(YrGameState *state, YrEntity *self, size_t index);
+
+typedef void (*YrEntityUpdateFunc)(YrContext *ctx, YrEntity *self, size_t index);
 typedef void (*YrEntityInitFunc)(YrEntity *self, void *data);
 typedef void (*YrEntityCleanupFunc)(YrEntity *self);
+
 struct YrEntity {
     Vector2 pos;
     int texture_id;
@@ -50,7 +52,7 @@ typedef struct {
 
 yr_hm_declare(YrEntityMap, size_t, YrEntity);
 
-typedef struct YrGameState {
+struct YrContext {
     YrCamera camera;
     int screen_width;
     int screen_height;
@@ -69,34 +71,45 @@ typedef struct YrGameState {
     size_t ceil_texture;
     size_t next_entity_id;
     void* game_data; // game-defined state
-} YrGameState;
+};
+
+extern YrContext yr_context;
 
 
-void yr_raycast_walls(YrGameState *state, Vector2 dir, int slice_x);
+void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x);
 
-void yr_draw_walls(YrGameState *state);
+void yr_draw_walls(YrContext *ctx);
 
-void yr_draw_background(YrGameState *state);
+void yr_draw_background(YrContext *ctx);
 
-void yr_draw_entities(YrGameState *state);
+void yr_draw_entities(YrContext *ctx);
 
 void yr_draw_game();
 
-size_t yr_create_entity_ex(YrGameState *state, YrEntity e, void *data);
+size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data);
 #define yr_create_entity(state, e) yr_create_entity_ex(state, e, NULL)
 
-void yr_remove_entity(YrGameState *state, size_t id);
+void yr_remove_entity(YrContext *ctx, size_t id);
 size_t yr_get_entity_id(YrEntity *e);
 
 void yr__init_game();
 
-void yr_init_game(YrGameState *state);
+void yr_init_game(YrContext *ctx);
 
 void yr__update_game();
 
-void yr_update_game(YrGameState *state);
+void yr_update_game(YrContext *ctx);
 
 void yr__free_game();
+
+void yr__draw_walls_range(YrContext *ctx, int x_start, int x_end);
+void yr__draw_background_range(YrContext *ctx, int x_start, int x_end);
+void yr__draw_sprites_range( YrContext *ctx, YrEntity **entities, size_t active_entities_count, int x_start, int x_end);
+size_t yr__entities_prep(YrContext *ctx, YrEntity ***out_entities);
+void yr__update_entities(YrContext *ctx);
+#ifdef ESP32_MULTITHREAD
+void yr__draw_game_multithread();
+#endif
 
 #include "physics.h"
 
@@ -104,7 +117,7 @@ void yr__free_game();
 #define Camera YrCamera
 #define Entity YrEntity
 #define Entities YrEntities
-#define GameState YrGameState
+#define Context YrContext
 #define raycast_walls yr_raycast_walls
 #define draw_walls yr_draw_walls
 #define draw_background yr_draw_background

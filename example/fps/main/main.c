@@ -162,29 +162,29 @@ static const GunData WEAPONS[] = {
     },
 };
 
-void pickup_key(YrGameState *state, YrEntity *self, size_t index) {
+void pickup_key(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         game.player.has_key = true;
-        remove_entity(state, index);
+        remove_entity(ctx, index);
     }
 }
 
-void pickup_medikit(YrGameState *state, YrEntity *self, size_t index) {
+void pickup_medikit(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         game.player.hp += 50;
-        remove_entity(state, index);
+        remove_entity(ctx, index);
     }
 }
 
-void trigger_end(YrGameState *state, YrEntity *self, size_t index) {
+void trigger_end(YrContext *ctx, YrEntity *self, size_t index) {
     (void)index;
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         if (game.player.has_key && game.player.has_killed_boss) {
             game.state = GAME_MENU2;
         } else if (!game.player.has_key) {
-            draw_text("You need the key to exit!", state->screen_width / 2 - 120, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
+            draw_text("You need the key to exit!", ctx->screen_width / 2 - 120, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
         } else if (!game.player.has_killed_boss) {
-            draw_text("Kill the boss!", state->screen_width / 2 - 120, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
+            draw_text("Kill the boss!", ctx->screen_width / 2 - 120, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
         }
     }
 }
@@ -204,82 +204,82 @@ void set_gun(int gun_id) {
 }
 
 
-void spawn_mummy(GameState *state, Vector2 pos) {
-    create_entity(state, create_mummy_level1_pos(pos, NULL));
+void spawn_mummy(Context *ctx, Vector2 pos) {
+    create_entity(ctx, create_mummy_level1_pos(pos, NULL));
 }
 
-void spawn_mummy2(GameState *state, Vector2 pos) {
-    create_entity(state, create_mummy_2_level1_pos(pos, NULL));
+void spawn_mummy2(Context *ctx, Vector2 pos) {
+    create_entity(ctx, create_mummy_2_level1_pos(pos, NULL));
 }
 
-void spawn_boss(GameState *state) {
-    create_entity(state, create_boss_level1(NULL));
+void spawn_boss(Context *ctx) {
+    create_entity(ctx, create_boss_level1(NULL));
 }
 
-void spawn_first_wave(GameState *state) {
-    spawn_mummy(state, (Vector2){.x = 11, .y = 25});
-    spawn_mummy(state, (Vector2){.x = 12, .y = 29});
-    spawn_mummy(state, (Vector2){.x = 9, .y = 26});
-    spawn_mummy(state, (Vector2){.x = 8, .y = 35});
-    spawn_mummy(state, (Vector2){.x = 8, .y = 29});
+void spawn_first_wave(Context *ctx) {
+    spawn_mummy(ctx, (Vector2){.x = 11, .y = 25});
+    spawn_mummy(ctx, (Vector2){.x = 12, .y = 29});
+    spawn_mummy(ctx, (Vector2){.x = 9, .y = 26});
+    spawn_mummy(ctx, (Vector2){.x = 8, .y = 35});
+    spawn_mummy(ctx, (Vector2){.x = 8, .y = 29});
 }
 
-void spawn_second_wave(GameState *state) {
-    spawn_mummy(state, (Vector2){.x = 11, .y = 3});
-    spawn_mummy(state, (Vector2){.x = 12, .y = 2});
-    spawn_mummy(state, (Vector2){.x = 9, .y = 3});
-    spawn_mummy(state, (Vector2){.x = 4, .y = 5});
-    spawn_mummy(state, (Vector2){.x = 2, .y = 2});
+void spawn_second_wave(Context *ctx) {
+    spawn_mummy(ctx, (Vector2){.x = 11, .y = 3});
+    spawn_mummy(ctx, (Vector2){.x = 12, .y = 2});
+    spawn_mummy(ctx, (Vector2){.x = 9, .y = 3});
+    spawn_mummy(ctx, (Vector2){.x = 4, .y = 5});
+    spawn_mummy(ctx, (Vector2){.x = 2, .y = 2});
 }
 
-void spawn_third_wave(GameState *state) {
-    spawn_mummy(state, (Vector2){.x = 13, .y = 15});
-    spawn_mummy(state, (Vector2){.x = 21, .y = 13});
-    spawn_mummy(state, (Vector2){.x = 23, .y = 13});
-    spawn_mummy(state, (Vector2){.x = 17, .y = 16});
-    spawn_mummy(state, (Vector2){.x = 27, .y = 5});
-    spawn_mummy(state, (Vector2){.x = 16, .y = 23});
+void spawn_third_wave(Context *ctx) {
+    spawn_mummy(ctx, (Vector2){.x = 13, .y = 15});
+    spawn_mummy(ctx, (Vector2){.x = 21, .y = 13});
+    spawn_mummy(ctx, (Vector2){.x = 23, .y = 13});
+    spawn_mummy(ctx, (Vector2){.x = 17, .y = 16});
+    spawn_mummy(ctx, (Vector2){.x = 27, .y = 5});
+    spawn_mummy(ctx, (Vector2){.x = 16, .y = 23});
 }
 
-void spawn_fourth_wave(GameState *state) {
-    spawn_mummy2(state, (Vector2){.x = 46, .y = 23});
-    spawn_mummy2(state, (Vector2){.x = 46, .y = 25});
-    spawn_mummy2(state, (Vector2){.x = 47, .y = 23});
-    spawn_mummy2(state, (Vector2){.x = 43, .y = 26});
-    spawn_mummy2(state, (Vector2){.x = 46, .y = 28});
+void spawn_fourth_wave(Context *ctx) {
+    spawn_mummy2(ctx, (Vector2){.x = 46, .y = 23});
+    spawn_mummy2(ctx, (Vector2){.x = 46, .y = 25});
+    spawn_mummy2(ctx, (Vector2){.x = 47, .y = 23});
+    spawn_mummy2(ctx, (Vector2){.x = 43, .y = 26});
+    spawn_mummy2(ctx, (Vector2){.x = 46, .y = 28});
 }
 
-void spawn_explosion(GameState *state, Vector2 pos) {
-    create_entity(state, create_explosion_level1_pos(pos, NULL));
+void spawn_explosion(Context *ctx, Vector2 pos) {
+    create_entity(ctx, create_explosion_level1_pos(pos, NULL));
 }
 
 
-void check_monster_spawns(GameState *state) {
-    Vector2 player_pos = state->camera.pos;
+void check_monster_spawns(Context *ctx) {
+    Vector2 player_pos = ctx->camera.pos;
 
     for (size_t i = 0; i < ARRAY_LEN(second_wave_trigger_points); i++) {
         if ((int)player_pos.x == second_wave_trigger_points[i].x && (int)player_pos.y == second_wave_trigger_points[i].y && timer_loop(&second_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_second_wave(state);
+            spawn_second_wave(ctx);
             break;
         }
     }
 
     for (size_t i = 0; i < ARRAY_LEN(third_wave_trigger_points); i++) {
         if ((int)player_pos.x == third_wave_trigger_points[i].x && (int)player_pos.y == third_wave_trigger_points[i].y && timer_loop(&third_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_third_wave(state);
+            spawn_third_wave(ctx);
             break;
         }
     }
 
     for (size_t i = 0; i < ARRAY_LEN(fourth_wave_trigger_points); i++) {
         if ((int)player_pos.x == fourth_wave_trigger_points[i].x && (int)player_pos.y == fourth_wave_trigger_points[i].y && timer_loop(&fourth_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_fourth_wave(state);
+            spawn_fourth_wave(ctx);
             break;
         }
     }
 
     if ((int)player_pos.x == boss_trigger.x && (int)player_pos.y == boss_trigger.y && !timer_is_started(&boss_spawn_animation)) {
-        spawn_boss(state);
+        spawn_boss(ctx);
     }
 }
 
@@ -329,10 +329,10 @@ void init_boss_projectile(YrEntity *self, void *data) {
     memcpy(self->entity_data, pj, sizeof(*pj));
 }
 
-void update_mummy(YrGameState *state, YrEntity *self, size_t index) {
+void update_mummy(YrContext *ctx, YrEntity *self, size_t index) {
     EnemyData *data = (EnemyData *)self->entity_data;
     if (data->hp <= 0) {
-        remove_entity(state, index);
+        remove_entity(ctx, index);
         return;
     }
 
@@ -346,70 +346,70 @@ void update_mummy(YrGameState *state, YrEntity *self, size_t index) {
         return;
     }
 
-    Vector2 dir = Vector2Subtract(state->camera.pos, self->pos);
+    Vector2 dir = Vector2Subtract(ctx->camera.pos, self->pos);
     dir = Vector2Normalize(dir);
     Vector2 target = Vector2Add(self->pos, Vector2Scale(dir, MUMMY_SPEED * get_frame_time()));
-    self->pos = slide_collision_out_radius(state, self->pos, target, NULL, self->collision_threshold, YR_CMSK_WALL | YR_CMSK_ENEMY, .5f);
+    self->pos = slide_collision_out_radius(ctx, self->pos, target, NULL, self->collision_threshold, YR_CMSK_WALL | YR_CMSK_ENEMY, .5f);
 }
 
-void update_boss(YrGameState *state, YrEntity *self, size_t index) {
+void update_boss(YrContext *ctx, YrEntity *self, size_t index) {
     float x_slide = sinf(get_time() * 2.0f) * 0.5f;
     self->pos.x += x_slide * get_frame_time();
 
     EnemyData *data = (EnemyData *)self->entity_data;
     if (data->hp <= 0) {
         game.player.has_killed_boss = true;
-        remove_entity(state, index);
+        remove_entity(ctx, index);
         return;
     }
 
     if (timer_loop(&data->shot_cd, BOSS_SHOT_COOLDOWN)) {
-        Vector2 dir = Vector2Subtract(state->camera.pos, self->pos);
+        Vector2 dir = Vector2Subtract(ctx->camera.pos, self->pos);
         dir = Vector2Normalize(dir);
         Vector2 projectile_pos = Vector2Add(self->pos, Vector2Scale(dir, 0.1f));
         Entity e = create_boss_projectile_level1_pos(projectile_pos, NULL);
         ProjectileData pd = {.dir = dir, .damage = data->damage};
-        create_entity_ex(state, e, &pd);
+        create_entity_ex(ctx, e, &pd);
         start_animation_once(&self->animation, data->attack_anim);
     }
 }
 
-void update_boss_projectile(YrGameState *state, YrEntity *self, size_t index) {
+void update_boss_projectile(YrContext *ctx, YrEntity *self, size_t index) {
     ProjectileData *p = (ProjectileData *)self->entity_data;
     if (self->dist > 0 && self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         damage_player(p->damage);
-        remove_entity(state, index);
+        remove_entity(ctx, index);
         return;
     }
     self->pos = Vector2Add(self->pos, Vector2Scale(p->dir, PROJECTILE_SPEED * get_frame_time()));
-    CollisionInfo hit = check_collision(state, self->pos, self->collision_threshold, YR_CMSK_WALL);
+    CollisionInfo hit = check_collision(ctx, self->pos, self->collision_threshold, YR_CMSK_WALL);
     if (hit.type == YR_COLLISION_WALL) {
-        remove_entity(state, index);
+        remove_entity(ctx, index);
         return;
     }
 }
 
-void pickup_gun(YrGameState *state, YrEntity *self, size_t index) {
+void pickup_gun(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         set_gun(WEP_GUN);
-        remove_entity(state, index);
-        spawn_first_wave(state);
+        remove_entity(ctx, index);
+        spawn_first_wave(ctx);
     }
 }
 
-void pickup_shotgun(YrGameState *state, YrEntity *self, size_t index) {
+void pickup_shotgun(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         set_gun(WEP_BFG);
-        remove_entity(state, index);
-        spawn_first_wave(state);
+        remove_entity(ctx, index);
+        spawn_first_wave(ctx);
     }
 }
 
-void update_explosion(YrGameState *state, YrEntity *self, size_t index) {
+void update_explosion(YrContext *ctx, YrEntity *self, size_t index) {
     const float explosion_radius = 3.0f;
     ExplosionData *bomb = (ExplosionData *)self->entity_data;
     if (timer_is_done(&bomb->duration)) {
-        remove_entity(state, index);
+        remove_entity(ctx, index);
         return;
     }
     self->hdiv -= get_frame_time();
@@ -423,7 +423,7 @@ void update_explosion(YrGameState *state, YrEntity *self, size_t index) {
     }
 
     CollisionInfo hit[10];
-    size_t cn = check_mult_collisions(state, self->pos, explosion_radius, YR_CMSK_ENEMY, hit, ARRAY_LEN(hit));
+    size_t cn = check_mult_collisions(ctx, self->pos, explosion_radius, YR_CMSK_ENEMY, hit, ARRAY_LEN(hit));
     size_t to_delete[10];
     int di = 0;
     for (size_t i = 0; i < cn; i++) {
@@ -438,7 +438,7 @@ void update_explosion(YrGameState *state, YrEntity *self, size_t index) {
         start_animation_once(&e->animation, data->hit_anim);
     }
     for (int i=0; i<di; i++) {
-        remove_entity(state, to_delete[i]);
+        remove_entity(ctx, to_delete[i]);
     }
 }
 
@@ -446,8 +446,8 @@ void cleanup_data(Entity *e) {
     free(e->entity_data);
 }
 
-void move_player(GameState *state) {
-    Camera *p = &state->camera;
+void move_player(Context *ctx) {
+    Camera *p = &ctx->camera;
     float joy_x = esp_joystick_get_axis(joystick_id, YR_X_AXIS);
     float joy_y = esp_joystick_get_axis(joystick_id, YR_Y_AXIS);
 
@@ -480,7 +480,7 @@ void move_player(GameState *state) {
     }
 
     CollisionInfo hit;
-    p->pos = slide_collision(state, p->pos, target, &hit, PLAYER_COLLISION_THRESHOLD, YR_CMSK_PLAYER);
+    p->pos = slide_collision(ctx, p->pos, target, &hit, PLAYER_COLLISION_THRESHOLD, YR_CMSK_PLAYER);
 
     if (is_moving) {
         game.player.bob_phase += get_frame_time() * (is_running ? PLAYER_RUN_BOB_SPEED : PLAYER_BOB_SPEED);
@@ -498,7 +498,7 @@ void print_fps() {
     draw_text(fps_text, SCREEN_W - 100, 15, fonts[YR_FONT_SM], YR_WHITE);
 }
 
-void draw_hud(GameState *state) {
+void draw_hud(Context *ctx) {
     char hp_text[32];
     sprintf(hp_text, "HP: %d", game.player.hp);
     draw_text(hp_text, 10, 15, fonts[YR_FONT_SM], YR_GREEN);
@@ -510,33 +510,33 @@ void draw_hud(GameState *state) {
     if (gun_asset_id) {
         int gun_h = SCREEN_H * GUN_SCALE;
         int gun_w = gun_h/2;
-        draw_texture((state->screen_width - gun_w) / 2, state->screen_height - gun_h, gun_w, gun_h, assets_map[gun_asset_id], 64, 128, true);
+        draw_texture((ctx->screen_width - gun_w) / 2, ctx->screen_height - gun_h, gun_w, gun_h, assets_map[gun_asset_id], 64, 128, true);
     }
 
     if (game.player.has_key) {
-        draw_texture(0, state->screen_height - 55, 64, 64, assets_map[tx_spr_092], 64, 64, true);
+        draw_texture(0, ctx->screen_height - 55, 64, 64, assets_map[tx_spr_092], 64, 64, true);
     }
     print_fps();
 }
 
-void shoot_gun(GameState *state) {
+void shoot_gun(Context *ctx) {
     if (!timer_is_done(&game.player.shot_timer)) return;
 
     GunData *gun = &game.player.gun;
     game.player.shot_timer = timer_start(gun->shot_cd);
     start_animation_once(&gun->shot_animation, gun->fire_anim);
 
-    CollisionInfo hit = check_ray_collision(state, state->camera.pos, state->camera.dir, gun->range, YR_CMSK_ENEMY | YR_CMSK_DECORATION | YR_CMSK_WALL);
+    CollisionInfo hit = check_ray_collision(ctx, ctx->camera.pos, ctx->camera.dir, gun->range, YR_CMSK_ENEMY | YR_CMSK_DECORATION | YR_CMSK_WALL);
     if (hit.type != YR_COLLISION_ENTITY) return;
 
     if (hit.entity->kind == YR_KIND_EXPLOSIVE) {
-        spawn_explosion(state, hit.entity->pos);
-        remove_entity(state, hit.entity_index);
+        spawn_explosion(ctx, hit.entity->pos);
+        remove_entity(ctx, hit.entity_index);
         return;
     }
 
     if (hit.entity->entity_data == NULL) {
-        remove_entity(state, hit.entity_index);
+        remove_entity(ctx, hit.entity_index);
         return;
     }
 
@@ -625,19 +625,19 @@ static inline void red_vignette_filter(int x, int y, yr_pixel_t *color, void *us
 #endif
 }
 
-void apply_screen_effects(GameState *state) {
+void apply_screen_effects(Context *ctx) {
     if (!timer_is_done(&game.player.taking_damage)) {
         apply_color_filter(red_vignette_filter, NULL);
     }
     if (timer_is_started(&boss_spawn_animation) && !timer_is_done(&boss_spawn_animation)) {
-        state->camera.horizon = sinf(get_time() * 100.0f) * 0.05f;
+        ctx->camera.horizon = sinf(get_time() * 100.0f) * 0.05f;
         apply_color_filter(sepia_filter, NULL);
     } else {
-        state->camera.horizon = game.player.bob_horizon;
+        ctx->camera.horizon = game.player.bob_horizon;
     }
 }
 
-void reset_game(GameState *state) {
+void reset_game(Context *ctx) {
     game.state = GAME_MENU;
     game.player.hp = 100;
     da_free(&game.player.gun.shot_animation);
@@ -647,17 +647,17 @@ void reset_game(GameState *state) {
     game.player.bob_phase = 0.0f;
     game.player.bob_horizon = 0.0f;
     memset(&boss_spawn_animation, 0, sizeof(boss_spawn_animation));
-    while (state->entities.length > 0) {
-        remove_entity(state, state->entities.data[0].key);
+    while (ctx->entities.length > 0) {
+        remove_entity(ctx, ctx->entities.data[0].key);
     }
 }
 
 // Main game functions
-void yr_init_game(GameState *state) {
-    state->screen_width = SCREEN_W;
-    state->screen_height = SCREEN_H;
-    state->ray_res = RAY_RES;
-    state->target_fps = TARGET_FPS;
+void yr_init_game(Context *ctx) {
+    ctx->screen_width = SCREEN_W;
+    ctx->screen_height = SCREEN_H;
+    ctx->ray_res = RAY_RES;
+    ctx->target_fps = TARGET_FPS;
 
     joystick_id = esp_joystick_init(32, 36);
     esp_key_init(25, YR_KEY_Q);
@@ -665,78 +665,78 @@ void yr_init_game(GameState *state) {
     esp_key_init(15, YR_KEY_R);
     esp_key_init(26, YR_KEY_SPACE);
 
-    reset_game(state);
+    reset_game(ctx);
 }
 
-void yr_update_game(GameState *state) {
+void yr_update_game(Context *ctx) {
     switch (game.state) {
     case GAME_MENU: {
         clear_screen(YR_BLACK);
-        draw_text("YARI FPS", state->screen_width / 2 - 60, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press SPACE to start", state->screen_width / 2 - 100, state->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text("YARI FPS", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
+        draw_text("Press SPACE to start", ctx->screen_width / 2 - 100, ctx->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
         if (is_key_pressed(YR_KEY_SPACE)) {
             game.state = GAME_LEVEL1;
-            load_level1(state);
+            load_level1(ctx);
         }
     } break;
     case GAME_LEVEL1: {
         draw_game();
-        move_player(state);
+        move_player(ctx);
 
-        check_monster_spawns(state);
+        check_monster_spawns(ctx);
 
         if (is_key_down(YR_KEY_SPACE)) {
-            shoot_gun(state);
+            shoot_gun(ctx);
         }
 
         if (game.player.hp <= 0) {
             game.state = GAME_OVER;
         }
-        apply_screen_effects(state);
-        draw_hud(state);
+        apply_screen_effects(ctx);
+        draw_hud(ctx);
     } break;
     case GAME_MENU2: {
         clear_screen(YR_BLACK);
-        draw_text("Level 2", state->screen_width / 2 - 60, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press SPACE to start", state->screen_width / 2 - 100, state->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text("Level 2", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
+        draw_text("Press SPACE to start", ctx->screen_width / 2 - 100, ctx->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
         if (is_key_pressed(YR_KEY_SPACE)) {
-            reset_game(state);
+            reset_game(ctx);
             game.state = GAME_LEVEL2;
-            load_level2(state);
+            load_level2(ctx);
         }
     } break;
     case GAME_LEVEL2: {
         draw_game();
-        move_player(state);
+        move_player(ctx);
 
         if (is_key_down(YR_KEY_SPACE)) {
-            shoot_gun(state);
+            shoot_gun(ctx);
         }
 
         if (game.player.hp <= 0) {
             game.state = GAME_OVER;
         }
-        if (state->entities.length == 0) {
+        if (ctx->entities.length == 0) {
             game.state = GAME_WIN;
             return;
         }
-        apply_screen_effects(state);
-        draw_hud(state);
+        apply_screen_effects(ctx);
+        draw_hud(ctx);
     } break;
     case GAME_WIN: {
         clear_screen(YR_BLACK);
-        draw_text("You win!", state->screen_width / 2 - 60, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press R to restart", state->screen_width / 2 - 80, state->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text("You win!", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
+        draw_text("Press R to restart", ctx->screen_width / 2 - 80, ctx->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
         if (is_key_pressed(YR_KEY_R)) {
-            reset_game(state);
+            reset_game(ctx);
         }
     } break;
     case GAME_OVER: {
         clear_screen(YR_BLACK);
-        draw_text("Game Over", state->screen_width / 2 - 60, state->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press R to restart", state->screen_width / 2 - 80, state->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text("Game Over", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
+        draw_text("Press R to restart", ctx->screen_width / 2 - 80, ctx->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
         if (is_key_pressed(YR_KEY_R)) {
-            reset_game(state);
+            reset_game(ctx);
         }
     } break;
     }

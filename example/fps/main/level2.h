@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <yari.h>
 #include "assets.h"
 #include "level_gen.h"
@@ -187,17 +189,16 @@ static inline YrEntity create_entity_6_level2(void *data, YrEntityInitFunc init,
     return create_entity_6_level2_pos((Vector2){24.310341f, 23.057426f}, data, init, update, cleanup);
 }
 
-static inline void level_append_exported_entities_level2(YrGameState *state) {
-    yr_create_entity(state, create_entity_1_level2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_2_level2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_3_level2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_4_level2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_5_level2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_6_level2(NULL, NULL, NULL, NULL));
+static inline void level_append_exported_entities_level2(YrContext *ctx) {
+    yr_create_entity(ctx, create_entity_1_level2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_2_level2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_3_level2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_4_level2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_5_level2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_6_level2(NULL, NULL, NULL, NULL));
 }
 
-static inline uint8_t *level_get_map_level2(void) {
-    static uint8_t data[YR_MAP_ROWS_LEVEL2 * YR_MAP_COLS_LEVEL2] = {
+static const uint8_t level_map_level2[YR_MAP_ROWS_LEVEL2 * YR_MAP_COLS_LEVEL2] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -248,21 +249,22 @@ static inline uint8_t *level_get_map_level2(void) {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    return data;
-}
+};
 
-static inline void load_level2(YrGameState *state) {
-    state->assets_map = assets_map;
-    state->map = level_get_map_level2();
-    state->map_floor = NULL;
-    state->map_ceil = NULL;
-    state->map_cols = YR_MAP_COLS_LEVEL2;
-    state->map_rows = YR_MAP_ROWS_LEVEL2;
-    state->floor_texture = YR_LEVEL2_FLOOR;
-    state->ceil_texture = YR_LEVEL2_CEIL;
-    state->camera = init_camera_level2();
-    level_append_exported_entities_level2(state);
+static inline void load_level2(YrContext *ctx) {
+    ctx->assets_map = assets_map;
+    ctx->map = realloc(ctx->map, sizeof(level_map_level2));
+    memcpy(ctx->map, level_map_level2, sizeof(level_map_level2));
+    free(ctx->map_floor);
+    ctx->map_floor = NULL;
+    free(ctx->map_ceil);
+    ctx->map_ceil = NULL;
+    ctx->map_cols = YR_MAP_COLS_LEVEL2;
+    ctx->map_rows = YR_MAP_ROWS_LEVEL2;
+    ctx->floor_texture = YR_LEVEL2_FLOOR;
+    ctx->ceil_texture = YR_LEVEL2_CEIL;
+    ctx->camera = init_camera_level2();
+    level_append_exported_entities_level2(ctx);
 }
 
 #endif // YR_LEVEL_H_LEVEL2

@@ -937,6 +937,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <yari.h>
 #include "assets.h"
 #include "level_gen.h"
@@ -1851,44 +1853,43 @@ static inline YrEntity create_entity_29_level1(void *data, YrEntityInitFunc init
     return create_entity_29_level1_pos((Vector2){1.552094f, 24.477802f}, data, init, update, cleanup);
 }
 
-static inline void level_append_exported_entities_level1(YrGameState *state) {
-    yr_create_entity(state, create_key_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_end_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_gun_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_shotgun_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_1_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_2_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_3_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_4_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_5_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_6_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_7_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_8_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_9_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_10_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_11_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_12_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_13_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_14_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_30_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_16_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_17_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_18_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_19_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_20_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_21_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_22_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_23_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_24_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_25_level1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_26_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_27_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_28_level1(NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_29_level1(NULL, NULL, NULL, NULL));
+static inline void level_append_exported_entities_level1(YrContext *ctx) {
+    yr_create_entity(ctx, create_key_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_end_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_gun_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_shotgun_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_1_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_2_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_3_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_4_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_5_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_6_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_7_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_8_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_9_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_10_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_11_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_12_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_13_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_14_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_30_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_16_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_17_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_18_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_19_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_20_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_21_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_22_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_23_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_24_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_25_level1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_26_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_27_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_28_level1(NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_29_level1(NULL, NULL, NULL, NULL));
 }
 
-static inline uint8_t *level_get_map_level1(void) {
-    static uint8_t data[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
+static const uint8_t level_map_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
         tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_grass, tx_grass, tx_lab, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_026, tx_wal_026, tx_wal_026, tx_wal_016, tx_wal_016,
         tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_tile, tx_lab, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, tx_wal_016, 0, 0, 0, 0, 0, 0, tx_wal_016,
         tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_tile, tx_lab, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, tx_wal_016, 0, 0, 0, 0, 0, 0, tx_wal_016,
@@ -1939,11 +1940,9 @@ static inline uint8_t *level_get_map_level1(void) {
         tx_wal_004, 0, 0, 0, 0, 0, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, tx_wal_004, tx_wal_004, 0, tx_wal_004,
         tx_wal_004, 0, 0, 0, 0, 0, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_004, tx_wal_004, tx_wal_004,
         tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004, tx_wal_004,
-    };
-    return data;
-}
+};
 
-static uint8_t level_map_floor_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
+static const uint8_t level_map_floor_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, 0, 0, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, tx_steel, 0, 0, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, tx_wal_016, 0,
@@ -1996,7 +1995,7 @@ static uint8_t level_map_floor_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] =
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static uint8_t level_map_ceil_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
+static const uint8_t level_map_ceil_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2049,17 +2048,20 @@ static uint8_t level_map_ceil_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static inline void load_level1(YrGameState *state) {
-    state->assets_map = assets_map;
-    state->map = level_get_map_level1();
-    state->map_floor = level_map_floor_level1;
-    state->map_ceil = level_map_ceil_level1;
-    state->map_cols = YR_MAP_COLS_LEVEL1;
-    state->map_rows = YR_MAP_ROWS_LEVEL1;
-    state->floor_texture = YR_LEVEL1_FLOOR;
-    state->ceil_texture = YR_LEVEL1_CEIL;
-    state->camera = init_camera_level1();
-    level_append_exported_entities_level1(state);
+static inline void load_level1(YrContext *ctx) {
+    ctx->assets_map = assets_map;
+    ctx->map = realloc(ctx->map, sizeof(level_map_level1));
+    memcpy(ctx->map, level_map_level1, sizeof(level_map_level1));
+    ctx->map_floor = realloc(ctx->map_floor, sizeof(level_map_floor_level1));
+    memcpy(ctx->map_floor, level_map_floor_level1, sizeof(level_map_floor_level1));
+    ctx->map_ceil = realloc(ctx->map_ceil, sizeof(level_map_ceil_level1));
+    memcpy(ctx->map_ceil, level_map_ceil_level1, sizeof(level_map_ceil_level1));
+    ctx->map_cols = YR_MAP_COLS_LEVEL1;
+    ctx->map_rows = YR_MAP_ROWS_LEVEL1;
+    ctx->floor_texture = YR_LEVEL1_FLOOR;
+    ctx->ceil_texture = YR_LEVEL1_CEIL;
+    ctx->camera = init_camera_level1();
+    level_append_exported_entities_level1(ctx);
 }
 
 #endif // YR_LEVEL_H_LEVEL1

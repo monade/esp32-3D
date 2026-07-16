@@ -8,6 +8,7 @@ idf_component_register(
         "ht.c"
         "platform/esp32/inputs.c"
         "platform/esp32/renderer.c"
+        "platform/esp32/multithread.c"
     INCLUDE_DIRS
         "./"
     REQUIRES
@@ -22,4 +23,5 @@ target_compile_options(${COMPONENT_LIB} PRIVATE
     -fno-math-errno
     -fjump-tables
     -ftree-switch-conversion
+    -funroll-loops
 )

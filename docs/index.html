@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YARI — Yet Another Raycast Implementation</title>
+<title>YARI - Yet Another Raycast Implementation</title>
 <meta name="description" content="A small C raycasting engine for vintage first-person games in the spirit of Wolfenstein 3D. Built for ESP32 hardware, also running on macOS, Linux and WebAssembly. Play the FPS and Kart demos in your browser.">
-<meta property="og:title" content="YARI — Yet Another Raycast Implementation">
+<meta property="og:title" content="YARI - Yet Another Raycast Implementation">
 <meta property="og:description" content="A small C raycasting engine for ESP32, desktop and web. Play the FPS and Kart demos right in your browser.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="media/fps_preview.png">
@@ -556,7 +556,7 @@
           <p class="tagline">Yet Another Raycast Implementation</p>
           <p class="lede">
             A small C game engine for building vintage first-person games in the spirit of
-            Wolfenstein&nbsp;3D. Written for ESP32 hardware — the same game code also runs on
+            Wolfenstein&nbsp;3D. Written for ESP32 hardware - the same game code also runs on
             macOS, Linux and, right here, compiled to WebAssembly.
           </p>
           <div class="badges">
@@ -579,7 +579,7 @@
             <div class="pins">
               <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
-            <p class="caption">running on real ESP32 hardware — ST7789, 240×136</p>
+            <p class="caption">running on real ESP32 hardware - ST7789, 240×136</p>
           </div>
         </div>
       </div>
@@ -616,7 +616,7 @@
             </div>
           </a>
         </div>
-        <p class="play-note">Keyboard required — <span class="key">↑ ↓ ← →</span> or <span class="key">WASD</span> to move, <span class="key">space</span> to start.</p>
+        <p class="play-note">Keyboard required - <span class="key">↑ ↓ ← →</span> or <span class="key">WASD</span> to move, <span class="key">space</span> to start.</p>
       </div>
     </section>
 
@@ -656,7 +656,7 @@
           <div class="feature">
             <span class="mark">[api]</span>
             <h3>Tiny game-facing API</h3>
-            <p>A game implements <code>yr_init_game()</code> and <code>yr_update_game()</code> — YARI owns the rest.</p>
+            <p>A game implements <code>yr_init_game()</code> and <code>yr_update_game()</code> - YARI owns the rest.</p>
           </div>
         </div>
       </div>
@@ -675,7 +675,7 @@
             <p>
               The ESP32 backend targets an ST7789 SPI display in landscape orientation, driven from
               an RGB565 framebuffer. Digital buttons map to pull-up GPIOs and an analog joystick
-              covers the two movement axes — all configured with a handful of macros.
+              covers the two movement axes - all configured with a handful of macros.
             </p>
             <ul>
               <li>ST7789 SPI display, configurable pins and clock speed</li>
@@ -706,8 +706,8 @@
             <div class="code"><span class="cm">// generated level.h, included directly</span>
 <span class="kw">#include</span> "level.h"
 
-<span class="kw">void</span> <span class="fn">yr_init_game</span>(YrGameState *state) {
-    load_level(state);
+<span class="kw">void</span> <span class="fn">yr_init_game</span>(YrContext *ctx) {
+    load_level(ctx);
 }</div>
           </div>
         </div>
@@ -734,7 +734,7 @@
         <a href="https://github.com/raysan5/raylib" target="_blank" rel="noopener">raylib</a>
       </div>
       <div class="col">
-        <p class="credit">MIT licensed. <span>yari</span> — a raycaster for hardware that shouldn't be able to run one.</p>
+        <p class="credit">MIT licensed. <span>yari</span> - a raycaster for hardware that shouldn't be able to run one.</p>
       </div>
     </div>
   </footer>

@@ -5,7 +5,7 @@ Quick reference for every function exported by the `yari` engine (`src/yari/`).
 All engine symbols are prefixed `yr_`/`Yr`. If you `#define YARI_NO_PREFIX`
 before `#include <yari.h>`, an unprefixed alias is generated for every
 function, macro and type below (e.g. `yr_draw_rectangle` → `draw_rectangle`,
-`YrGameState` → `GameState`). Math functions from `raymath.h` (`Vector2Add`,
+`YrContext` → `Context`). Math functions from `raymath.h` (`Vector2Add`,
 `MatrixMultiply`, ...) are never prefixed, matching raylib.
 
 ## Table of Contents
@@ -13,27 +13,27 @@ function, macro and type below (e.g. `yr_draw_rectangle` → `draw_rectangle`,
 - [Core Types](#core-types)
 - [Configuration Macros](#configuration-macros)
 - [Game Loop](#game-loop-yarih)
-- [Renderer — Drawing](#renderer--drawing-rendererh)
-- [Renderer — Screen & Lifecycle](#renderer--screen--lifecycle-rendererh)
+- [Renderer - Drawing](#renderer--drawing-rendererh)
+- [Renderer - Screen & Lifecycle](#renderer--screen--lifecycle-rendererh)
 - [Colors](#colors-colorsh)
 - [Physics & Collisions](#physics--collisions-physicsh)
 - [Input](#input-inputsh)
-- [Utils — Timers](#utils--timers-yari_utilsh)
-- [Utils — Sprite Animation](#utils--sprite-animation-yari_utilsh)
-- [Utils — Entities](#utils--entities-yarih)
+- [Utils - Timers](#utils--timers-yari_utilsh)
+- [Utils - Sprite Animation](#utils--sprite-animation-yari_utilsh)
+- [Utils - Entities](#utils--entities-yarih)
 - [Dynamic Array](#dynamic-array-dah)
 - [Hash Map & Hash Set](#hash-map--hash-set-hth)
-- [Math — raymath](#math--raymath-raymathh)
+- [Math - raymath](#math--raymath-raymathh)
 
 ---
 
 ## Core Types
 
 ```c
-YrGameState     // central engine state: camera, map, entities, screen, assets (see README § Game State)
+YrContext     // central engine state: camera, map, entities, screen, assets (see README - `Engine` context)
 YrCamera        // { Vector2 pos; Vector2 dir; float horizon; float angle; }
-YrEntity        // a sprite/object: pos, texture_id, kind, embedded animation stack, collision info, init/update/cleanup callbacks (see README § Entities)
-YrEntityMap     // yr_Hm(size_t, YrEntity) — hash map of entity id -> YrEntity, backs state->entities
+YrEntity        // a sprite/object: pos, texture_id, kind, embedded animation stack, collision info, init/update/cleanup callbacks (see README - `Entities`)
+YrEntityMap     // yr_Hm(size_t, YrEntity) - hash map of entity id -> YrEntity, backs ctx->entities
 yr_pixel_t      // framebuffer pixel: uint16_t (RGB565, ESP32/COLOR_565) or uint32_t (ARGB, desktop/web)
 yr_font_t       // baked bitmap font: 1-bit atlas + yr_glyph_t[96] (ASCII 32-127)
 yr_glyph_t      // one glyph's atlas bounds, offset and advance (mirrors stbtt_bakedchar)
@@ -60,18 +60,18 @@ YR_CMSK_ALL            // collision mask: everything (-1)
 ## Game Loop (`yari.h`)
 
 ```c
-void yr_init_game(YrGameState *state);                          // Implement in game code: configure initial state, called once at startup
-void yr_update_game(YrGameState *state);                        // Implement in game code: update state and draw, called every frame
+void yr_init_game(YrContext *ctx);                          // Implement in game code: configure initial state, called once at startup
+void yr_update_game(YrContext *ctx);                        // Implement in game code: update state and draw, called every frame
 
 void yr_draw_game(void);                                        // Draws background, walls and entities using the global engine state
 
 // low level drawing functions
-void yr_draw_background(YrGameState *state);                    // Draws the floor and ceiling (textured, per-cell, or solid black)
-void yr_draw_walls(YrGameState *state);                         // Raycasts and draws every wall column for the frame
-void yr_draw_entities(YrGameState *state);                      // Sorts entities back-to-front, draws sprites, then runs their update callbacks
+void yr_draw_background(YrContext *ctx);                    // Draws the floor and ceiling (textured, per-cell, or solid black)
+void yr_draw_walls(YrContext *ctx);                         // Raycasts and draws every wall column for the frame
+void yr_draw_entities(YrContext *ctx);                      // Sorts entities back-to-front, draws sprites, then runs their update callbacks
 ```
 
-## Renderer — Drawing (`renderer.h`)
+## Renderer - Drawing (`renderer.h`)
 
 ```c
 void yr_clear_screen(yr_pixel_t color);                                       // Fills the entire framebuffer with a color
@@ -88,7 +88,7 @@ void yr_draw_text(const char *text, int x, int y, const yr_font_t *font, yr_pixe
 ```
 
 Color filters (full-screen post-processing, applied once per pixel regardless
-of overdraw — see README § Color filters):
+of overdraw - see README - `Color filters`):
 
 ```c
 typedef void (*YrColorFilterCallback)(int x, int y, yr_pixel_t *color, void *user_data);
@@ -96,7 +96,7 @@ typedef void (*YrColorFilterCallback)(int x, int y, yr_pixel_t *color, void *use
 void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data); // Runs `apply` once over every pixel of the framebuffer
 ```
 
-## Renderer — Screen & Lifecycle (`renderer.h`)
+## Renderer - Screen & Lifecycle (`renderer.h`)
 
 ```c
 float yr_get_frame_time(void);                                   // Frame delta time in seconds
@@ -130,13 +130,13 @@ enumerates the colors entries for use as wall map tile values.
 Vector2 yr_move(Vector2 subject_position, Vector2 subject_direction, enum YrMovementDirection direction, float movement_speed); // Moves a point using delta time; direction is YR_FORWARD/BACK/LEFT/RIGHT
 Vector2 yr_rotate(Vector2 vector, enum YrRotationDirection direction, float rotation_speed); // Rotates a vector using delta time; direction is YR_CLOCKWISE/COUNTERCLOCKWISE
 
-YrCollisionInfo yr_check_collision(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask); // [macro] First collision (wall or entity) at next_pos
-YrCollisionInfo yr_check_collision_out_radius(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius); // Same, ignoring entities farther than `radius` from next_pos
-size_t yr_check_mult_collisions(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask, YrCollisionInfo *out_info, size_t len); // [macro] Fills out_info[] with every collision at next_pos, returns hit count
-size_t yr_check_mult_collisions_out_radius(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius, YrCollisionInfo *out_info, size_t len); // Same, with an outer entity-search radius
-YrCollisionInfo yr_check_ray_collision(YrGameState *state, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask); // First collision hit by a ray cast from origin along dir
-Vector2 yr_slide_collision(YrGameState *state, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask); // Slides from→to around the first obstacle; writes hit info to *hit, returns the slided new position
-Vector2 yr_slide_collision_out_radius(YrGameState *state, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask, float radius); // Same, with an outer entity-search radius
+YrCollisionInfo yr_check_collision(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask); // [macro] First collision (wall or entity) at next_pos
+YrCollisionInfo yr_check_collision_out_radius(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius); // Same, ignoring entities farther than `radius` from next_pos
+size_t yr_check_mult_collisions(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask, YrCollisionInfo *out_info, size_t len); // [macro] Fills out_info[] with every collision at next_pos, returns hit count
+size_t yr_check_mult_collisions_out_radius(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius, YrCollisionInfo *out_info, size_t len); // Same, with an outer entity-search radius
+YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask); // First collision hit by a ray cast from origin along dir
+Vector2 yr_slide_collision(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask); // Slides from→to around the first obstacle; writes hit info to *hit, returns the slided new position
+Vector2 yr_slide_collision_out_radius(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask, float radius); // Same, with an outer entity-search radius
 ```
 
 ```c
@@ -145,7 +145,7 @@ typedef struct {
     int cell_x, cell_y;     // map cell of the hit wall (wall hits only)
     uint8_t tile;           // tile value of the hit wall (wall hits only)
     YrEntity *entity;       // pointer to the hit entity (entity hits only)
-    size_t entity_index;    // id of the hit entity in state->entities (entity hits only)
+    size_t entity_index;    // id of the hit entity in ctx->entities (entity hits only)
 } YrCollisionInfo;
 ```
 
@@ -165,7 +165,7 @@ Key codes are the `YrKeyboardKey` enum (`YR_KEY_A`, `YR_KEY_SPACE`,
 matching raylib's key codes so desktop/web/ESP32 game code stays identical.
 `YrJoystickAxis` provides `YR_X_AXIS` / `YR_Y_AXIS`.
 
-## Utils — Timers (`yari_utils.h`)
+## Utils - Timers (`yari_utils.h`)
 
 ```c
 YrTimer yr_timer_start(float duration);                  // Returns a timer that expires `duration` seconds from now
@@ -176,7 +176,7 @@ bool    yr_timer_is_started(const YrTimer *timer);       // True if the timer ha
 
 `timer->count` increments every time `yr_timer_loop` fires.
 
-## Utils — Sprite Animation (`yari_utils.h`)
+## Utils - Sprite Animation (`yari_utils.h`)
 
 ```c
 void yr_start_animation(YrAnimationStack *stack, YrAnimation a, float pop_after); // Pushes animation `a` ({frames, frame_count, duration}); pop_after <= 0 loops forever
@@ -185,24 +185,24 @@ void yr_start_animation_once(stack, a);         // [macro] Pushes a one-shot ani
 int  yr_get_animation_texture(YrAnimationStack *animation); // Advances the top animation, pops on expiry (resuming the one beneath), returns its current frame's texture id, or -1 if the stack is empty
 ```
 
-Entities carry their own `animation` (a `YrAnimationStack` field on `YrEntity`) which `yr_draw_entities` advances automatically every frame, writing the result into `entity->texture_id` — push onto `&self->animation` and the sprite animates with no extra per-frame call. Use `yr_get_animation_texture` directly only for animations not tied to an entity (e.g. a HUD weapon sprite).
+Entities carry their own `animation` (a `YrAnimationStack` field on `YrEntity`) which `yr_draw_entities` advances automatically every frame, writing the result into `entity->texture_id` - push onto `&self->animation` and the sprite animates with no extra per-frame call. Use `yr_get_animation_texture` directly only for animations not tied to an entity (e.g. a HUD weapon sprite).
 
-## Utils — Entities (`yari.h`)
+## Utils - Entities (`yari.h`)
 
 ```c
-size_t yr_create_entity_ex(YrGameState *state, YrEntity e, void *data); // Runs e.init(&e, data) if set, inserts e into state->entities (a YrEntityMap), returns its new stable id
+size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data); // Runs e.init(&e, data) if set, inserts e into ctx->entities (a YrEntityMap), returns its new stable id
 yr_create_entity(state, e);                              // [macro] yr_create_entity_ex(state, e, NULL)
-void   yr_remove_entity(YrGameState *state, size_t id);  // Runs entity->cleanup (if set), frees its animation stack, then removes the entity with this id
-size_t yr_get_entity_id(YrEntity *e);                     // Recovers the id of a live entity pointer obtained from state->entities
+void   yr_remove_entity(YrContext *ctx, size_t id);  // Runs entity->cleanup (if set), frees its animation stack, then removes the entity with this id
+size_t yr_get_entity_id(YrEntity *e);                     // Recovers the id of a live entity pointer obtained from ctx->entities
 ```
 
-`data` in `yr_create_entity_ex` is a spawn-time payload forwarded to `e.init`, separate from `entity_data` (which factories set directly from their own `data` parameter) — see README § Entities.
+`data` in `yr_create_entity_ex` is a spawn-time payload forwarded to `e.init`, separate from `entity_data` (which factories set directly from their own `data` parameter) - see README - `Entities`.
 
-`state->entities` is a `yr_Hm(size_t, YrEntity)`; iterate with `yr_foreach(&state->entities, kv)` (`kv->key` is the id, `kv->value` the `YrEntity`). See [Hash Map & Hash Set](#hash-map--hash-set-hth) and README § Entities.
+`ctx->entities` is a `yr_Hm(size_t, YrEntity)`; iterate with `yr_foreach(&ctx->entities, kv)` (`kv->key` is the id, `kv->value` the `YrEntity`). See [Hash Map & Hash Set](#hash-map--hash-set-hth) and README - `Entities`.
 
 ## Dynamic Array (`da.h`)
 
-Generic macros over any struct shaped `{ Type *data; size_t length; size_t capacity; }` (e.g. `YrAnimationStack`). `yr_Hm`/`yr_Hs` (below) extend this same layout with a hash index, so read-only `yr_da_foreach` also works over hash maps and sets — but use the `yr_hm_*`/`yr_hs_*` mutators, not `yr_da_append`/`yr_da_remove_*` directly, or the hash index falls out of sync.
+Generic macros over any struct shaped `{ Type *data; size_t length; size_t capacity; }` (e.g. `YrAnimationStack`). `yr_Hm`/`yr_Hs` (below) extend this same layout with a hash index, so read-only `yr_da_foreach` also works over hash maps and sets - but use the `yr_hm_*`/`yr_hs_*` mutators, not `yr_da_append`/`yr_da_remove_*` directly, or the hash index falls out of sync.
 
 `YR_DA_INIT_CAPACITY` (4), `YR_DA_GROWTH_FACTOR` (1.5) and `YR_DA_SHRINK_FACTOR` (2) are `#define`d with `#ifndef` guards, so `#define` them before including `da.h`/`yari.h` to override.
 
@@ -211,7 +211,7 @@ YR_ARRAY_LEN(array);                    // Number of elements in a fixed-size C 
 yr_da_reserve(da, expected_capacity);   // Grows da->data to fit at least expected_capacity items
 yr_da_append(da, item);                 // Appends item, growing storage as needed
 yr_da_pop(da);                          // Removes the last element of the array and return a pointer to it (it does not auto-shrink the capacity)
-yr_da_remove_unordered(da, idx);        // Removes item at idx by swapping in the last element — O(1), reorders; auto-shrinks storage if underfilled
+yr_da_remove_unordered(da, idx);        // Removes item at idx by swapping in the last element - O(1), reorders; auto-shrinks storage if underfilled
 yr_da_remove(da, idx, del);             // Removes `del` items at idx, preserving order (memmove); auto-shrinks storage if underfilled
 yr_da_shrink(da);                       // Shrinks capacity by YR_DA_GROWTH_FACTOR (never below YR_DA_INIT_CAPACITY or length + 1); called automatically by the removals above
 yr_da_foreach(da, var);                 // [macro] for-loop over da->data; var is a pointer to each element
@@ -221,7 +221,7 @@ yr_da_free(da);                         // Frees storage and resets length/capac
 
 ## Hash Map & Hash Set (`ht.h`)
 
-Generic open-addressing hash map and set, included by `yari.h` (used internally for `state->entities`). `const char *`/`char *` keys (map) or values (set) are hashed/compared by content and heap-copied/freed internally; any other type is hashed/compared by raw bytes.
+Generic open-addressing hash map and set, included by `yari.h` (used internally for `ctx->entities`). `const char *`/`char *` keys (map) or values (set) are hashed/compared by content and heap-copied/freed internally; any other type is hashed/compared by raw bytes.
 
 ```c
 yr_Hm(key_t, val_t)                // [type] anonymous hash map struct: { struct { key_t key; val_t value; } *data; length; capacity; ... }

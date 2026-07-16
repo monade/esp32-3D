@@ -36,17 +36,17 @@ typedef struct {
   };
 } YrCollisionInfo;
 
-size_t yr_check_mult_collisions_out_radius(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius, YrCollisionInfo *out_info, size_t len);
-YrCollisionInfo yr_check_collision_out_radius(YrGameState *state, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius);
+size_t yr_check_mult_collisions_out_radius(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius, YrCollisionInfo *out_info, size_t len);
+YrCollisionInfo yr_check_collision_out_radius(YrContext *ctx, Vector2 next_pos, float threshold, uint32_t collision_mask, float radius);
 #define yr_check_mult_collisions(state, next_pos, threshold, collision_mask, out_info, len) \
     yr_check_mult_collisions_out_radius(state, next_pos, threshold, collision_mask, 0.0f, out_info, len)
 #define yr_check_collision(state, next_pos, threshold, collision_mask) \
     yr_check_collision_out_radius(state, next_pos, threshold, collision_mask, 0.0f)
 
-YrCollisionInfo yr_check_ray_collision(YrGameState *state, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask);
+YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask);
 
-Vector2 yr_slide_collision(YrGameState *state, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask);
-Vector2 yr_slide_collision_out_radius(YrGameState *state, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask, float radius);
+Vector2 yr_slide_collision(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask);
+Vector2 yr_slide_collision_out_radius(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask, float radius);
 
 
 Vector2 yr_rotate(Vector2 vector, enum YrRotationDirection direction, float rotation_speed);

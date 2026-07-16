@@ -1842,6 +1842,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 #include <yari.h>
 #include "assets.h"
 #include "level_gen.h"
@@ -2026,18 +2028,17 @@ static inline YrEntity create_entity_7(void *data, YrEntityInitFunc init, YrEnti
     return create_entity_7_pos((Vector2){18.016254f, 73.355583f}, data, init, update, cleanup);
 }
 
-static inline void level_append_exported_entities(YrGameState *state) {
-    yr_create_entity(state, create_entity_1(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_2(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_3(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_4(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_5(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_6(NULL, NULL, NULL, NULL));
-    yr_create_entity(state, create_entity_7(NULL, NULL, NULL, NULL));
+static inline void level_append_exported_entities(YrContext *ctx) {
+    yr_create_entity(ctx, create_entity_1(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_2(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_3(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_4(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_5(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_6(NULL, NULL, NULL, NULL));
+    yr_create_entity(ctx, create_entity_7(NULL, NULL, NULL, NULL));
 }
 
-static inline uint8_t *level_get_map(void) {
-    static uint8_t data[YR_MAP_ROWS * YR_MAP_COLS] = {
+static const uint8_t level_map[YR_MAP_ROWS * YR_MAP_COLS] = {
         tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001,
         tx_wal_001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_001,
         tx_wal_001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_001,
@@ -2138,11 +2139,9 @@ static inline uint8_t *level_get_map(void) {
         tx_wal_001, 0, 0, 0, 0, 0, 0, 0, tx_wal_001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_001,
         tx_wal_001, 0, 0, 0, 0, 0, 0, 0, tx_wal_001, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, tx_wal_001,
         tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001, tx_wal_001,
-    };
-    return data;
-}
+};
 
-static uint8_t level_map_floor[YR_MAP_ROWS * YR_MAP_COLS] = {
+static const uint8_t level_map_floor[YR_MAP_ROWS * YR_MAP_COLS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2245,7 +2244,7 @@ static uint8_t level_map_floor[YR_MAP_ROWS * YR_MAP_COLS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static uint8_t level_map_ceil[YR_MAP_ROWS * YR_MAP_COLS] = {
+static const uint8_t level_map_ceil[YR_MAP_ROWS * YR_MAP_COLS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2348,17 +2347,20 @@ static uint8_t level_map_ceil[YR_MAP_ROWS * YR_MAP_COLS] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
 
-static inline void load_level(YrGameState *state) {
-    state->assets_map = assets_map;
-    state->map = level_get_map();
-    state->map_floor = level_map_floor;
-    state->map_ceil = level_map_ceil;
-    state->map_cols = YR_MAP_COLS;
-    state->map_rows = YR_MAP_ROWS;
-    state->floor_texture = YR_LEVEL_FLOOR;
-    state->ceil_texture = YR_LEVEL_CEIL;
-    state->camera = init_camera();
-    level_append_exported_entities(state);
+static inline void load_level(YrContext *ctx) {
+    ctx->assets_map = assets_map;
+    ctx->map = realloc(ctx->map, sizeof(level_map));
+    memcpy(ctx->map, level_map, sizeof(level_map));
+    ctx->map_floor = realloc(ctx->map_floor, sizeof(level_map_floor));
+    memcpy(ctx->map_floor, level_map_floor, sizeof(level_map_floor));
+    ctx->map_ceil = realloc(ctx->map_ceil, sizeof(level_map_ceil));
+    memcpy(ctx->map_ceil, level_map_ceil, sizeof(level_map_ceil));
+    ctx->map_cols = YR_MAP_COLS;
+    ctx->map_rows = YR_MAP_ROWS;
+    ctx->floor_texture = YR_LEVEL_FLOOR;
+    ctx->ceil_texture = YR_LEVEL_CEIL;
+    ctx->camera = init_camera();
+    level_append_exported_entities(ctx);
 }
 
 #endif // YR_LEVEL_H

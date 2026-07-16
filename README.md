@@ -174,15 +174,15 @@ functions:
 
 ...
 
-void yr_init_game(YrGameState *state) {
-    // configure the game state
-    state->map = (uint8_t *)map;
-    state->map_cols = 20;
-    state->map_rows = 20;
-    state->camera = (YrCamera){.pos = {14.5, 5.5}, .dir = {-0.8, 0.5}};
+void yr_init_game(YrContext *ctx) {
+    // configure the engine
+    ctx->map = (uint8_t *)map;
+    ctx->map_cols = 20;
+    ctx->map_rows = 20;
+    ctx->camera = (YrCamera){.pos = {14.5, 5.5}, .dir = {-0.8, 0.5}};
 }
 
-void yr_update_game(YrGameState *state) {
+void yr_update_game(YrContext *ctx) {
     // update the game state and draw the frame
     yr_draw_game(state);
 }
@@ -192,15 +192,15 @@ Youc can find a minimal example in `example/base/main.c`:
 
 
 `YARI_NO_PREFIX` is optional. Without it, use the explicit `yr_` and `Yr`
-symbols, such as `yr_draw_game()` and `YrGameState`.
+symbols, such as `yr_draw_game()` and `YrContext`.
 
 ## Core API
 
 Full function reference: [CHEATSHEET.md](CHEATSHEET.md).
 
-### Game State
+### Engine context
 
-`YrGameState` is the central structure used by the engine.
+`YrContext` is the central structure used by the engine.
 
 | Field | Purpose |
 | --- | --- |
@@ -270,7 +270,7 @@ typedef struct {
     int cell_x, cell_y;        // map cell of the hit wall (wall hits only)
     uint8_t tile;              // tile value of the hit wall (wall hits only)
     YrEntity *entity;          // pointer to the hit entity (entity hits only)
-    size_t entity_index;       // id of the hit entity in state->entities (entity hits only)
+    size_t entity_index;       // id of the hit entity in ctx->entities (entity hits only)
 } YrCollisionInfo;
 ```
 
@@ -311,10 +311,10 @@ shared across desktop backends and embedded targets.
 | `collision_threshold` | collision radius |
 | `animation` | embedded `YrAnimationStack` |
 | `init` | optional callback run once by `yr_create_entity_ex` when the entity is spawned: `void(YrEntity *self, void *data)` |
-| `update` | optional callback invoked every frame: `void(YrGameState *state, YrEntity *self, size_t id)` |
+| `update` | optional callback invoked every frame: `void(YrContext *ctx, YrEntity *self, size_t id)` |
 | `cleanup` | optional callback run by `yr_remove_entity`: `void(YrEntity *self)`; use it to free `entity_data` |
 
-`state->entities` is a `YrEntityMap` (a `yr_Hm(size_t, YrEntity)` hash map — see the Hash Map and Hash Set section under Utils), not a plain array. Entities are addressed by a stable id that keeps working across other insertions/removals, so it's safe to remove one while iterating or holding onto its id across frames:
+`ctx->entities` is a `YrEntityMap` (a `yr_Hm(size_t, YrEntity)` hash map - see the Hash Map and Hash Set section under Utils), not a plain array. Entities are addressed by a stable id that keeps working across other insertions/removals, so it's safe to remove one while iterating or holding onto its id across frames:
 
 ```c
 size_t id = yr_create_entity(state, entity);       // inserts entity, returns its new id
@@ -322,12 +322,12 @@ size_t id2 = yr_create_entity_ex(state, entity, p); // same, and passes p to ent
 yr_remove_entity(state, id);                        // runs entity->cleanup (if set), then removes it
 ```
 
-The `id`/`index` argument passed to `update` callbacks, and `YrCollisionInfo.entity_index`, are this same persistent id. Use it with `yr_remove_entity` or `yr_hm_try(&state->entities, id)` — it is not an array offset. Given a live `YrEntity *`, `yr_get_entity_id(e)` recovers its id.
+The `id`/`index` argument passed to `update` callbacks, and `YrCollisionInfo.entity_index`, are this same persistent id. Use it with `yr_remove_entity` or `yr_hm_try(&ctx->entities, id)` - it is not an array offset. Given a live `YrEntity *`, `yr_get_entity_id(e)` recovers its id.
 
 To iterate all entities:
 
 ```c
-yr_foreach(&state->entities, kv) {
+yr_foreach(&ctx->entities, kv) {
     YrEntity *e = &kv->value; // kv->key is the entity id
 }
 ```
@@ -344,9 +344,9 @@ The `count` field on `YrTimer` increments each time `yr_timer_loop` fires.
 
 `YrAnimationStack` manages a stack of animations. An animation is described by a `YrAnimation` value (`frames`, `frame_count`, `duration`); push one with the helpers in [CHEATSHEET.md](CHEATSHEET.md). Popping the top animation (once its lifetime expires) resumes the one beneath it.
 
-Every `YrEntity` has its own `animation` stack, and `yr_draw_entities` advances each entity's stack and writes the result into `texture_id` automatically every frame — game code only ever pushes animations, it never needs to call an "advance" function for entities.
+Every `YrEntity` has its own `animation` stack, and `yr_draw_entities` advances each entity's stack and writes the result into `texture_id` automatically every frame - game code only ever pushes animations, it never needs to call an "advance" function for entities.
 
-Example — looping idle with a one-shot attack that auto-pops, driven from an entity's `init`/`update` callbacks:
+Example - looping idle with a one-shot attack that auto-pops, driven from an entity's `init`/`update` callbacks:
 
 ```c
 // the map builder can generate these as named YrAnimation constants instead
@@ -361,10 +361,10 @@ void init_enemy(YrEntity *self, void *data) {
     yr_start_loop_animation(&self->animation, idle_anim); // push idle on spawn
 }
 
-void update_enemy(YrGameState *state, YrEntity *self, size_t id) {
+void update_enemy(YrContext *ctx, YrEntity *self, size_t id) {
     (void)state;
     if (/* attack triggered */ false) {
-        // push attack on trigger — auto-pops, idle resumes underneath
+        // push attack on trigger - auto-pops, idle resumes underneath
         yr_start_animation_once(&self->animation, attack_anim);
     }
 }
@@ -494,7 +494,7 @@ Include the generated level file header from game code and wire it into `yr_init
 #include "assets.h" // generated by assets_packer
 #include "level.h" // generated by map_builder
 
-void yr_init_game(GameState *state) {
+void yr_init_game(Context *ctx) {
     load_level(state);
     // ...
 }
@@ -514,7 +514,7 @@ Entities with a named update callback generate a forward declaration for that fu
 with this signature:
 
 ```c
-void update_enemy(YrGameState *state, YrEntity *self, size_t id) {
+void update_enemy(YrContext *ctx, YrEntity *self, size_t id) {
     (void)state;
     (void)self;
     (void)id;

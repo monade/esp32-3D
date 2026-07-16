@@ -2,11 +2,6 @@
 
 #include <stdlib.h>
 
-#ifdef ESP32_MULTITHREAD
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#endif
-
 // #define YR_PROFILE 1
 #if YR_PROFILE
 #include <stdio.h>
@@ -31,10 +26,10 @@ static inline int fixed16_to_int(int value) {
     return value >= 0 ? (value >> 16) : -((-value) >> 16);
 }
 
-static inline float yr_projection_plane_scale(const YrGameState *state) {
+static inline float yr_projection_plane_scale(const YrContext *ctx) {
     static float base_scale = 0.0f;
     if (base_scale == 0.0f) base_scale = tanf(YR_FOV_ANGLE / 2.0f);
-    return base_scale * (float)state->screen_width / (float)state->screen_height;
+    return base_scale * (float)ctx->screen_width / (float)ctx->screen_height;
 }
 
 static inline void yr_draw_texture_column(
@@ -47,8 +42,7 @@ static inline void yr_draw_texture_column(
     int texture_y,
     int texture_height,
     float brightness,
-    bool skip_empty
-) {
+    bool skip_empty) {
     if (width <= 0 || height <= 0 || texture_height <= 0 || !texture) return;
     if (texture_x < 0 || texture_x >= YR_TEXTURE_SIZE) return;
 
@@ -91,16 +85,16 @@ static inline void yr_animate_entity(YrEntity *entity) {
  * Performs raycasting for a single vertical slice of the screen to find wall intersections and render them.
  * Uses DDA algorithm to step through the grid map and find the first wall hit by the ray.
  * It also applies distance-based brightness to the wall slice.
- * @param state The current game state containing camera, map, and rendering information.
+ * @param ctx The current game ctx containing camera, map, and rendering information.
  * @param dir The direction vector of the ray being cast.
  * @param slice_x The x-coordinate of the vertical slice on the screen to render.
  */
-void yr_raycast_walls(YrGameState *state, Vector2 dir, int slice_x) {
-    YrCamera *p = &state->camera;
-    float v_shift_base = p->horizon * state->screen_height * 0.5f;
-    float roll = ((float)slice_x - state->screen_width * 0.5f) * tanf(p->angle);
+void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
+    YrCamera *p = &ctx->camera;
+    float v_shift_base = p->horizon * ctx->screen_height * 0.5f;
+    float roll = ((float)slice_x - ctx->screen_width * 0.5f) * tanf(p->angle);
     int v_shift = (int)(v_shift_base + roll);
-    int z_index = slice_x / state->ray_res;
+    int z_index = slice_x / ctx->ray_res;
 
     if (dir.x > -THRESHOLD && dir.x < THRESHOLD) dir.x = (dir.x < 0.0f) ? -THRESHOLD : THRESHOLD;
     if (dir.y > -THRESHOLD && dir.y < THRESHOLD) dir.y = (dir.y < 0.0f) ? -THRESHOLD : THRESHOLD;
@@ -154,35 +148,34 @@ void yr_raycast_walls(YrGameState *state, Vector2 dir, int slice_x) {
             hit_vertical = false;
         }
 
-        if (cell_x < 0 || cell_x >= state->map_cols || cell_y < 0 || cell_y >= state->map_rows) {
+        if (cell_x < 0 || cell_x >= ctx->map_cols || cell_y < 0 || cell_y >= ctx->map_rows) {
             break;
         }
 
-        uint8_t map_cell = state->map[cell_y * state->map_cols + cell_x];
+        uint8_t map_cell = ctx->map[cell_y * ctx->map_cols + cell_x];
         if (!map_cell) continue; // empty cell, keep raycasting
 
         float dist = ray_dist;
         if (dist < THRESHOLD) dist = THRESHOLD;
         if (dist > YR_MAX_RENDER_DIST) break; // stop if the distance exceeds the maximum render distance
 
-        state->zbuffer[z_index] = dist; // store distance in z-buffer for sprite rendering
-        int h = (int)((float)state->screen_height / dist);
+        ctx->zbuffer[z_index] = dist; // store distance in z-buffer for sprite rendering
+        int h = (int)((float)ctx->screen_height / dist);
         float bright_factor = 1.0f / dist - 0.9f;
         if (bright_factor > 0.0f) bright_factor = 0.0f;
 
         // If the map cell is a special color-coded cell (>= 128), draw a solid color rectangle instead of a texture.
         if (map_cell >= 128) {
             yr_pixel_t c = yr_color_brightness(yr_color_map[map_cell - 128], bright_factor);
-            yr_draw_rectangle(slice_x, (state->screen_height - h) / 2 + v_shift, state->ray_res, h, c);
+            yr_draw_rectangle(slice_x, (ctx->screen_height - h) / 2 + v_shift, ctx->ray_res, h, c);
             return;
         }
 
         // If the map cell corresponds to a texture, calculate the appropriate texture coordinates and draw the textured column.
-        const yr_pixel_t *tex = state->assets_map[map_cell];
+        const yr_pixel_t *tex = ctx->assets_map[map_cell];
         Vector2 rs = {
             .x = p->pos.x + dir.x * ray_dist,
-            .y = p->pos.y + dir.y * ray_dist
-        };
+            .y = p->pos.y + dir.y * ray_dist};
         float diff = hit_vertical ? rs.y - (float)((int)rs.y) : rs.x - (float)((int)rs.x);
         if (diff < 0.0f) diff += 1.0f;
 
@@ -192,13 +185,13 @@ void yr_raycast_walls(YrGameState *state, Vector2 dir, int slice_x) {
         if (hit_vertical) texture_x = YR_TEXTURE_SIZE - texture_x - 1;
 
         int hmax = h;
-        if (hmax > state->screen_height) hmax = state->screen_height;
+        if (hmax > ctx->screen_height) hmax = ctx->screen_height;
         int overflow_screen = (h - hmax) / 2;
-        int draw_y = (state->screen_height - hmax) / 2 + v_shift;
+        int draw_y = (ctx->screen_height - hmax) / 2 + v_shift;
         yr_draw_texture_column(
             slice_x,
             draw_y,
-            state->ray_res,
+            ctx->ray_res,
             hmax,
             tex,
             texture_x,
@@ -209,61 +202,59 @@ void yr_raycast_walls(YrGameState *state, Vector2 dir, int slice_x) {
         return;
     }
 
-    state->zbuffer[z_index] = YR_MAX_RENDER_DIST;
+    ctx->zbuffer[z_index] = YR_MAX_RENDER_DIST;
 }
 
 /**
  * Renders the walls of the scene by performing raycasting for each vertical slice of the screen.
  * This function iterates over the screen width, casting rays and drawing the corresponding wall slices.
  */
-static void yr_draw_walls_range(YrGameState *state, int x_start, int x_end) {
-    YrCamera *p = &state->camera;
-    float scale = yr_projection_plane_scale(state);
-    Vector2 plane = { .x = -p->dir.y * scale, .y = p->dir.x * scale };
-    int ray_res = state->ray_res;
-    float camera_step = 2.0f * (float)ray_res / (float)state->screen_width;
+void yr__draw_walls_range(YrContext *ctx, int x_start, int x_end) {
+    YrCamera *p = &ctx->camera;
+    float scale = yr_projection_plane_scale(ctx);
+    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    int ray_res = ctx->ray_res;
+    float camera_step = 2.0f * (float)ray_res / (float)ctx->screen_width;
     int start_column = x_start / ray_res;
     float camera_x = -1.0f + camera_step * (float)start_column;
 
     for (int slice_x = x_start; slice_x < x_end; slice_x += ray_res, camera_x += camera_step) {
         Vector2 ray = {
             .x = p->dir.x + plane.x * camera_x,
-            .y = p->dir.y + plane.y * camera_x
-        };
-        yr_raycast_walls(state, ray, slice_x);
+            .y = p->dir.y + plane.y * camera_x};
+        yr_raycast_walls(ctx, ray, slice_x);
     }
 }
 
-void yr_draw_walls(YrGameState *state) {
-    yr_draw_walls_range(state, 0, state->screen_width);
+void yr_draw_walls(YrContext *ctx) {
+    yr__draw_walls_range(ctx, 0, ctx->screen_width);
 }
-
 
 /**
  * Renders the background (floor and ceiling) of the scene using a raycasting approach.
- * For each vertical slice of the screen, it calculates the corresponding floor and ceiling texture coordinates and draws the textured columns. 
+ * For each vertical slice of the screen, it calculates the corresponding floor and ceiling texture coordinates and draws the textured columns.
  * It also applies distance-based brightness to create a sense of depth.
  * If no floor or ceiling texture is provided, it fills the respective areas with a solid color (black).
  */
-static void yr_draw_background_range(YrGameState *state, int x_start, int x_end) {
-    YrCamera *p = &state->camera;
-    float scale = yr_projection_plane_scale(state);
-    Vector2 plane = { .x = -p->dir.y * scale, .y = p->dir.x * scale };
-    Vector2 r0 = { .x = p->dir.x - plane.x, .y = p->dir.y - plane.y };
-    Vector2 r1 = { .x = p->dir.x + plane.x, .y = p->dir.y + plane.y };
+void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
+    YrCamera *p = &ctx->camera;
+    float scale = yr_projection_plane_scale(ctx);
+    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    Vector2 r0 = {.x = p->dir.x - plane.x, .y = p->dir.y - plane.y};
+    Vector2 r1 = {.x = p->dir.x + plane.x, .y = p->dir.y + plane.y};
 
     Vector2 ray_dir = Vector2Subtract(r1, r0);
-    float inv_sw = 1.0f / (float)state->screen_width;
-    int sh = state->screen_height;
-    int rr = state->ray_res;
+    float inv_sw = 1.0f / (float)ctx->screen_width;
+    int sh = ctx->screen_height;
+    int rr = ctx->ray_res;
     int start_column = x_start / rr;
     float h_cam = (float)sh * 0.5f;
     float half_h = (float)sh * 0.5f;
 
     const yr_pixel_t *floor_tex = NULL;
     const yr_pixel_t *ceil_tex = NULL;
-    if (state->floor_texture) floor_tex = state->assets_map[state->floor_texture];
-    if (state->ceil_texture) ceil_tex = state->assets_map[state->ceil_texture];
+    if (ctx->floor_texture) floor_tex = ctx->assets_map[ctx->floor_texture];
+    if (ctx->ceil_texture) ceil_tex = ctx->assets_map[ctx->ceil_texture];
 
     if (p->angle == 0.0f) {
         int hz = (int)(half_h + p->horizon * half_h);
@@ -287,12 +278,12 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
 
                 for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
                     const yr_pixel_t *tex = ceil_tex;
-                    if (state->map_ceil) {
+                    if (ctx->map_ceil) {
                         int cell_x = (int)world_x;
                         int cell_y = (int)world_y;
-                        if (cell_x >= 0 && cell_x < state->map_cols && cell_y >= 0 && cell_y < state->map_rows) {
-                            uint8_t tex_id = state->map_ceil[cell_y * state->map_cols + cell_x];
-                            if (tex_id) tex = state->assets_map[tex_id];
+                        if (cell_x >= 0 && cell_x < ctx->map_cols && cell_y >= 0 && cell_y < ctx->map_rows) {
+                            uint8_t tex_id = ctx->map_ceil[cell_y * ctx->map_cols + cell_x];
+                            if (tex_id) tex = ctx->assets_map[tex_id];
                         }
                     }
 
@@ -323,12 +314,12 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
 
                 for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
                     const yr_pixel_t *tex = floor_tex;
-                    if (state->map_floor) {
+                    if (ctx->map_floor) {
                         int cell_x = (int)world_x;
                         int cell_y = (int)world_y;
-                        if (cell_x >= 0 && cell_x < state->map_cols && cell_y >= 0 && cell_y < state->map_rows) {
-                            uint8_t tex_id = state->map_floor[cell_y * state->map_cols + cell_x];
-                            if (tex_id) tex = state->assets_map[tex_id];
+                        if (cell_x >= 0 && cell_x < ctx->map_cols && cell_y >= 0 && cell_y < ctx->map_rows) {
+                            uint8_t tex_id = ctx->map_floor[cell_y * ctx->map_cols + cell_x];
+                            if (tex_id) tex = ctx->assets_map[tex_id];
                         }
                     }
 
@@ -346,7 +337,7 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
     }
 
     float tan_angle = tanf(p->angle);
-    float half_w = (float)state->screen_width * 0.5f;
+    float half_w = (float)ctx->screen_width * 0.5f;
 
     for (int x = x_start; x < x_end; x += rr) {
         float horizon = half_h + p->horizon * half_h + ((float)x - half_w) * tan_angle;
@@ -366,13 +357,13 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
                 }
                 float brightness = -(row_dist / YR_MAX_RENDER_DIST);
                 Vector2 w = Vector2Add(p->pos, Vector2Scale(base_ray, row_dist)); // world coordinates of the point on the ceiling corresponding to this pixel row
-                if (state->map_ceil) {
+                if (ctx->map_ceil) {
                     int cell_x = (int)w.x;
                     int cell_y = (int)w.y;
-                    if(cell_x >= 0 && cell_x < state->map_cols && cell_y >= 0 && cell_y < state->map_rows && state->map_ceil[cell_y * state->map_cols + cell_x]) {
-                        ceil_tex = state->assets_map[state->map_ceil[cell_y * state->map_cols + cell_x]];
+                    if (cell_x >= 0 && cell_x < ctx->map_cols && cell_y >= 0 && cell_y < ctx->map_rows && ctx->map_ceil[cell_y * ctx->map_cols + cell_x]) {
+                        ceil_tex = ctx->assets_map[ctx->map_ceil[cell_y * ctx->map_cols + cell_x]];
                     } else {
-                        ceil_tex = state->assets_map[state->ceil_texture];
+                        ceil_tex = ctx->assets_map[ctx->ceil_texture];
                     }
                 }
                 int tx = ((int)(w.x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
@@ -393,13 +384,13 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
                 }
                 float brightness = -(row_dist / YR_MAX_RENDER_DIST);
                 Vector2 w = Vector2Add(p->pos, Vector2Scale(base_ray, row_dist)); // world coordinates of the point on the floor corresponding to this pixel row
-                if (state->map_floor && w.x >= 0 && (int)w.x < state->map_cols && w.y >= 0 && (int)w.y < state->map_rows) {
+                if (ctx->map_floor && w.x >= 0 && (int)w.x < ctx->map_cols && w.y >= 0 && (int)w.y < ctx->map_rows) {
                     int cell_x = (int)w.x;
                     int cell_y = (int)w.y;
-                    if(cell_x >= 0 && cell_x < state->map_cols && cell_y >= 0 && cell_y < state->map_rows && state->map_floor[cell_y * state->map_cols + cell_x]) {
-                        floor_tex = state->assets_map[state->map_floor[cell_y * state->map_cols + cell_x]];
+                    if (cell_x >= 0 && cell_x < ctx->map_cols && cell_y >= 0 && cell_y < ctx->map_rows && ctx->map_floor[cell_y * ctx->map_cols + cell_x]) {
+                        floor_tex = ctx->assets_map[ctx->map_floor[cell_y * ctx->map_cols + cell_x]];
                     } else {
-                        floor_tex = state->assets_map[state->floor_texture];
+                        floor_tex = ctx->assets_map[ctx->floor_texture];
                     }
                 }
                 int tx = ((int)(w.x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
@@ -413,24 +404,24 @@ static void yr_draw_background_range(YrGameState *state, int x_start, int x_end)
     }
 }
 
-void yr_draw_background(YrGameState *state) {
-    yr_draw_background_range(state, 0, state->screen_width);
+void yr_draw_background(YrContext *ctx) {
+    yr__draw_background_range(ctx, 0, ctx->screen_width);
 }
 
 /**
- * Renders the entities (sprites) in the scene. It first calculates the distance of each entity from the camera, sorts them by distance, and then renders them in back-to-front order to ensure proper occlusion. 
- * For each entity, it calculates the appropriate screen position and size based on its distance and renders it using its associated texture. 
+ * Renders the entities (sprites) in the scene. It first calculates the distance of each entity from the camera, sorts them by distance, and then renders them in back-to-front order to ensure proper occlusion.
+ * For each entity, it calculates the appropriate screen position and size based on its distance and renders it using its associated texture.
  * It also applies distance-based brightness to create a sense of depth.
  */
 // Computes distances, advances animations and returns the active entities
 // sorted farthest-first, ready to be drawn (caller frees the array).
-static size_t yr_entities_prep(YrGameState *state, YrEntity ***out_entities) {
-    YrCamera *p = &state->camera;
-    YrEntity** entities = malloc(sizeof(*entities)*state->entities.length);
+size_t yr__entities_prep(YrContext *ctx, YrEntity ***out_entities) {
+    YrCamera *p = &ctx->camera;
+    YrEntity **entities = malloc(sizeof(*entities) * ctx->entities.length);
     size_t active_entities_count = 0;
     // Update entity distances
-    for (size_t i = 0; i < state->entities.length; i++) {
-        YrEntity *e = &state->entities.data[i].value;
+    for (size_t i = 0; i < ctx->entities.length; i++) {
+        YrEntity *e = &ctx->entities.data[i].value;
         if (e->disabled) continue;
         e->dist = Vector2Length(Vector2Subtract(e->pos, p->pos));
         entities[active_entities_count++] = e;
@@ -438,33 +429,32 @@ static size_t yr_entities_prep(YrGameState *state, YrEntity ***out_entities) {
     }
 
     // Sort entities by distance from the camera in descending order (farthest first) for proper rendering.
-    qsort(entities, active_entities_count, sizeof(YrEntity*), compare_sprite_dist);
+    qsort(entities, active_entities_count, sizeof(YrEntity *), compare_sprite_dist);
     *out_entities = entities;
     return active_entities_count;
 }
 
-static void yr_update_entities(YrGameState *state) {
-    for (size_t i = 0; i < state->entities.length; i++) {
-        YrEntity *e = &state->entities.data[i].value;
+void yr__update_entities(YrContext *ctx) {
+    for (size_t i = 0; i < ctx->entities.length; i++) {
+        YrEntity *e = &ctx->entities.data[i].value;
         if (e->disabled || e->update == NULL) continue;
-        e->update(state, e, state->entities.data[i].key);
+        e->update(ctx, e, ctx->entities.data[i].key);
     }
 }
 
 // Draws the prepared sprites, restricted to screen columns [x_start, x_end).
-static void yr_draw_sprites_range(
-    YrGameState *state,
+void yr__draw_sprites_range(
+    YrContext *ctx,
     YrEntity **entities,
     size_t active_entities_count,
     int x_start,
-    int x_end
-) {
-    YrCamera *p = &state->camera;
-    float half_screen = state->screen_width * 0.5f;
+    int x_end) {
+    YrCamera *p = &ctx->camera;
+    float half_screen = ctx->screen_width * 0.5f;
     float tan_angle = tanf(p->angle);
-    float scale = yr_projection_plane_scale(state);
-    float projection_scale = (float)state->screen_height;
-    Vector2 plane = { .x = -p->dir.y * scale, .y = p->dir.x * scale };
+    float scale = yr_projection_plane_scale(ctx);
+    float projection_scale = (float)ctx->screen_height;
+    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
     float invDet = 1.0f / (plane.x * p->dir.y - p->dir.x * plane.y);
 
     for (size_t i = 0; i < active_entities_count; i++) {
@@ -479,24 +469,23 @@ static void yr_draw_sprites_range(
         Vector2 rel = Vector2Subtract(e->pos, p->pos);
         Vector2 transform = {
             .x = p->dir.y * rel.x - p->dir.x * rel.y,
-            .y = -plane.y * rel.x + plane.x * rel.y
-        };
+            .y = -plane.y * rel.x + plane.x * rel.y};
         transform = Vector2Scale(transform, invDet);
 
         if (transform.y <= 0.0f || transform.y >= YR_MAX_RENDER_DIST) continue;
 
         int spriteScreenX = (int)(half_screen * (1 + transform.x / transform.y));
-        int v_shift = (int)(p->horizon * state->screen_height * 0.5f + ((float)spriteScreenX - half_screen) * tan_angle);
+        int v_shift = (int)(p->horizon * ctx->screen_height * 0.5f + ((float)spriteScreenX - half_screen) * tan_angle);
         int vmove = (int)((e->vmove * projection_scale) / transform.y);
 
         int spriteHeight = abs((int)((projection_scale * (1.0 - e->vdiv)) / transform.y));
         if (spriteHeight <= 0) continue;
-        int spriteTop = (state->screen_height - spriteHeight) / 2 + vmove + v_shift;
+        int spriteTop = (ctx->screen_height - spriteHeight) / 2 + vmove + v_shift;
         int spriteBottom = spriteTop + spriteHeight;
         int drawStartY = spriteTop;
         if (drawStartY < 0) drawStartY = 0;
         int drawEndY = spriteBottom;
-        if (drawEndY > state->screen_height) drawEndY = state->screen_height;
+        if (drawEndY > ctx->screen_height) drawEndY = ctx->screen_height;
         if (drawEndY <= drawStartY) continue;
 
         int spriteWidth = abs((int)((projection_scale * (1.0 - e->hdiv)) / transform.y));
@@ -509,20 +498,20 @@ static void yr_draw_sprites_range(
         if (drawEndX > x_end) drawEndX = x_end;
         if (drawEndX <= drawStartX) continue;
 
-        const yr_pixel_t *tex = state->assets_map[e->texture_id];
+        const yr_pixel_t *tex = ctx->assets_map[e->texture_id];
 
         // Render the sprite column by column, applying distance-based brightness and checking against the z-buffer for proper occlusion with walls.
-        for (int x = drawStartX; x < drawEndX; x += state->ray_res) {
+        for (int x = drawStartX; x < drawEndX; x += ctx->ray_res) {
             int texX = (x - spriteLeft) * YR_TEXTURE_SIZE / spriteWidth;
             if (texX < 0) texX = 0;
             if (texX >= YR_TEXTURE_SIZE) texX = YR_TEXTURE_SIZE - 1;
 
-            if (transform.y < state->zbuffer[x / state->ray_res]) {
+            if (transform.y < ctx->zbuffer[x / ctx->ray_res]) {
                 int texture_y = drawStartY - spriteTop;
                 yr_draw_texture_column(
                     x,
                     drawStartY,
-                    state->ray_res,
+                    ctx->ray_res,
                     drawEndY - drawStartY,
                     tex,
                     texX,
@@ -535,206 +524,113 @@ static void yr_draw_sprites_range(
     }
 }
 
-void yr_draw_entities(YrGameState *state) {
+void yr_draw_entities(YrContext *ctx) {
     YrEntity **entities = NULL;
-    size_t active_entities_count = yr_entities_prep(state, &entities);
-    yr_draw_sprites_range(state, entities, active_entities_count, 0, state->screen_width);
+    size_t active_entities_count = yr__entities_prep(ctx, &entities);
+    yr__draw_sprites_range(ctx, entities, active_entities_count, 0, ctx->screen_width);
     free(entities);
-    yr_update_entities(state);
+    yr__update_entities(ctx);
 }
 
-YrGameState state = {0};
-
-#ifdef ESP32_MULTITHREAD
-// Dual-core work splitting: a worker task pinned to the other core runs the
-// first half of a job while the main core runs the second half. Used for the
-// screen rendering (split by columns) and yr_apply_color_filter (split by
-// rows). All shared state must be read-only during the parallel phase and
-// each half must only write data disjoint from the other.
-static TaskHandle_t yr_render_worker_handle = NULL;
-static TaskHandle_t yr_render_main_handle = NULL;
-static bool yr_render_worker_failed = false;
-static void (*yr_par_job)(void *ctx, int start, int end) = NULL;
-static void *yr_par_ctx = NULL;
-static int yr_par_mid = 0;
-static YrEntity **yr_par_entities = NULL;
-static size_t yr_par_entity_count = 0;
-
-static void yr_render_worker(void *arg) {
-    (void)arg;
-    for (;;) {
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-        yr_par_job(yr_par_ctx, 0, yr_par_mid);
-        xTaskNotifyGive(yr_render_main_handle);
-    }
-}
-
-static bool yr_render_worker_start(void) {
-    if (yr_render_worker_handle) return true;
-    if (yr_render_worker_failed) return false;
-
-    yr_render_main_handle = xTaskGetCurrentTaskHandle();
-
-    // The main task runs on core 0 (ESP_MAIN_TASK_AFFINITY_CPU0); pin the
-    // render worker to core 1. On unicore configs this fails and we fall
-    // back to single-core execution.
-    if (xTaskCreatePinnedToCore(yr_render_worker, "yr_render", 4096, NULL,
-                                uxTaskPriorityGet(NULL), &yr_render_worker_handle, 1) != pdPASS) {
-        yr_render_worker_handle = NULL;
-        yr_render_worker_failed = true;
-        return false;
-    }
-    return true;
-}
-
-// Runs job over [0, total): the worker executes [0, total/2) on core 1 while
-// the caller executes [total/2, total), then they join. Falls back to one
-// sequential call if the worker can't start. Call only from the main task,
-// never from inside another split job.
-void yr_run_split(void (*job)(void *ctx, int start, int end), void *ctx, int total) {
-    if (total > 1 && yr_render_worker_start()) {
-        yr_par_job = job;
-        yr_par_ctx = ctx;
-        yr_par_mid = total / 2;
-        xTaskNotifyGive(yr_render_worker_handle);
-        job(ctx, yr_par_mid, total);
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    } else {
-        job(ctx, 0, total);
-    }
-}
-
-// Draws background, walls and sprites for a range of screen columns. Units
-// are ray_res-wide columns; the last unit absorbs any screen-width remainder.
-static void yr_draw_half_job(void *ctx, int start, int end) {
-    (void)ctx;
-    int rr = state.ray_res;
-    int total = state.screen_width / rr;
-    int x0 = start * rr;
-    int x1 = (end == total) ? state.screen_width : end * rr;
-    yr_draw_background_range(&state, x0, x1);
-    yr_draw_walls_range(&state, x0, x1);
-    yr_draw_sprites_range(&state, yr_par_entities, yr_par_entity_count, x0, x1);
-}
-#endif // ESP32_MULTITHREAD
+YrContext yr_context = {0};
 
 void yr__init_game() {
-    state.screen_width = YR_LCD_W;
-    state.screen_height = YR_LCD_H;
-    state.game_title = "Yari";
-    state.target_fps = 0;
-    state.ray_res = 1;
-    state.next_entity_id = 0;
-    yr_init_game(&state);
-    if (state.ray_res == 0) state.ray_res = 1;
-    state.camera.dir = Vector2Normalize(state.camera.dir);
-    state.zbuffer = malloc(sizeof(float) * ((state.screen_width + state.ray_res - 1) / state.ray_res));
+    yr_context.screen_width = YR_LCD_W;
+    yr_context.screen_height = YR_LCD_H;
+    yr_context.game_title = "Yari";
+    yr_context.target_fps = 0;
+    yr_context.ray_res = 1;
+    yr_context.next_entity_id = 0;
+    yr_init_game(&yr_context);
+    if (yr_context.ray_res == 0) yr_context.ray_res = 1;
+    yr_context.camera.dir = Vector2Normalize(yr_context.camera.dir);
+    yr_context.zbuffer = malloc(sizeof(float) * ((yr_context.screen_width + yr_context.ray_res - 1) / yr_context.ray_res));
     yr_renderer_init(
-        state.screen_width,
-        state.screen_height,
-        state.game_title,
-        state.target_fps
-        );
+        yr_context.screen_width,
+        yr_context.screen_height,
+        yr_context.game_title,
+        yr_context.target_fps);
     yr_inputs_init();
 }
 
 void yr_draw_game() {
 #ifdef ESP32_MULTITHREAD
-#if YR_PROFILE
-  float t0 = yr_get_time();
-#endif
-  YrEntity **entities = NULL;
-  size_t entity_count = yr_entities_prep(&state, &entities);
-
-  yr_par_entities = entities;
-  yr_par_entity_count = entity_count;
-  yr_run_split(yr_draw_half_job, NULL, state.screen_width / state.ray_res);
-
-  free(entities);
-  yr_update_entities(&state);
-#if YR_PROFILE
-  // Parallel mode: the whole draw (prep + both halves + updates) lands in
-  // "ents"; bg/walls stay at 0. Watch fps and ents for comparisons.
-  yr_prof.ents += yr_get_time() - t0;
-#endif
+    yr__draw_game_multithread(&yr_context);
 #else // !ESP32_MULTITHREAD
 #if YR_PROFILE
-  float t0 = yr_get_time();
-  yr_draw_background(&state);
-  float t1 = yr_get_time();
-  yr_draw_walls(&state);
-  float t2 = yr_get_time();
-  yr_draw_entities(&state);
-  float t3 = yr_get_time();
-  yr_prof.bg += t1 - t0;
-  yr_prof.walls += t2 - t1;
-  yr_prof.ents += t3 - t2;
+    float t0 = yr_get_time();
+    yr_draw_background(&ctx);
+    float t1 = yr_get_time();
+    yr_draw_walls(&ctx);
+    float t2 = yr_get_time();
+    yr_draw_entities(&ctx);
+    float t3 = yr_get_time();
+    yr_prof.bg += t1 - t0;
+    yr_prof.walls += t2 - t1;
+    yr_prof.ents += t3 - t2;
 #else
-  yr_draw_background(&state);
-  yr_draw_walls(&state);
-  yr_draw_entities(&state);
+    yr_draw_background(&yr_context);
+    yr_draw_walls(&yr_context);
+    yr_draw_entities(&yr_context);
 #endif
 #endif // ESP32_MULTITHREAD
 }
 
-
 void yr__update_game() {
 #if YR_PROFILE
-  float f0 = yr_get_time();
-  yr_begin_drawing();
-  yr_update_game(&state);
-  float f1 = yr_get_time();
-  yr_render_screen();
-  float f2 = yr_get_time();
-  yr_prof.game += f1 - f0;
-  yr_prof.tx += f2 - f1;
+    float f0 = yr_get_time();
+    yr_begin_drawing();
+    yr_update_game(&ctx);
+    float f1 = yr_get_time();
+    yr_render_screen();
+    float f2 = yr_get_time();
+    yr_prof.game += f1 - f0;
+    yr_prof.tx += f2 - f1;
 
-  if (++yr_prof.frames >= 60) {
-    float n = (float)yr_prof.frames;
-    float fps = (yr_prof.last > 0.0f) ? n / (f2 - yr_prof.last) : 0.0f;
-    // "logic" = everything in yr_update_game outside the three draw phases
-    // (game logic, HUD, input handling).
-    float logic = yr_prof.game - yr_prof.bg - yr_prof.walls - yr_prof.ents;
-    printf("[prof] fps=%.1f | bg=%.2f walls=%.2f ents=%.2f logic=%.2f tx=%.2f ms\n",
-           fps,
-           1000.0f * yr_prof.bg / n,
-           1000.0f * yr_prof.walls / n,
-           1000.0f * yr_prof.ents / n,
-           1000.0f * logic / n,
-           1000.0f * yr_prof.tx / n);
-    memset(&yr_prof, 0, sizeof(yr_prof));
-    yr_prof.last = f2;
-  }
+    if (++yr_prof.frames >= 60) {
+        float n = (float)yr_prof.frames;
+        float fps = (yr_prof.last > 0.0f) ? n / (f2 - yr_prof.last) : 0.0f;
+        // "logic" = everything in yr_update_game outside the three draw phases
+        // (game logic, HUD, input handling).
+        float logic = yr_prof.game - yr_prof.bg - yr_prof.walls - yr_prof.ents;
+        printf("[prof] fps=%.1f | bg=%.2f walls=%.2f ents=%.2f logic=%.2f tx=%.2f ms\n",
+               fps,
+               1000.0f * yr_prof.bg / n,
+               1000.0f * yr_prof.walls / n,
+               1000.0f * yr_prof.ents / n,
+               1000.0f * logic / n,
+               1000.0f * yr_prof.tx / n);
+        memset(&yr_prof, 0, sizeof(yr_prof));
+        yr_prof.last = f2;
+    }
 #else
-  yr_begin_drawing();
-  yr_update_game(&state);
-  yr_render_screen();
+    yr_begin_drawing();
+    yr_update_game(&yr_context);
+    yr_render_screen();
 #endif
-  yr_end_drawing();
+    yr_end_drawing();
 }
 
 void yr__free_game() {
-    free(state.zbuffer);
-    yr_da_free(&state.entities);
+    free(yr_context.zbuffer);
+    yr_da_free(&yr_context.entities);
 }
 
-size_t yr_create_entity_ex(YrGameState *state, YrEntity e, void *data) {
-    if(e.init) e.init(&e, data);
-    yr_hm_set(&state->entities, state->next_entity_id, e);
-    return state->next_entity_id++;
+size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data) {
+    if (e.init) e.init(&e, data);
+    yr_hm_set(&ctx->entities, ctx->next_entity_id, e);
+    return ctx->next_entity_id++;
 }
 
-void yr_remove_entity(YrGameState *state, size_t id) {
-    YrEntity *e = yr_hm_try(&state->entities, id);
-    if(!e) return;
-    
-    if(e->cleanup) e->cleanup(e);
+void yr_remove_entity(YrContext *ctx, size_t id) {
+    YrEntity *e = yr_hm_try(&ctx->entities, id);
+    if (!e) return;
+
+    if (e->cleanup) e->cleanup(e);
     yr_da_free(&e->animation);
-    yr_hm_remove(&state->entities, id);
+    yr_hm_remove(&ctx->entities, id);
 }
 
 size_t yr_get_entity_id(YrEntity *e) {
-    return *((size_t*)(((uint8_t*)(e)) - sizeof(size_t)));
+    return *((size_t *)(((uint8_t *)(e)) - sizeof(size_t)));
 }
-
-

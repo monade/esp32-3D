@@ -3599,17 +3599,8 @@ static void append_map_array_data(String *out, const App *app, const WallMap *ma
     }
 }
 
-static void append_map_array_fn(String *out, const App *app, const char *fn_name, const WallMap *map, const char *macro_suffix) {
-    str_appendf(out, "static inline uint8_t *%s(void) {\n", fn_name);
-    str_appendf(out, "    static uint8_t data[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", macro_suffix, macro_suffix);
-    append_map_array_data(out, app, map);
-    str_append(out, "    };\n");
-    str_append(out, "    return data;\n");
-    str_append(out, "}\n\n");
-}
-
 static void append_map_array_var(String *out, const App *app, const char *var_name, const WallMap *map, const char *macro_suffix) {
-    str_appendf(out, "static uint8_t %s[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", var_name, macro_suffix, macro_suffix);
+    str_appendf(out, "static const uint8_t %s[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", var_name, macro_suffix, macro_suffix);
     append_map_array_data(out, app, map);
     str_append(out, "};\n\n");
 }
@@ -3658,8 +3649,8 @@ static bool write_level_header(App *app) {
 
     char guard_name[96];
     snprintf(guard_name, sizeof(guard_name), "YR_LEVEL_H%s", macro_suffix);
-    char map_get_fn[96];
-    snprintf(map_get_fn, sizeof(map_get_fn), "level_get_map%s", fn_suffix);
+    char map_var[96];
+    snprintf(map_var, sizeof(map_var), "level_map%s", fn_suffix);
     char map_floor_var[96];
     snprintf(map_floor_var, sizeof(map_floor_var), "level_map_floor%s", fn_suffix);
     char map_ceil_var[96];
@@ -3692,6 +3683,8 @@ static bool write_level_header(App *app) {
     str_append(&out, "#include <stdint.h>\n");
     str_append(&out, "#include <stddef.h>\n");
     str_append(&out, "#include <stdbool.h>\n");
+    str_append(&out, "#include <stdlib.h>\n");
+    str_append(&out, "#include <string.h>\n");
     str_append(&out, "#include <yari.h>\n");
     str_append(&out, "#include \"assets.h\"\n");
     str_append(&out, "#include \"" LEVEL_GEN_FILE_NAME "\"\n\n");
@@ -3798,14 +3791,14 @@ static bool write_level_header(App *app) {
         str_append(&out, "}\n\n");
     }
 
-    str_appendf(&out, "static inline void %s(YrGameState *state) {\n", append_entities_fn);
+    str_appendf(&out, "static inline void %s(YrContext *ctx) {\n", append_entities_fn);
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
         if (!entity->exported) continue;
         bool has_init = entity->init_fn[0] != '\0';
         bool has_update = entity->update_fn[0] != '\0';
         bool has_cleanup = entity->cleanup_fn[0] != '\0';
-        str_appendf(&out, "    yr_create_entity(state, create_%s%s(NULL", entity->name, fn_suffix);
+        str_appendf(&out, "    yr_create_entity(ctx, create_%s%s(NULL", entity->name, fn_suffix);
         if (!has_init) str_append(&out, ", NULL");
         if (!has_update) str_append(&out, ", NULL");
         if (!has_cleanup) str_append(&out, ", NULL");
@@ -3813,26 +3806,37 @@ static bool write_level_header(App *app) {
     }
     str_append(&out, "}\n\n");
 
-    append_map_array_fn(&out, app, map_get_fn, &app->map, macro_suffix);
+    append_map_array_var(&out, app, map_var, &app->map, macro_suffix);
 
     bool has_floor_map = wall_map_has_any(app, &app->floor_map);
     bool has_ceil_map = wall_map_has_any(app, &app->ceil_map);
     if (has_floor_map) append_map_array_var(&out, app, map_floor_var, &app->floor_map, macro_suffix);
     if (has_ceil_map) append_map_array_var(&out, app, map_ceil_var, &app->ceil_map, macro_suffix);
 
-    str_appendf(&out, "static inline void %s(YrGameState *state) {\n", load_fn);
-    str_append(&out, "    state->assets_map = assets_map;\n");
-    str_appendf(&out, "    state->map = %s();\n", map_get_fn);
-    if (has_floor_map) str_appendf(&out, "    state->map_floor = %s;\n", map_floor_var);
-    else str_append(&out, "    state->map_floor = NULL;\n");
-    if (has_ceil_map) str_appendf(&out, "    state->map_ceil = %s;\n", map_ceil_var);
-    else str_append(&out, "    state->map_ceil = NULL;\n");
-    str_appendf(&out, "    state->map_cols = YR_MAP_COLS%s;\n", macro_suffix);
-    str_appendf(&out, "    state->map_rows = YR_MAP_ROWS%s;\n", macro_suffix);
-    str_appendf(&out, "    state->floor_texture = %s;\n", floor_macro);
-    str_appendf(&out, "    state->ceil_texture = %s;\n", ceil_macro);
-    str_appendf(&out, "    state->camera = %s();\n", init_camera_fn);
-    str_appendf(&out, "    %s(state);\n", append_entities_fn);
+    str_appendf(&out, "static inline void %s(YrContext *ctx) {\n", load_fn);
+    str_append(&out, "    ctx->assets_map = assets_map;\n");
+    str_appendf(&out, "    ctx->map = realloc(ctx->map, sizeof(%s));\n", map_var);
+    str_appendf(&out, "    memcpy(ctx->map, %s, sizeof(%s));\n", map_var, map_var);
+    if (has_floor_map) {
+        str_appendf(&out, "    ctx->map_floor = realloc(ctx->map_floor, sizeof(%s));\n", map_floor_var);
+        str_appendf(&out, "    memcpy(ctx->map_floor, %s, sizeof(%s));\n", map_floor_var, map_floor_var);
+    } else {
+        str_append(&out, "    free(ctx->map_floor);\n");
+        str_append(&out, "    ctx->map_floor = NULL;\n");
+    }
+    if (has_ceil_map) {
+        str_appendf(&out, "    ctx->map_ceil = realloc(ctx->map_ceil, sizeof(%s));\n", map_ceil_var);
+        str_appendf(&out, "    memcpy(ctx->map_ceil, %s, sizeof(%s));\n", map_ceil_var, map_ceil_var);
+    } else {
+        str_append(&out, "    free(ctx->map_ceil);\n");
+        str_append(&out, "    ctx->map_ceil = NULL;\n");
+    }
+    str_appendf(&out, "    ctx->map_cols = YR_MAP_COLS%s;\n", macro_suffix);
+    str_appendf(&out, "    ctx->map_rows = YR_MAP_ROWS%s;\n", macro_suffix);
+    str_appendf(&out, "    ctx->floor_texture = %s;\n", floor_macro);
+    str_appendf(&out, "    ctx->ceil_texture = %s;\n", ceil_macro);
+    str_appendf(&out, "    ctx->camera = %s();\n", init_camera_fn);
+    str_appendf(&out, "    %s(ctx);\n", append_entities_fn);
     str_append(&out, "}\n\n");
 
     str_appendf(&out, "#endif // %s\n", guard_name);
@@ -3882,7 +3886,7 @@ static bool write_level_gen_header(App *app) {
 
     /* forward declarations for entity update functions (unique names only) */
     for (size_t i = 0; i < app->update_fns.length; i++) {
-        str_appendf(&out, "void %s(YrGameState *state, YrEntity *self, size_t index);\n", app->update_fns.data[i].name);
+        str_appendf(&out, "void %s(YrContext *ctx, YrEntity *self, size_t index);\n", app->update_fns.data[i].name);
     }
     if (app->update_fns.length > 0) str_append(&out, "\n");
 
