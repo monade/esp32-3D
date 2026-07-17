@@ -52,23 +52,51 @@ typedef struct {
 
 yr_hm_declare(YrEntityMap, size_t, YrEntity);
 
+enum yr_wall_kind {
+    YR_WK_EMPTY,
+    YR_WK_FULL,
+    YR_WK_THIN_H,
+    YR_WK_THIN_V,
+    YR_WK_THIN_X,
+    YR_WK_THIN_D1,
+    YR_WK_THIN_D2,
+};
+typedef struct {
+    uint8_t kind;
+    bool textured;
+    union {
+        uint16_t texture_id;
+        yr_pixel_t color;
+    };
+    int8_t slide_x;
+    int8_t slide_y;
+} YrWall;
+
+#define YrEmptyWall() (YrWall) {0}
+#define YrColoredWall(col, ...) (YrWall) {.textured = false, .color = (col), __VA_ARGS__}
+#define YrTexturedWall(tex_id, ...) (YrWall) {.textured = true, .texture_id = (uint16_t)(tex_id), __VA_ARGS__}
+
+typedef struct {
+    YrWall  *walls;
+    uint8_t *floor;
+    uint8_t *ceil;
+    size_t cols;
+    size_t rows;
+    size_t floor_texture;
+    size_t ceil_texture;
+} YrMap;
+
 struct YrContext {
     YrCamera camera;
     int screen_width;
     int screen_height;
     char *game_title;
     unsigned int target_fps;
-    uint8_t *map;
-    uint8_t *map_floor;
-    uint8_t *map_ceil;
-    uint8_t map_cols;
-    uint8_t map_rows;
+    YrMap map;
     YrEntityMap entities;
     unsigned int ray_res;
     float *zbuffer;
     const yr_pixel_t **assets_map;
-    size_t floor_texture;
-    size_t ceil_texture;
     size_t next_entity_id;
     void* game_data; // game-defined state
 };
@@ -77,6 +105,23 @@ extern YrContext yr_context;
 
 
 void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x);
+
+// Shared wall geometry (yari.c) - used by both the renderer and physics.c so
+// collision always matches exactly what's drawn. See yr_raycast_walls for
+// the model these implement: FULL recedes from a cell corner by slide/128
+// per axis; THIN_H/THIN_V are a zero-thickness bar inside the cell whose
+// length is clipped the same way and whose depth is moved by the other
+// axis's slide (0 = centered); THIN_D1/THIN_D2/THIN_X are a zero-thickness
+// diagonal that always stays at exactly 45 degrees - slide_x recedes it
+// along its own direction (from its "low" corner, mirroring the others),
+// slide_y shifts it perpendicular to that direction (0 = the true corner-
+// to-corner diagonal). Never derive a diagonal from yr__wall_recede_box's
+// box corners directly: unless slide_x and slide_y have equal magnitude
+// that box isn't square and the corner-to-corner line skews off 45 degrees.
+bool yr__thin_diagonal_hit(Vector2 pos, Vector2 dir, float ex0, float ey0, float ex1, float ey1, float *out_t, float *out_s, bool *out_side);
+void yr__wall_recede_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
+void yr__wall_thin_bar_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
+void yr__wall_diagonal_endpoints(YrWall tile, size_t cell_x, size_t cell_y, bool slash, Vector2 *out_a, Vector2 *out_b);
 
 void yr_draw_walls(YrContext *ctx);
 

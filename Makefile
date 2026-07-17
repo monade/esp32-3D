@@ -37,8 +37,6 @@ build/yari: src/yari/*.h
 ## Raylib
 build/yari.o: src/yari/yari.c
 	$(CC) $(YARI_CFLAGS) -c src/yari/yari.c -o build/yari.o
-build/colors.o: src/yari/colors.c
-	$(CC) $(YARI_CFLAGS) -c src/yari/colors.c -o build/colors.o
 build/renderer_common.o: src/yari/renderer_common.c
 	$(CC) $(YARI_CFLAGS) -c src/yari/renderer_common.c -o build/renderer_common.o
 build/physics.o: src/yari/physics.c
@@ -52,16 +50,16 @@ build/inputs.o: src/yari/platform/raylib/inputs.c
 	$(CC) $(YARI_CFLAGS) $(RAYLIB_CFLAGS) -c src/yari/platform/raylib/inputs.c -o build/inputs.o
 build/renderer.o: src/yari/platform/raylib/renderer.c
 	$(CC) $(YARI_CFLAGS) $(RAYLIB_CFLAGS) -c src/yari/platform/raylib/renderer.c -o build/renderer.o
-build/yari/lib/libyari_raylib.a: build/yari build/yari.o build/colors.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
-	ar rcs build/yari/lib/libyari_raylib.a build/yari.o build/colors.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
+build/yari/lib/libyari_raylib.a: build/yari build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
+	ar rcs build/yari/lib/libyari_raylib.a build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
 
 ## SDL2
 build/inputs_sdl.o: src/yari/platform/sdl/inputs.c src/yari/inputs.h
 	$(CC) $(YARI_CFLAGS) $(SDL2_CFLAGS) -c src/yari/platform/sdl/inputs.c -o build/inputs_sdl.o
 build/renderer_sdl.o: src/yari/platform/sdl/renderer.c src/yari/renderer.h
 	$(CC) $(YARI_CFLAGS) $(SDL2_CFLAGS) -c src/yari/platform/sdl/renderer.c -o build/renderer_sdl.o
-build/yari/lib/libyari_sdl.a: build/yari build/yari.o build/colors.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
-	ar rcs build/yari/lib/libyari_sdl.a build/yari.o build/colors.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
+build/yari/lib/libyari_sdl.a: build/yari build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
+	ar rcs build/yari/lib/libyari_sdl.a build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
 
 ## Raylib web
 external/web:
@@ -74,8 +72,6 @@ external/web:
 	fi
 build/yari_web.o: src/yari/yari.c src/yari/yari.h src/yari/renderer.h src/yari/inputs.h src/yari/colors.h src/yari/physics.h
 	$(EMCC) $(RAYLIB_WEB_CFLAGS) -c src/yari/yari.c -o build/yari_web.o
-build/colors_web.o: src/yari/colors.c src/yari/colors.h
-	$(EMCC) $(RAYLIB_WEB_CFLAGS) -c src/yari/colors.c -o build/colors_web.o
 build/renderer_common_web.o: src/yari/renderer_common.c src/yari/renderer.h
 	$(EMCC) $(RAYLIB_WEB_CFLAGS) -c src/yari/renderer_common.c -o build/renderer_common_web.o
 build/physics_web.o: src/yari/physics.c src/yari/physics.h src/yari/yari.h
@@ -88,8 +84,8 @@ build/renderer_web.o: external/web src/yari/platform/raylib/renderer.c src/yari/
 	$(EMCC) $(RAYLIB_WEB_CFLAGS) -c src/yari/platform/raylib/renderer.c -o build/renderer_web.o
 build/inputs_web.o: external/web src/yari/platform/raylib/inputs.c src/yari/inputs.h
 	$(EMCC) $(RAYLIB_WEB_CFLAGS) -c src/yari/platform/raylib/inputs.c -o build/inputs_web.o
-build/yari/lib/libyari_web.a: external/web build/yari build/yari_web.o build/colors_web.o build/renderer_common_web.o build/inputs_web.o build/renderer_web.o build/physics_web.o build/yari_utils_web.o build/ht_web.o
-	$(EMAR) rcs build/yari/lib/libyari_web.a build/yari_web.o build/colors_web.o build/renderer_common_web.o build/inputs_web.o build/renderer_web.o build/physics_web.o build/yari_utils_web.o build/ht_web.o
+build/yari/lib/libyari_web.a: external/web build/yari build/yari_web.o build/renderer_common_web.o build/inputs_web.o build/renderer_web.o build/physics_web.o build/yari_utils_web.o build/ht_web.o
+	$(EMAR) rcs build/yari/lib/libyari_web.a build/yari_web.o build/renderer_common_web.o build/inputs_web.o build/renderer_web.o build/physics_web.o build/yari_utils_web.o build/ht_web.o
 
 ## ESP32
 build/yari/esp32: src/yari/* src/yari/platform/esp32/*

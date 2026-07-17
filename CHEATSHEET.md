@@ -121,9 +121,6 @@ Named color constants (`YR_BLACK`, `YR_WHITE`, `YR_RED`, `YR_GREEN`,
 `YR_EMPTY_PIXEL`) are defined as `yr_pixel_t` values, in RGB565 or ARGB form
 depending on whether `COLOR_565` is defined.
 
-`enum wall_color` (`YR_WALL_BLACK`, `YR_WALL_WHITE`, `YR_WALL_RED`, ...)
-enumerates the colors entries for use as wall map tile values.
-
 ## Physics & Collisions (`physics.h`)
 
 ```c

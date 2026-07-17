@@ -1,6 +1,6 @@
 // File generated automatically by map_builder.c. DO NOT EDIT.
 // MAP_BUILDER_STATE_BEGIN
-// version 2
+// version 3
 // player_collision 0.150000006 0xFFFFFFCD
 // layer PICKUP 1
 // layer ENEMY 2

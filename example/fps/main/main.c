@@ -21,7 +21,7 @@
 #define PLAYER_ROTATION_SPEED 2.0
 #define PLAYER_SPEED 4.0
 #define PLAYER_RUN_SPEED 5.5
-#define PLAYER_COLLISION_THRESHOLD 0.15f
+#define PLAYER_COLLISION_THRESHOLD 0.35f
 #define PLAYER_HIT_ANIM_SPEED 0.4f
 #define PLAYER_BOB_SPEED 14.0f
 #define PLAYER_RUN_BOB_SPEED 20.0f
@@ -219,7 +219,7 @@ void spawn_boss(Context *ctx) {
 void spawn_first_wave(Context *ctx) {
     spawn_mummy(ctx, (Vector2){.x = 11, .y = 25});
     spawn_mummy(ctx, (Vector2){.x = 12, .y = 29});
-    spawn_mummy(ctx, (Vector2){.x = 9, .y = 26});
+    spawn_mummy(ctx, (Vector2){.x = 9, .y = 28});
     spawn_mummy(ctx, (Vector2){.x = 8, .y = 35});
     spawn_mummy(ctx, (Vector2){.x = 8, .y = 29});
 }

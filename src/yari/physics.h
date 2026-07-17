@@ -27,7 +27,7 @@ typedef struct {
     struct {
         int cell_x;
         int cell_y;
-        uint8_t tile;
+        YrWall tile;
     };
     struct {
         YrEntity *entity;

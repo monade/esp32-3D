@@ -57,7 +57,7 @@
 #define NO_SELECTION -1
 #define MAP_BUILDER_STATE_BEGIN "MAP_BUILDER_STATE_BEGIN"
 #define MAP_BUILDER_STATE_END "MAP_BUILDER_STATE_END"
-#define MAP_BUILDER_STATE_VERSION 2
+#define MAP_BUILDER_STATE_VERSION 3
 #define LEVEL_GEN_FILE_NAME "level_gen.h"
 #define ANIM_NAME_SIZE 64
 #define MAX_ANIM_FRAMES 64
@@ -129,6 +129,36 @@ typedef struct {
     int *data;
 } WallMap;
 
+// Values mirror enum yr_wall_kind in src/yari/yari.h for readability - codegen
+// always emits the symbolic YR_WK_* names, so this isn't safety-critical.
+typedef enum {
+    WALL_KIND_EMPTY = 0,
+    WALL_KIND_FULL = 1,
+    WALL_KIND_THIN_H = 2,
+    WALL_KIND_THIN_V = 3,
+    WALL_KIND_THIN_X = 4,
+    WALL_KIND_THIN_D1 = 5,
+    WALL_KIND_THIN_D2 = 6,
+} WallKind;
+
+typedef struct {
+    int kind; // WallKind; EMPTY is the one true "no wall here" check
+    bool textured;
+    int asset_index; // meaningful only when textured
+    Color color;      // meaningful only when !textured - kept separate from
+                       // asset_index (not unioned) so toggling `textured`
+                       // never clobbers whichever value isn't active
+    int slide_x; // staged as int for GuiValueBox; clamped to [-128,127] on
+                 // every write and again at export
+    int slide_y;
+} WallCell;
+
+typedef struct {
+    int cols;
+    int rows;
+    WallCell *cells; // row-major, cells[y*cols+x]
+} WallGrid;
+
 typedef enum {
     BRUSH_WALL = 0,
     BRUSH_ENTITY = 1,
@@ -173,7 +203,7 @@ typedef struct {
 typedef struct {
     int offset_x;
     int offset_y;
-    int asset_index;
+    WallCell cell;
 } ClipboardWall;
 
 da_declare(Assets, Asset);
@@ -199,7 +229,7 @@ typedef enum {
 // Deep copy of everything undo/redo can restore: the map layers, entities, shared
 // definitions (collision layers, fn names, kinds, animations) and the player.
 typedef struct {
-    WallMap map;
+    WallGrid map;
     WallMap floor_map;
     WallMap ceil_map;
     PlacedEntities entities;
@@ -230,7 +260,7 @@ da_declare(UndoStates, UndoState);
 typedef struct {
     Assets assets;
     PlacedEntities entities;
-    WallMap map;
+    WallGrid map;
     WallMap floor_map;
     WallMap ceil_map;
     Camera2D camera;
@@ -295,6 +325,16 @@ typedef struct {
     bool player_dir_x_edit;
     bool player_dir_y_edit;
     bool player_threshold_edit;
+    bool brush_wall_slide_x_edit;
+    bool brush_wall_slide_y_edit;
+
+    int brush_wall_kind; // WallKind; UI only ever sets FULL/THIN_H/THIN_V, never WALL_KIND_EMPTY (Delete owns that)
+    bool brush_wall_textured;
+    Color brush_wall_color;
+    int brush_wall_slide_x; // -128..127, clamped on every write into a cell
+    int brush_wall_slide_y;
+    char brush_wall_slide_x_text[16];
+    char brush_wall_slide_y_text[16];
 
     float brush_vdiv;
     float brush_hdiv;
@@ -372,7 +412,7 @@ typedef struct {
 
 typedef struct {
     bool has_size;
-    WallMap map;
+    WallGrid map;
     WallMap floor_map;
     WallMap ceil_map;
     PlacedEntities entities;
@@ -570,8 +610,61 @@ static void wall_map_clone(const WallMap *src, WallMap *dst) {
     memcpy(dst->data, src->data, count * sizeof(dst->data[0]));
 }
 
+static void wall_grid_init(WallGrid *grid, int cols, int rows) {
+    grid->cols = cols;
+    grid->rows = rows;
+    // A zeroed WallCell is already a valid empty cell (kind == WALL_KIND_EMPTY).
+    grid->cells = calloc((size_t)cols * (size_t)rows, sizeof(grid->cells[0]));
+    if (!grid->cells) {
+        log_error("Out of memory\n");
+        exit(1);
+    }
+}
+
+static void wall_grid_free(WallGrid *grid) {
+    free(grid->cells);
+    grid->cells = NULL;
+    grid->cols = 0;
+    grid->rows = 0;
+}
+
+static void wall_grid_clone(const WallGrid *src, WallGrid *dst) {
+    dst->cols = src->cols;
+    dst->rows = src->rows;
+    size_t count = (size_t)src->cols * (size_t)src->rows;
+    dst->cells = malloc(count * sizeof(dst->cells[0]));
+    if (!dst->cells) {
+        log_error("Out of memory\n");
+        exit(1);
+    }
+    memcpy(dst->cells, src->cells, count * sizeof(dst->cells[0]));
+}
+
+static bool wall_grid_inside(const WallGrid *grid, int x, int y) {
+    return x >= 0 && y >= 0 && x < grid->cols && y < grid->rows;
+}
+
+static WallCell *wall_grid_cell(WallGrid *grid, int x, int y) {
+    if (!wall_grid_inside(grid, x, y)) return NULL;
+    return &grid->cells[y * grid->cols + x];
+}
+
+static void wall_grid_resize_copy(WallGrid *grid, int cols, int rows) {
+    WallGrid next = {0};
+    wall_grid_init(&next, cols, rows);
+
+    int copy_cols = grid->cols < cols ? grid->cols : cols;
+    int copy_rows = grid->rows < rows ? grid->rows : rows;
+    for (int y = 0; y < copy_rows; y++) {
+        memcpy(&next.cells[y * next.cols], &grid->cells[y * grid->cols], (size_t)copy_cols * sizeof(next.cells[0]));
+    }
+
+    wall_grid_free(grid);
+    *grid = next;
+}
+
 static void free_undo_state(UndoState *state) {
-    wall_map_free(&state->map);
+    wall_grid_free(&state->map);
     wall_map_free(&state->floor_map);
     wall_map_free(&state->ceil_map);
     da_free(&state->entities);
@@ -585,7 +678,7 @@ static void free_undo_state(UndoState *state) {
 
 static UndoState capture_undo_state(App *app) {
     UndoState state = {0};
-    wall_map_clone(&app->map, &state.map);
+    wall_grid_clone(&app->map, &state.map);
     wall_map_clone(&app->floor_map, &state.floor_map);
     wall_map_clone(&app->ceil_map, &state.ceil_map);
     da_append_many(&state.entities, app->entities.data, app->entities.length);
@@ -677,6 +770,79 @@ static int asset_index_from_symbol(const App *app, const char *symbol) {
     return -1;
 }
 
+// Painting a color-mode wall needs no texture selected at all - only textured
+// painting requires a valid asset.
+static bool current_wall_brush_is_valid(const App *app) {
+    return !app->brush_wall_textured || selected_wall_asset_is_valid(app);
+}
+
+static WallCell current_brush_wall_cell(const App *app) {
+    WallCell cell = {0};
+    cell.kind = app->brush_wall_kind;
+    cell.textured = app->brush_wall_textured;
+    cell.asset_index = app->selected_asset;
+    cell.color = app->brush_wall_color;
+    cell.slide_x = clamp_int(app->brush_wall_slide_x, -128, 127);
+    cell.slide_y = clamp_int(app->brush_wall_slide_y, -128, 127);
+    return cell;
+}
+
+// Packing for the tool's own project-save text format only (see
+// append_level_state/parse_state_line) - always a fixed 32-bit RRGGBBAA
+// encoding, independent of whatever yr_pixel_t format the exported game is
+// built with (that switch is handled separately in the codegen, directly in
+// the generated header, since it depends on the *consumer's* COLOR_565
+// define, not on anything map_builder itself controls).
+static uint32_t color_to_yr_pixel(Color c) {
+    return ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16) | ((uint32_t)c.b << 8) | (uint32_t)c.a;
+}
+
+static Color yr_pixel_to_color(uint32_t p) {
+    return (Color){
+        .r = (unsigned char)(p >> 24),
+        .g = (unsigned char)(p >> 16),
+        .b = (unsigned char)(p >> 8),
+        .a = (unsigned char)p,
+    };
+}
+
+static const char *wall_kind_symbol(int kind) {
+    switch (kind) {
+        case WALL_KIND_FULL: return "YR_WK_FULL";
+        case WALL_KIND_THIN_H: return "YR_WK_THIN_H";
+        case WALL_KIND_THIN_V: return "YR_WK_THIN_V";
+        case WALL_KIND_THIN_X: return "YR_WK_THIN_X";
+        case WALL_KIND_THIN_D1: return "YR_WK_THIN_D1";
+        case WALL_KIND_THIN_D2: return "YR_WK_THIN_D2";
+        default: return "YR_WK_EMPTY";
+    }
+}
+
+// Mirrors yr__wall_diagonal_endpoints (src/yari/yari.c) exactly, so the map
+// view is a truthful preview: THIN_D1 (slash=false, "\") / THIN_D2
+// (slash=true, "/") always stay at exactly 45 degrees regardless of
+// slide_x/slide_y - slide_x recedes the segment along its own direction
+// from its "a" corner, slide_y rigidly shifts the whole segment
+// perpendicular to that direction. Deriving it from a per-axis recede box
+// instead (like FULL) would skew it whenever |slide_x| != |slide_y|.
+static void wall_diagonal_endpoints(const WallCell *cell, int cell_x, int cell_y, bool slash, Vector2 *out_a, Vector2 *out_b) {
+    float length_frac = (float)clamp_int(cell->slide_x, -128, 127) / 128.0f;
+    float depth_frac = (float)clamp_int(cell->slide_y, -128, 127) / 128.0f;
+
+    Vector2 a = slash ? (Vector2){(float)cell_x, (float)cell_y + 1.0f} : (Vector2){(float)cell_x, (float)cell_y};
+    Vector2 b = slash ? (Vector2){(float)cell_x + 1.0f, (float)cell_y} : (Vector2){(float)cell_x + 1.0f, (float)cell_y + 1.0f};
+    Vector2 d = {b.x - a.x, b.y - a.y};
+    Vector2 perp = {d.y, -d.x};
+
+    float recede_a = length_frac > 0.0f ? length_frac : 0.0f;
+    float recede_b = length_frac < 0.0f ? length_frac : 0.0f;
+
+    out_a->x = a.x + d.x * recede_a + perp.x * depth_frac;
+    out_a->y = a.y + d.y * recede_a + perp.y * depth_frac;
+    out_b->x = b.x + d.x * recede_b + perp.x * depth_frac;
+    out_b->y = b.y + d.y * recede_b + perp.y * depth_frac;
+}
+
 static void stroke_wall_rect(App *app, int x0, int y0, int x1, int y1) {
     int min_x = x0 < x1 ? x0 : x1;
     int max_x = x0 > x1 ? x0 : x1;
@@ -691,8 +857,8 @@ static void stroke_wall_rect(App *app, int x0, int y0, int x1, int y1) {
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
             if (x != min_x && x != max_x && y != min_y && y != max_y) continue;
-            int *cell = wall_map_cell(&app->map, x, y);
-            if (cell) *cell = app->selected_asset;
+            WallCell *cell = wall_grid_cell(&app->map, x, y);
+            if (cell) *cell = current_brush_wall_cell(app);
         }
     }
 }
@@ -704,8 +870,8 @@ static void stroke_wall_circle(App *app, int cx, int cy, int edge_x, int edge_y)
     float dy = ((float)edge_y + 0.5f) - center_y;
     float radius = sqrtf(dx * dx + dy * dy);
     if (radius < 0.5f) {
-        int *cell = wall_map_cell(&app->map, cx, cy);
-        if (cell) *cell = app->selected_asset;
+        WallCell *cell = wall_grid_cell(&app->map, cx, cy);
+        if (cell) *cell = current_brush_wall_cell(app);
         return;
     }
 
@@ -722,15 +888,15 @@ static void stroke_wall_circle(App *app, int cx, int cy, int edge_x, int edge_y)
             float ddy = cell_y - center_y;
             float dist = sqrtf(ddx * ddx + ddy * ddy);
             if (fabsf(dist - radius) <= 0.5f) {
-                int *cell = wall_map_cell(&app->map, x, y);
-                if (cell) *cell = app->selected_asset;
+                WallCell *cell = wall_grid_cell(&app->map, x, y);
+                if (cell) *cell = current_brush_wall_cell(app);
             }
         }
     }
 }
 
 static void apply_wall_drag(App *app) {
-    if (!selected_wall_asset_is_valid(app)) {
+    if (!current_wall_brush_is_valid(app)) {
         set_status_kind(app, STATUS_WARNING, "Select a texture first");
         return;
     }
@@ -745,12 +911,6 @@ static void apply_wall_drag(App *app) {
 
 static WallMap *active_surface_map(App *app) {
     return app->surface_target == SURFACE_CEIL ? &app->ceil_map : &app->floor_map;
-}
-
-// The grid that the current cell selection operates on: the active surface map for
-// SELECTION_SURFACE, otherwise the wall map (SELECTION_WALL and the default).
-static WallMap *selection_cell_map(App *app) {
-    return app->selection_kind == SELECTION_SURFACE ? active_surface_map(app) : &app->map;
 }
 
 static void stroke_surface_rect(App *app, int x0, int y0, int x1, int y1) {
@@ -793,7 +953,7 @@ static void wall_map_resize_copy(WallMap *map, int cols, int rows) {
 }
 
 static void wall_map_resize(App *app, int cols, int rows) {
-    wall_map_resize_copy(&app->map, cols, rows);
+    wall_grid_resize_copy(&app->map, cols, rows);
     wall_map_resize_copy(&app->floor_map, cols, rows);
     wall_map_resize_copy(&app->ceil_map, cols, rows);
 
@@ -883,7 +1043,9 @@ static bool app_is_editing(const App *app) {
         app->player_threshold_edit ||
         app->new_anim_edit ||
         app->anim_name_edit ||
-        app->anim_speed_edit;
+        app->anim_speed_edit ||
+        app->brush_wall_slide_x_edit ||
+        app->brush_wall_slide_y_edit;
 }
 
 static void set_status(App *app, const char *fmt, ...) {
@@ -912,6 +1074,34 @@ static void draw_texture_preview(const Asset *asset, Rectangle dst, Color tint) 
         DrawRectangleRec(dst, asset->fallback);
     } else {
         DrawRectangleRec(dst, (Color){68, 72, 78, 255});
+    }
+}
+
+// Same fill logic as draw_texture_preview/DrawRectangleRec, but cut to a
+// rotated band running from a to b (thickness wide) instead of an
+// axis-aligned rect - used for THIN_D1/THIN_D2/THIN_X so the diagonal shows
+// its actual texture/color directly, the same way the axis-aligned THIN_H/
+// THIN_V bar already does, instead of a plain accent-colored line.
+static void draw_wall_band(App *app, const WallCell *cell, Vector2 a, Vector2 b, float thickness) {
+    float dx = b.x - a.x;
+    float dy = b.y - a.y;
+    float length = sqrtf(dx * dx + dy * dy);
+    if (length < 0.0001f) return;
+
+    float angle_deg = atan2f(dy, dx) * (180.0f / PI);
+    Vector2 origin = {length * 0.5f, thickness * 0.5f};
+    Rectangle dst = {(a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f, length, thickness};
+
+    if (cell->textured && asset_index_is_valid(app, cell->asset_index)) {
+        const Asset *asset = &app->assets.data[cell->asset_index];
+        if (asset->texture.id != 0) {
+            Rectangle src = {0.0f, 0.0f, (float)asset->texture.width, (float)asset->texture.height};
+            DrawTexturePro(asset->texture, src, dst, origin, angle_deg, WHITE);
+        } else {
+            DrawRectanglePro(dst, origin, angle_deg, asset->fallback);
+        }
+    } else if (!cell->textured) {
+        DrawRectanglePro(dst, origin, angle_deg, cell->color);
     }
 }
 
@@ -1466,6 +1656,15 @@ static const char *entity_edit_subject(App *app) {
     return app->brush_entity_name;
 }
 
+static const char *wall_edit_subject(App *app) {
+    static char label[32];
+    if (app->selection_kind == SELECTION_WALL && app->selected_walls.length > 1) {
+        snprintf(label, sizeof(label), "%u walls", (unsigned int)app->selected_walls.length);
+        return label;
+    }
+    return "wall";
+}
+
 static void clear_edit_selection(App *app) {
     app->editing_entity = NO_SELECTION;
     app->editing_wall = false;
@@ -1524,21 +1723,26 @@ static void load_entity_into_editor(App *app, int entity_index) {
 }
 
 static void load_wall_fields_into_editor(App *app, int x, int y) {
-    int *cell = wall_map_cell(&app->map, x, y);
-    if (!cell || *cell < 0) return;
+    WallCell *cell = wall_grid_cell(&app->map, x, y);
+    if (!cell || cell->kind == WALL_KIND_EMPTY) return;
 
     app->brush = BRUSH_WALL;
     app->editing_entity = NO_SELECTION;
     app->editing_wall = true;
     app->editing_wall_x = x;
     app->editing_wall_y = y;
-    app->selected_asset = *cell;
+    app->brush_wall_kind = cell->kind;
+    app->brush_wall_textured = cell->textured;
+    if (cell->textured) app->selected_asset = cell->asset_index;
+    else app->brush_wall_color = cell->color;
+    app->brush_wall_slide_x = cell->slide_x;
+    app->brush_wall_slide_y = cell->slide_y;
     set_status(app, "Editing wall %d,%d", x, y);
 }
 
 static void load_wall_into_editor(App *app, int x, int y) {
-    int *cell = wall_map_cell(&app->map, x, y);
-    if (!cell || *cell < 0) return;
+    WallCell *cell = wall_grid_cell(&app->map, x, y);
+    if (!cell || cell->kind == WALL_KIND_EMPTY) return;
 
     clear_edit_selection(app);
     app->selection_kind = SELECTION_WALL;
@@ -1632,7 +1836,7 @@ static void refresh_wall_editor_primary(App *app) {
         if (cell && *cell >= 0) app->selected_asset = *cell;
         return;
     }
-    if (wall_map_inside(&app->map, wall.x, wall.y)) {
+    if (wall_grid_inside(&app->map, wall.x, wall.y)) {
         load_wall_fields_into_editor(app, wall.x, wall.y);
     }
 }
@@ -1661,9 +1865,15 @@ static void add_wall_to_selection(App *app, int x, int y) {
     SelectionKind kind = app->selection_kind;
     if (kind == SELECTION_NONE) kind = (app->brush == BRUSH_SURFACE) ? SELECTION_SURFACE : SELECTION_WALL;
 
-    WallMap *map = (kind == SELECTION_SURFACE) ? active_surface_map(app) : &app->map;
-    int *cell = wall_map_cell(map, x, y);
-    if (!cell || *cell < 0) return;
+    int surface_asset = -1;
+    if (kind == SELECTION_SURFACE) {
+        int *cell = wall_map_cell(active_surface_map(app), x, y);
+        if (!cell || *cell < 0) return;
+        surface_asset = *cell;
+    } else {
+        WallCell *cell = wall_grid_cell(&app->map, x, y);
+        if (!cell || cell->kind == WALL_KIND_EMPTY) return;
+    }
 
     if (app->selection_kind == SELECTION_NONE) {
         app->selection_kind = kind;
@@ -1675,7 +1885,7 @@ static void add_wall_to_selection(App *app, int x, int y) {
     }
 
     if (app->selection_kind == SELECTION_SURFACE) {
-        if (app->selected_walls.length == 1) app->selected_asset = *cell;
+        if (app->selected_walls.length == 1) app->selected_asset = surface_asset;
     } else if (app->selected_walls.length == 1 || !app->editing_wall) {
         load_wall_fields_into_editor(app, x, y);
     }
@@ -1745,11 +1955,19 @@ static void prune_invalid_selection(App *app) {
         }
     }
 
-    WallMap *cell_map = selection_cell_map(app);
+    bool surface_selection = app->selection_kind == SELECTION_SURFACE;
+    WallMap *surface_map = surface_selection ? active_surface_map(app) : NULL;
     for (size_t i = 0; i < app->selected_walls.length;) {
         SelectedWall wall = app->selected_walls.data[i];
-        int *cell = wall_map_cell(cell_map, wall.x, wall.y);
-        if (!cell || *cell < 0) {
+        bool present;
+        if (surface_selection) {
+            int *cell = wall_map_cell(surface_map, wall.x, wall.y);
+            present = cell && *cell >= 0;
+        } else {
+            WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+            present = cell && cell->kind != WALL_KIND_EMPTY;
+        }
+        if (!present) {
             if (i + 1 < app->selected_walls.length) {
                 memmove(
                     &app->selected_walls.data[i],
@@ -1818,8 +2036,8 @@ static bool selected_walls_bounds(App *app, int *min_x, int *min_y, int *max_x, 
     bool found = false;
     for (size_t i = 0; i < app->selected_walls.length; i++) {
         SelectedWall wall = app->selected_walls.data[i];
-        int *cell = wall_map_cell(&app->map, wall.x, wall.y);
-        if (!cell || *cell < 0) continue;
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (!cell || cell->kind == WALL_KIND_EMPTY) continue;
 
         if (!found) {
             *min_x = *max_x = wall.x;
@@ -1885,13 +2103,13 @@ static void copy_active_selection(App *app) {
 
         for (size_t i = 0; i < app->selected_walls.length; i++) {
             SelectedWall wall = app->selected_walls.data[i];
-            int *cell = wall_map_cell(&app->map, wall.x, wall.y);
-            if (!cell || *cell < 0) continue;
+            WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+            if (!cell || cell->kind == WALL_KIND_EMPTY) continue;
 
             ClipboardWall item = {
                 .offset_x = wall.x - min_x,
                 .offset_y = wall.y - min_y,
-                .asset_index = *cell,
+                .cell = *cell,
             };
             da_append(&app->clipboard_walls, item);
         }
@@ -1989,10 +2207,10 @@ static void paste_clipboard_walls_at(App *app, int center_x, int center_y) {
         ClipboardWall item = app->clipboard_walls.data[i];
         int x = min_x + item.offset_x;
         int y = min_y + item.offset_y;
-        int *cell = wall_map_cell(&app->map, x, y);
+        WallCell *cell = wall_grid_cell(&app->map, x, y);
         if (!cell) continue;
 
-        *cell = item.asset_index;
+        *cell = item.cell;
         da_append(&app->selected_walls, ((SelectedWall){x, y}));
     }
 
@@ -2066,13 +2284,19 @@ static void delete_active_selection(App *app) {
 
     if (app->selection_kind == SELECTION_WALL || app->selection_kind == SELECTION_SURFACE) {
         bool surface = app->selection_kind == SELECTION_SURFACE;
-        WallMap *map = selection_cell_map(app);
+        WallMap *map = surface ? active_surface_map(app) : NULL;
         size_t delete_count = 0;
         for (size_t i = 0; i < app->selected_walls.length; i++) {
             SelectedWall wall = app->selected_walls.data[i];
-            int *cell = wall_map_cell(map, wall.x, wall.y);
-            if (!cell || *cell < 0) continue;
-            *cell = -1;
+            if (surface) {
+                int *cell = wall_map_cell(map, wall.x, wall.y);
+                if (!cell || *cell < 0) continue;
+                *cell = -1;
+            } else {
+                WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+                if (!cell || cell->kind == WALL_KIND_EMPTY) continue;
+                *cell = (WallCell){0};
+            }
             delete_count++;
         }
 
@@ -2324,19 +2548,106 @@ static void apply_selected_asset_to_edit(App *app) {
             int entity_index = app->selected_entities.data[i];
             if (selected_entity_is_valid(app, entity_index)) app->entities.data[entity_index].asset_index = app->selected_asset;
         }
-    } else if ((app->selection_kind == SELECTION_WALL || app->selection_kind == SELECTION_SURFACE) && app->selected_walls.length > 0) {
-        WallMap *map = selection_cell_map(app);
+    } else if (app->selection_kind == SELECTION_SURFACE && app->selected_walls.length > 0) {
+        WallMap *map = active_surface_map(app);
         for (size_t i = 0; i < app->selected_walls.length; i++) {
             SelectedWall wall = app->selected_walls.data[i];
             int *cell = wall_map_cell(map, wall.x, wall.y);
             if (cell && *cell >= 0) *cell = app->selected_asset;
         }
+    } else if (app->selection_kind == SELECTION_WALL && app->selected_walls.length > 0) {
+        for (size_t i = 0; i < app->selected_walls.length; i++) {
+            SelectedWall wall = app->selected_walls.data[i];
+            WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+            // Picking a texture swatch is unambiguous proof of texture-mode intent.
+            if (cell && cell->kind != WALL_KIND_EMPTY) { cell->textured = true; cell->asset_index = app->selected_asset; }
+        }
     } else if (editing_entity_is_valid(app)) {
         app->entities.data[app->editing_entity].asset_index = app->selected_asset;
     } else if (app->editing_wall) {
-        int *cell = wall_map_cell(&app->map, app->editing_wall_x, app->editing_wall_y);
-        if (cell) *cell = app->selected_asset;
+        WallCell *cell = wall_grid_cell(&app->map, app->editing_wall_x, app->editing_wall_y);
+        if (cell) { cell->textured = true; cell->asset_index = app->selected_asset; }
     }
+}
+
+static void apply_selected_wall_kind_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) cell->kind = app->brush_wall_kind;
+    }
+}
+
+static void apply_selected_wall_textured_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) cell->textured = app->brush_wall_textured;
+    }
+}
+
+static void apply_selected_wall_color_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) { cell->color = app->brush_wall_color; cell->textured = false; }
+    }
+}
+
+static void apply_selected_wall_slide_x_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) cell->slide_x = clamp_int(app->brush_wall_slide_x, -128, 127);
+    }
+}
+
+static void apply_selected_wall_slide_y_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) cell->slide_y = clamp_int(app->brush_wall_slide_y, -128, 127);
+    }
+}
+
+// Mirrors sync_selected_entity_from_editor: while exactly one wall is
+// selected/being edited, the brush_wall_* fields ARE that wall's live values,
+// written back unconditionally every frame (no per-field diffing needed).
+static void sync_selected_wall_from_editor(App *app) {
+    if (app->selection_kind != SELECTION_WALL || app->selected_walls.length == 0) {
+        if (!app->editing_wall) return;
+        app->selection_kind = SELECTION_WALL;
+        if (selected_wall_slot(app, app->editing_wall_x, app->editing_wall_y) < 0) {
+            da_append(&app->selected_walls, ((SelectedWall){app->editing_wall_x, app->editing_wall_y}));
+        }
+    }
+
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL || app->selected_walls.length != 1) return;
+
+    SelectedWall wall = app->selected_walls.data[0];
+    WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+    if (!cell || cell->kind == WALL_KIND_EMPTY) return;
+
+    cell->kind = app->brush_wall_kind;
+    cell->textured = app->brush_wall_textured;
+    if (app->brush_wall_textured) {
+        if (app->selected_asset >= 0 && app->selected_asset < (int)app->assets.length) cell->asset_index = app->selected_asset;
+    } else {
+        cell->color = app->brush_wall_color;
+    }
+    cell->slide_x = clamp_int(app->brush_wall_slide_x, -128, 127);
+    cell->slide_y = clamp_int(app->brush_wall_slide_y, -128, 127);
 }
 
 static float distance_between(Vector2 a, Vector2 b) {
@@ -2380,7 +2691,7 @@ static void set_player_pos(App *app, Vector2 pos) {
 // leaves the camera, brush and UI edit-mode fields untouched so undo/redo doesn't
 // disrupt whatever the user is currently looking at.
 static void apply_undo_state(App *app, UndoState *state) {
-    wall_map_free(&app->map);
+    wall_grid_free(&app->map);
     wall_map_free(&app->floor_map);
     wall_map_free(&app->ceil_map);
     da_free(&app->entities);
@@ -2516,8 +2827,8 @@ static bool select_existing_at(App *app, Vector2 world, int cell_x, int cell_y) 
         return true;
     }
 
-    int *cell = wall_map_cell(&app->map, cell_x, cell_y);
-    if (cell && *cell >= 0) {
+    WallCell *cell = wall_grid_cell(&app->map, cell_x, cell_y);
+    if (cell && cell->kind != WALL_KIND_EMPTY) {
         load_wall_into_editor(app, cell_x, cell_y);
         return true;
     }
@@ -2565,7 +2876,7 @@ static void selection_rect_cells(const App *app, int *min_x, int *min_y, int *ma
     *max_y = clamp_int(*max_y, 0, app->map.rows - 1);
 }
 
-static int count_walls_inside_selection_rect(const App *app) {
+static int count_walls_inside_selection_rect(App *app) {
     int min_x = 0;
     int min_y = 0;
     int max_x = 0;
@@ -2575,7 +2886,8 @@ static int count_walls_inside_selection_rect(const App *app) {
     int count = 0;
     for (int y = min_y; y <= max_y; y++) {
         for (int x = min_x; x <= max_x; x++) {
-            if (wall_map_inside(&app->map, x, y) && app->map.data[y * app->map.cols + x] >= 0) count++;
+            WallCell *cell = wall_grid_cell(&app->map, x, y);
+            if (cell && cell->kind != WALL_KIND_EMPTY) count++;
         }
     }
     return count;
@@ -2611,8 +2923,8 @@ static void apply_shift_click_selection(App *app, Vector2 world, int cell_x, int
     }
 
     if (app->selection_kind == SELECTION_WALL || app->selection_kind == SELECTION_NONE) {
-        int *cell = wall_map_cell(&app->map, cell_x, cell_y);
-        if (cell && *cell >= 0) toggle_wall_selection(app, cell_x, cell_y);
+        WallCell *cell = wall_grid_cell(&app->map, cell_x, cell_y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) toggle_wall_selection(app, cell_x, cell_y);
     }
 }
 
@@ -2659,8 +2971,8 @@ static void begin_shift_selection_drag(App *app, Vector2 world, int cell_x, int 
         if (entity_index >= 0) {
             app->selection_kind = SELECTION_ENTITY;
         } else {
-            int *cell = wall_map_cell(&app->map, cell_x, cell_y);
-            if (cell && *cell >= 0) app->selection_kind = SELECTION_WALL;
+            WallCell *cell = wall_grid_cell(&app->map, cell_x, cell_y);
+            if (cell && cell->kind != WALL_KIND_EMPTY) app->selection_kind = SELECTION_WALL;
         }
     }
 }
@@ -2781,28 +3093,28 @@ static bool move_selected_walls_by(App *app, int dx, int dy) {
         SelectedWall wall = app->selected_walls.data[i];
         int dst_x = wall.x + dx;
         int dst_y = wall.y + dy;
-        if (!wall_map_inside(&app->map, dst_x, dst_y)) return false;
+        if (!wall_grid_inside(&app->map, dst_x, dst_y)) return false;
 
-        int *dst = wall_map_cell(&app->map, dst_x, dst_y);
-        if (dst && *dst >= 0 && selected_wall_slot(app, dst_x, dst_y) < 0) return false;
+        WallCell *dst = wall_grid_cell(&app->map, dst_x, dst_y);
+        if (dst && dst->kind != WALL_KIND_EMPTY && selected_wall_slot(app, dst_x, dst_y) < 0) return false;
     }
 
     size_t count = app->selected_walls.length;
-    int *assets = malloc(count * sizeof(*assets));
-    if (!assets) {
+    WallCell *cells = malloc(count * sizeof(*cells));
+    if (!cells) {
         log_error("Out of memory\n");
         exit(1);
     }
 
     for (size_t i = 0; i < count; i++) {
         SelectedWall wall = app->selected_walls.data[i];
-        int *src = wall_map_cell(&app->map, wall.x, wall.y);
-        if (!src || *src < 0) {
-            free(assets);
+        WallCell *src = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (!src || src->kind == WALL_KIND_EMPTY) {
+            free(cells);
             prune_invalid_selection(app);
             return false;
         }
-        assets[i] = *src;
+        cells[i] = *src;
     }
 
     bool editing_wall_selected = app->editing_wall &&
@@ -2810,19 +3122,19 @@ static bool move_selected_walls_by(App *app, int dx, int dy) {
 
     for (size_t i = 0; i < count; i++) {
         SelectedWall wall = app->selected_walls.data[i];
-        int *src = wall_map_cell(&app->map, wall.x, wall.y);
-        if (src) *src = -1;
+        WallCell *src = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (src) *src = (WallCell){0};
     }
 
     for (size_t i = 0; i < count; i++) {
         SelectedWall *wall = &app->selected_walls.data[i];
-        int *dst = wall_map_cell(&app->map, wall->x + dx, wall->y + dy);
-        if (dst) *dst = assets[i];
+        WallCell *dst = wall_grid_cell(&app->map, wall->x + dx, wall->y + dy);
+        if (dst) *dst = cells[i];
         wall->x += dx;
         wall->y += dy;
     }
 
-    free(assets);
+    free(cells);
 
     if (editing_wall_selected) {
         app->editing_wall_x += dx;
@@ -2925,9 +3237,17 @@ static void append_level_state(String *out, const App *app) {
 
     for (int y = 0; y < app->map.rows; y++) {
         for (int x = 0; x < app->map.cols; x++) {
-            int asset_index = app->map.data[y * app->map.cols + x];
-            if (!asset_index_is_valid(app, asset_index)) continue;
-            str_appendf(out, "// wall %d %d %s\n", x, y, app->assets.data[asset_index].texture_symbol);
+            const WallCell *cell = &app->map.cells[y * app->map.cols + x];
+            if (cell->kind == WALL_KIND_EMPTY) continue;
+            if (cell->textured) {
+                str_appendf(out, "// wall %d %d %d 1 %s %d %d\n", x, y, cell->kind,
+                    asset_symbol_or_null(app, cell->asset_index),
+                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127));
+            } else {
+                str_appendf(out, "// wall %d %d %d 0 0x%08X %d %d\n", x, y, cell->kind,
+                    color_to_yr_pixel(cell->color),
+                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127));
+            }
         }
     }
 
@@ -3029,7 +3349,7 @@ static void loaded_level_init(LoadedLevel *loaded) {
 
 static void loaded_level_free(LoadedLevel *loaded) {
     if (loaded->has_size) {
-        wall_map_free(&loaded->map);
+        wall_grid_free(&loaded->map);
         wall_map_free(&loaded->floor_map);
         wall_map_free(&loaded->ceil_map);
     }
@@ -3133,11 +3453,11 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
     if (sscanf(payload, "size %d %d", &cols, &rows) == 2) {
         if (cols < MIN_MAP_SIZE || rows < MIN_MAP_SIZE || cols > MAX_MAP_SIZE || rows > MAX_MAP_SIZE) return false;
         if (loaded->has_size) {
-            wall_map_free(&loaded->map);
+            wall_grid_free(&loaded->map);
             wall_map_free(&loaded->floor_map);
             wall_map_free(&loaded->ceil_map);
         }
-        wall_map_init(&loaded->map, cols, rows);
+        wall_grid_init(&loaded->map, cols, rows);
         wall_map_init(&loaded->floor_map, cols, rows);
         wall_map_init(&loaded->ceil_map, cols, rows);
         loaded->has_size = true;
@@ -3220,15 +3540,45 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
 
     int x = 0;
     int y = 0;
-    if (sscanf(payload, "wall %d %d %127s", &x, &y, texture_symbol) == 3) {
-        if (!loaded->has_size || !wall_map_inside(&loaded->map, x, y)) return false;
-        int asset_index = asset_index_from_symbol(app, texture_symbol);
+    int kind = 0;
+    int textured_int = 0;
+    int slide_x = 0;
+    int slide_y = 0;
+    char token[128] = {0};
+    if (sscanf(payload, "wall %d %d %d %d %127s %d %d", &x, &y, &kind, &textured_int, token, &slide_x, &slide_y) == 7) {
+        if (!loaded->has_size || !wall_grid_inside(&loaded->map, x, y)) return false;
+        WallCell cell = {0};
+        cell.kind = clamp_int(kind, WALL_KIND_EMPTY, WALL_KIND_THIN_D2);
+        cell.textured = textured_int != 0;
+        cell.slide_x = clamp_int(slide_x, -128, 127);
+        cell.slide_y = clamp_int(slide_y, -128, 127);
+        if (cell.textured) {
+            int asset_index = asset_index_from_symbol(app, token);
+            if (asset_index < 0) {
+                if (strcmp(token, "NULL_ASSET") != 0 && strcmp(token, "0") != 0) (*missing_assets)++;
+                cell.kind = WALL_KIND_EMPTY; // can't author a textured wall with no resolvable texture
+            } else {
+                cell.asset_index = asset_index;
+            }
+        } else {
+            unsigned int packed = 0;
+            cell.color = (sscanf(token, "0x%x", &packed) == 1) ? yr_pixel_to_color(packed) : WHITE;
+        }
+        WallCell *dst = wall_grid_cell(&loaded->map, x, y);
+        if (dst) *dst = cell;
+        return true;
+    }
+
+    char legacy_wall_symbol[128] = {0};
+    if (sscanf(payload, "wall %d %d %127s", &x, &y, legacy_wall_symbol) == 3) {
+        if (!loaded->has_size || !wall_grid_inside(&loaded->map, x, y)) return false;
+        int asset_index = asset_index_from_symbol(app, legacy_wall_symbol);
         if (asset_index < 0) {
-            if (strcmp(texture_symbol, "NULL_ASSET") != 0 && strcmp(texture_symbol, "0") != 0) (*missing_assets)++;
+            if (strcmp(legacy_wall_symbol, "NULL_ASSET") != 0 && strcmp(legacy_wall_symbol, "0") != 0) (*missing_assets)++;
             return true;
         }
-        int *cell = wall_map_cell(&loaded->map, x, y);
-        if (cell) *cell = asset_index;
+        WallCell *dst = wall_grid_cell(&loaded->map, x, y);
+        if (dst) *dst = (WallCell){.kind = WALL_KIND_FULL, .textured = true, .asset_index = asset_index, .slide_x = 0, .slide_y = 0};
         return true;
     }
 
@@ -3347,7 +3697,7 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     clear_undo_history(&app->undo_stack);
     clear_undo_history(&app->redo_stack);
 
-    wall_map_free(&app->map);
+    wall_grid_free(&app->map);
     wall_map_free(&app->floor_map);
     wall_map_free(&app->ceil_map);
     da_free(&app->entities);
@@ -3372,7 +3722,7 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     if (app->selected_animation >= 0) {
         snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
     }
-    loaded->map = (WallMap){0};
+    loaded->map = (WallGrid){0};
     loaded->floor_map = (WallMap){0};
     loaded->ceil_map = (WallMap){0};
     loaded->entities = (PlacedEntities){0};
@@ -3605,6 +3955,44 @@ static void append_map_array_var(String *out, const App *app, const char *var_na
     str_append(out, "};\n\n");
 }
 
+static void append_wall_cell_literal(String *out, const App *app, const WallCell *cell) {
+    if (cell->kind == WALL_KIND_EMPTY) {
+        str_append(out, "YrEmptyWall()");
+        return;
+    }
+
+    int slide_x = clamp_int(cell->slide_x, -128, 127);
+    int slide_y = clamp_int(cell->slide_y, -128, 127);
+    if (cell->textured) {
+        str_appendf(out, "YrTexturedWall(%s, .kind=%s,.slide_x=%d,.slide_y=%d)",
+            asset_symbol_or_null(app, cell->asset_index), wall_kind_symbol(cell->kind), slide_x, slide_y);
+    } else {
+        // YR_COLOR(r,g,b) (src/yari/colors.h) packs a normalized 0..1 color
+        // into whichever yr_pixel_t format the level's *consumer* is built
+        // with (RGB565 or RGBA32) - map_builder never needs to know which.
+        Color c = cell->color;
+        str_appendf(out, "YrColoredWall(YR_COLOR(%.17g, %.17g, %.17g), .kind=%s,.slide_x=%d,.slide_y=%d)",
+            c.r / 255.0, c.g / 255.0, c.b / 255.0, wall_kind_symbol(cell->kind), slide_x, slide_y);
+    }
+}
+
+static void append_wall_array_data(String *out, const App *app, const WallGrid *grid) {
+    for (int y = 0; y < grid->rows; y++) {
+        str_append(out, "        ");
+        for (int x = 0; x < grid->cols; x++) {
+            append_wall_cell_literal(out, app, &grid->cells[y * grid->cols + x]);
+            str_append(out, (x == grid->cols - 1) ? "," : ", ");
+        }
+        str_append(out, "\n");
+    }
+}
+
+static void append_wall_array_var(String *out, const App *app, const char *var_name, const WallGrid *grid, const char *macro_suffix) {
+    str_appendf(out, "static const YrWall %s[YR_MAP_ROWS%s * YR_MAP_COLS%s] = {\n", var_name, macro_suffix, macro_suffix);
+    append_wall_array_data(out, app, grid);
+    str_append(out, "};\n\n");
+}
+
 /* Derives an identifier from the level file name (output path basename without
    extension) in both lower- and upper-case form, used to build the optional
    per-level suffix so multiple generated level headers can coexist. */
@@ -3806,7 +4194,7 @@ static bool write_level_header(App *app) {
     }
     str_append(&out, "}\n\n");
 
-    append_map_array_var(&out, app, map_var, &app->map, macro_suffix);
+    append_wall_array_var(&out, app, map_var, &app->map, macro_suffix);
 
     bool has_floor_map = wall_map_has_any(app, &app->floor_map);
     bool has_ceil_map = wall_map_has_any(app, &app->ceil_map);
@@ -3815,26 +4203,26 @@ static bool write_level_header(App *app) {
 
     str_appendf(&out, "static inline void %s(YrContext *ctx) {\n", load_fn);
     str_append(&out, "    ctx->assets_map = assets_map;\n");
-    str_appendf(&out, "    ctx->map = realloc(ctx->map, sizeof(%s));\n", map_var);
-    str_appendf(&out, "    memcpy(ctx->map, %s, sizeof(%s));\n", map_var, map_var);
+    str_appendf(&out, "    ctx->map.walls = realloc(ctx->map.walls, sizeof(%s));\n", map_var);
+    str_appendf(&out, "    memcpy(ctx->map.walls, %s, sizeof(%s));\n", map_var, map_var);
     if (has_floor_map) {
-        str_appendf(&out, "    ctx->map_floor = realloc(ctx->map_floor, sizeof(%s));\n", map_floor_var);
-        str_appendf(&out, "    memcpy(ctx->map_floor, %s, sizeof(%s));\n", map_floor_var, map_floor_var);
+        str_appendf(&out, "    ctx->map.floor = realloc(ctx->map.floor, sizeof(%s));\n", map_floor_var);
+        str_appendf(&out, "    memcpy(ctx->map.floor, %s, sizeof(%s));\n", map_floor_var, map_floor_var);
     } else {
-        str_append(&out, "    free(ctx->map_floor);\n");
-        str_append(&out, "    ctx->map_floor = NULL;\n");
+        str_append(&out, "    free(ctx->map.floor);\n");
+        str_append(&out, "    ctx->map.floor = NULL;\n");
     }
     if (has_ceil_map) {
-        str_appendf(&out, "    ctx->map_ceil = realloc(ctx->map_ceil, sizeof(%s));\n", map_ceil_var);
-        str_appendf(&out, "    memcpy(ctx->map_ceil, %s, sizeof(%s));\n", map_ceil_var, map_ceil_var);
+        str_appendf(&out, "    ctx->map.ceil = realloc(ctx->map.ceil, sizeof(%s));\n", map_ceil_var);
+        str_appendf(&out, "    memcpy(ctx->map.ceil, %s, sizeof(%s));\n", map_ceil_var, map_ceil_var);
     } else {
-        str_append(&out, "    free(ctx->map_ceil);\n");
-        str_append(&out, "    ctx->map_ceil = NULL;\n");
+        str_append(&out, "    free(ctx->map.ceil);\n");
+        str_append(&out, "    ctx->map.ceil = NULL;\n");
     }
-    str_appendf(&out, "    ctx->map_cols = YR_MAP_COLS%s;\n", macro_suffix);
-    str_appendf(&out, "    ctx->map_rows = YR_MAP_ROWS%s;\n", macro_suffix);
-    str_appendf(&out, "    ctx->floor_texture = %s;\n", floor_macro);
-    str_appendf(&out, "    ctx->ceil_texture = %s;\n", ceil_macro);
+    str_appendf(&out, "    ctx->map.cols = YR_MAP_COLS%s;\n", macro_suffix);
+    str_appendf(&out, "    ctx->map.rows = YR_MAP_ROWS%s;\n", macro_suffix);
+    str_appendf(&out, "    ctx->map.floor_texture = %s;\n", floor_macro);
+    str_appendf(&out, "    ctx->map.ceil_texture = %s;\n", ceil_macro);
     str_appendf(&out, "    ctx->camera = %s();\n", init_camera_fn);
     str_appendf(&out, "    %s(ctx);\n", append_entities_fn);
     str_append(&out, "}\n\n");
@@ -4081,8 +4469,8 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
         }
 
         push_undo_snapshot(app, "erase wall");
-        int *cell = wall_map_cell(&app->map, cell_x, cell_y);
-        if (cell) *cell = -1;
+        WallCell *cell = wall_grid_cell(&app->map, cell_x, cell_y);
+        if (cell) *cell = (WallCell){0};
         clear_edit_selection(app);
         return;
     }
@@ -4242,10 +4630,10 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
                 if (!app->wall_drag_moved) {
                     Vector2 click_pos = {(float)app->wall_drag_start_x + 0.5f, (float)app->wall_drag_start_y + 0.5f};
                     int entity_index = nearest_entity_at(app, click_pos, 0.5f);
-                    int *cell = wall_map_cell(&app->map, app->wall_drag_start_x, app->wall_drag_start_y);
+                    WallCell *cell = wall_grid_cell(&app->map, app->wall_drag_start_x, app->wall_drag_start_y);
                     if (entity_index >= 0) {
                         load_entity_into_editor(app, entity_index);
-                    } else if (cell && *cell >= 0) {
+                    } else if (cell && cell->kind != WALL_KIND_EMPTY) {
                         load_wall_into_editor(app, app->wall_drag_start_x, app->wall_drag_start_y);
                     } else {
                         apply_wall_drag(app);
@@ -4271,14 +4659,14 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) clear_edit_selection(app);
 
     if (app->brush == BRUSH_WALL && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        if (app->selected_asset < 0 || app->selected_asset >= (int)app->assets.length) {
+        if (!current_wall_brush_is_valid(app)) {
             set_status_kind(app, STATUS_WARNING, "Select a texture first");
             return;
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) push_undo_snapshot(app, "paint wall");
-        int *cell = wall_map_cell(&app->map, cell_x, cell_y);
-        if (cell) *cell = app->selected_asset;
+        WallCell *cell = wall_grid_cell(&app->map, cell_x, cell_y);
+        if (cell) *cell = current_brush_wall_cell(app);
     } else if (app->brush == BRUSH_ENTITY && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         place_entity(app, world);
     }
@@ -4313,16 +4701,74 @@ static void draw_map(App *app, Rectangle map_bounds) {
         }
     }
 
+    float line_width = fmaxf(1.0f / app->camera.zoom, 0.01f);
+
     for (int y = 0; y < app->map.rows; y++) {
         for (int x = 0; x < app->map.cols; x++) {
-            int asset_index = app->map.data[y * app->map.cols + x];
-            if (asset_index < 0 || asset_index >= (int)app->assets.length) continue;
+            const WallCell *cell = &app->map.cells[y * app->map.cols + x];
+            if (cell->kind == WALL_KIND_EMPTY) continue;
 
-            draw_texture_preview(&app->assets.data[asset_index], (Rectangle){(float)x, (float)y, 1.0f, 1.0f}, WHITE);
+            // Footprint mirrors the engine's own box test (yr_raycast_walls
+            // in src/yari/yari.c) so the 2D view is a truthful preview.
+            // FULL recedes from a corner: positive slide recedes the low
+            // corner, negative the high corner. THIN_H/THIN_V are a
+            // zero-thickness divider *inside* the cell instead: slide on the
+            // bar's own axis clips its length exactly like FULL's recede,
+            // slide on the other axis moves its depth (0 = centered).
+            float slide_x = (float)clamp_int(cell->slide_x, -128, 127) / 128.0f;
+            float slide_y = (float)clamp_int(cell->slide_y, -128, 127) / 128.0f;
+            const float thin_half_thickness = 0.06f;
+
+            // THIN_D1/THIN_D2/THIN_X are a zero-thickness diagonal that
+            // always stays at exactly 45 degrees (see
+            // yr__wall_diagonal_endpoints in src/yari/yari.c, mirrored here):
+            // slide_x recedes it along its own direction from its "a" corner
+            // (mirroring the other kinds' positive/negative recede), slide_y
+            // rigidly shifts the whole segment perpendicular to that
+            // direction. Deriving the diagonal from a per-axis recede box
+            // (like FULL) instead would skew it off 45 degrees whenever
+            // |slide_x| != |slide_y|.
+            if (cell->kind == WALL_KIND_THIN_D1 || cell->kind == WALL_KIND_THIN_D2 || cell->kind == WALL_KIND_THIN_X) {
+                float thickness = thin_half_thickness * 2.0f;
+                if (cell->kind == WALL_KIND_THIN_D1 || cell->kind == WALL_KIND_THIN_X) {
+                    Vector2 a, b;
+                    wall_diagonal_endpoints(cell, x, y, false, &a, &b);
+                    draw_wall_band(app, cell, a, b, thickness);
+                }
+                if (cell->kind == WALL_KIND_THIN_D2 || cell->kind == WALL_KIND_THIN_X) {
+                    Vector2 a, b;
+                    wall_diagonal_endpoints(cell, x, y, true, &a, &b);
+                    draw_wall_band(app, cell, a, b, thickness);
+                }
+                continue;
+            }
+
+            Rectangle footprint;
+            if (cell->kind == WALL_KIND_THIN_H) {
+                float x0 = (float)x + (slide_x > 0.0f ? slide_x : 0.0f);
+                float x1 = (float)x + 1.0f + (slide_x < 0.0f ? slide_x : 0.0f);
+                float y_pos = (float)y + 0.5f * (1.0f + slide_y);
+                footprint = (Rectangle){x0, y_pos - thin_half_thickness, x1 - x0, thin_half_thickness * 2.0f};
+            } else if (cell->kind == WALL_KIND_THIN_V) {
+                float y0 = (float)y + (slide_y > 0.0f ? slide_y : 0.0f);
+                float y1 = (float)y + 1.0f + (slide_y < 0.0f ? slide_y : 0.0f);
+                float x_pos = (float)x + 0.5f * (1.0f + slide_x);
+                footprint = (Rectangle){x_pos - thin_half_thickness, y0, thin_half_thickness * 2.0f, y1 - y0};
+            } else {
+                float x0 = (float)x + (slide_x > 0.0f ? slide_x : 0.0f);
+                float x1 = (float)x + 1.0f + (slide_x < 0.0f ? slide_x : 0.0f);
+                float y0 = (float)y + (slide_y > 0.0f ? slide_y : 0.0f);
+                float y1 = (float)y + 1.0f + (slide_y < 0.0f ? slide_y : 0.0f);
+                footprint = (Rectangle){x0, y0, x1 - x0, y1 - y0};
+            }
+
+            if (cell->textured) {
+                if (asset_index_is_valid(app, cell->asset_index)) draw_texture_preview(&app->assets.data[cell->asset_index], footprint, WHITE);
+            } else {
+                DrawRectangleRec(footprint, cell->color);
+            }
         }
     }
-
-    float line_width = fmaxf(1.0f / app->camera.zoom, 0.01f);
     if (app->camera.zoom >= 4.0f) {
         Color grid = (Color){255, 255, 255, 32};
         for (int x = 0; x <= app->map.cols; x++) {
@@ -4362,14 +4808,14 @@ static void draw_map(App *app, Rectangle map_bounds) {
 
     for (size_t i = 0; i < app->selected_walls.length; i++) {
         SelectedWall wall = app->selected_walls.data[i];
-        if (!wall_map_inside(&app->map, wall.x, wall.y)) continue;
+        if (!wall_grid_inside(&app->map, wall.x, wall.y)) continue;
         DrawRectangleLinesEx(
             (Rectangle){(float)wall.x, (float)wall.y, 1.0f, 1.0f},
             line_width * 4.0f,
             (Color){80, 180, 255, 255});
     }
 
-    if (app->editing_wall && wall_map_inside(&app->map, app->editing_wall_x, app->editing_wall_y)) {
+    if (app->editing_wall && wall_grid_inside(&app->map, app->editing_wall_x, app->editing_wall_y)) {
         DrawRectangleLinesEx(
             (Rectangle){(float)app->editing_wall_x, (float)app->editing_wall_y, 1.0f, 1.0f},
             line_width * 4.0f,
@@ -4574,6 +5020,27 @@ static void draw_float_field(App *app, const char *subject, const char *label, R
     if (GuiValueBoxFloat((Rectangle){bounds.x + 62.0f, bounds.y, bounds.width - 62.0f, bounds.height}, NULL, text, value, *edit)) {
         *edit = !*edit;
         if (!was_editing && *edit) push_undo_snapshot(app, "change %s %s", subject, label);
+    }
+}
+
+// GuiValueBox's minus-sign toggle is bound to the scancode-based KEY_MINUS
+// (see raygui.h), which only matches the US keyboard layout's "-" key
+// position - on other layouts (e.g. Italian) pressing "-" does nothing.
+// GuiTextBox has no such issue (it reads the actual typed character via
+// GetCharPressed()), so route negative-capable int fields through it
+// instead, parsing/clamping on commit.
+static void draw_int_field(App *app, const char *subject, const char *label, Rectangle bounds, char *text, size_t text_size, int *value, int min, int max, bool *edit) {
+    GuiLabel((Rectangle){bounds.x, bounds.y, 58.0f, bounds.height}, label);
+    if (!*edit) snprintf(text, text_size, "%d", *value);
+    bool was_editing = *edit;
+    if (GuiTextBox((Rectangle){bounds.x + 62.0f, bounds.y, bounds.width - 62.0f, bounds.height}, text, (int)text_size, *edit)) {
+        *edit = !*edit;
+        if (!was_editing && *edit) push_undo_snapshot(app, "change %s %s", subject, label);
+        if (was_editing && !*edit) {
+            int parsed = clamp_int(atoi(text), min, max);
+            *value = parsed;
+            snprintf(text, text_size, "%d", parsed);
+        }
     }
 }
 
@@ -5400,8 +5867,9 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
     GuiCheckBox((Rectangle){x, y, 18.0f, 18.0f}, "Level name suffix", &app->use_level_suffix);
     y += row_h;
 
-    bool uses_textures = app->brush == BRUSH_WALL || app->brush == BRUSH_SURFACE || app->brush == BRUSH_ANIM ||
-        (app->brush == BRUSH_ENTITY && app->entity_tab != ENTITY_TAB_FUNCTIONS);
+    bool uses_textures = app->brush == BRUSH_SURFACE || app->brush == BRUSH_ANIM ||
+        (app->brush == BRUSH_ENTITY && app->entity_tab != ENTITY_TAB_FUNCTIONS) ||
+        (app->brush == BRUSH_WALL && app->brush_wall_textured);
 
     if (app->brush == BRUSH_WALL) {
         GuiLabel((Rectangle){x, y, w, 20.0f}, "Wall insert");
@@ -5426,6 +5894,98 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         GuiToggle(circle_toggle, "Circle", &circle_active);
         GuiUnlock();
         y += 34.0f;
+
+        // This panel doubles as both the paint-brush defaults for new walls
+        // and the live editor for the current wall selection, mirroring how
+        // the BRUSH_ENTITY panel below serves both roles.
+        bool multi_wall_edit = app->selection_kind == SELECTION_WALL && app->selected_walls.length > 1;
+        int wall_kind_before = app->brush_wall_kind;
+        bool wall_textured_before = app->brush_wall_textured;
+        Color wall_color_before = app->brush_wall_color;
+        int wall_slide_x_before = app->brush_wall_slide_x;
+        int wall_slide_y_before = app->brush_wall_slide_y;
+
+        GuiLabel((Rectangle){x, y, w, 20.0f}, "Wall kind");
+        y += 24.0f;
+
+        float kind_w = (w - gap * 2.0f) / 3.0f;
+        Rectangle full_toggle = {x, y, kind_w, 24.0f};
+        Rectangle thin_h_toggle = {x + kind_w + gap, y, kind_w, 24.0f};
+        Rectangle thin_v_toggle = {x + (kind_w + gap) * 2.0f, y, kind_w, 24.0f};
+        Rectangle thin_d1_toggle = {x, y + 30.0f, kind_w, 24.0f};
+        Rectangle thin_d2_toggle = {x + kind_w + gap, y + 30.0f, kind_w, 24.0f};
+        Rectangle thin_x_toggle = {x + (kind_w + gap) * 2.0f, y + 30.0f, kind_w, 24.0f};
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            if (CheckCollisionPointRec(mouse, full_toggle)) app->brush_wall_kind = WALL_KIND_FULL;
+            else if (CheckCollisionPointRec(mouse, thin_h_toggle)) app->brush_wall_kind = WALL_KIND_THIN_H;
+            else if (CheckCollisionPointRec(mouse, thin_v_toggle)) app->brush_wall_kind = WALL_KIND_THIN_V;
+            else if (CheckCollisionPointRec(mouse, thin_d1_toggle)) app->brush_wall_kind = WALL_KIND_THIN_D1;
+            else if (CheckCollisionPointRec(mouse, thin_d2_toggle)) app->brush_wall_kind = WALL_KIND_THIN_D2;
+            else if (CheckCollisionPointRec(mouse, thin_x_toggle)) app->brush_wall_kind = WALL_KIND_THIN_X;
+        }
+        bool full_active = app->brush_wall_kind == WALL_KIND_FULL;
+        bool thin_h_active = app->brush_wall_kind == WALL_KIND_THIN_H;
+        bool thin_v_active = app->brush_wall_kind == WALL_KIND_THIN_V;
+        bool thin_d1_active = app->brush_wall_kind == WALL_KIND_THIN_D1;
+        bool thin_d2_active = app->brush_wall_kind == WALL_KIND_THIN_D2;
+        bool thin_x_active = app->brush_wall_kind == WALL_KIND_THIN_X;
+        GuiLock();
+        GuiToggle(full_toggle, "Full", &full_active);
+        GuiToggle(thin_h_toggle, "Thin H", &thin_h_active);
+        GuiToggle(thin_v_toggle, "Thin V", &thin_v_active);
+        GuiToggle(thin_d1_toggle, "Thin \\", &thin_d1_active);
+        GuiToggle(thin_d2_toggle, "Thin /", &thin_d2_active);
+        GuiToggle(thin_x_toggle, "Thin X", &thin_x_active);
+        GuiUnlock();
+        if (app->brush_wall_kind != wall_kind_before) {
+            push_undo_snapshot(app, "change %s kind", wall_edit_subject(app));
+            if (multi_wall_edit) apply_selected_wall_kind_to_edit(app);
+        }
+        y += 64.0f;
+
+        GuiCheckBox((Rectangle){x, y, 18.0f, 18.0f}, "Textured", &app->brush_wall_textured);
+        if (app->brush_wall_textured != wall_textured_before) {
+            push_undo_snapshot(app, "change %s textured", wall_edit_subject(app));
+            if (multi_wall_edit) apply_selected_wall_textured_to_edit(app);
+        }
+        y += row_h;
+
+        if (!app->brush_wall_textured) {
+            Rectangle picker_bounds = {x, y, 200.0f, 130.0f};
+            Rectangle hue_bounds = {picker_bounds.x + picker_bounds.width + 8.0f, y, 16.0f, 130.0f};
+            bool picker_press = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) &&
+                (CheckCollisionPointRec(mouse, picker_bounds) || CheckCollisionPointRec(mouse, hue_bounds));
+            if (picker_press) push_undo_snapshot(app, "change %s color", wall_edit_subject(app));
+            GuiColorPicker(picker_bounds, NULL, &app->brush_wall_color);
+            app->brush_wall_color.a = 255; // walls are always opaque - no alpha control
+
+            float swatch_x = hue_bounds.x + hue_bounds.width + 12.0f;
+            float swatch_w = x + w - swatch_x;
+            if (swatch_w > 0.0f) {
+                DrawRectangleRec((Rectangle){swatch_x, y, swatch_w, 32.0f}, app->brush_wall_color);
+                DrawRectangleLinesEx((Rectangle){swatch_x, y, swatch_w, 32.0f}, 1.0f, (Color){255, 255, 255, 120});
+            }
+            y += picker_bounds.height + 10.0f;
+
+            if (multi_wall_edit && memcmp(&app->brush_wall_color, &wall_color_before, sizeof(Color)) != 0) {
+                apply_selected_wall_color_to_edit(app);
+            }
+        }
+
+        GuiLabel((Rectangle){x, y, w, 20.0f}, "Slide");
+        y += 20.0f;
+
+        // Both axes are always meaningful: for FULL each recedes the box on
+        // its own axis; for THIN_H/THIN_V one clips the bar's length and the
+        // other moves its depth within the cell (see yr_raycast_walls in
+        // src/yari/yari.c) - which is which just swaps with kind.
+        draw_int_field(app, wall_edit_subject(app), "slide x", (Rectangle){x, y, half_w, row_h}, app->brush_wall_slide_x_text, sizeof(app->brush_wall_slide_x_text), &app->brush_wall_slide_x, -128, 127, &app->brush_wall_slide_x_edit);
+        draw_int_field(app, wall_edit_subject(app), "slide y", (Rectangle){x + half_w + gap, y, half_w, row_h}, app->brush_wall_slide_y_text, sizeof(app->brush_wall_slide_y_text), &app->brush_wall_slide_y, -128, 127, &app->brush_wall_slide_y_edit);
+        if (multi_wall_edit && app->brush_wall_slide_x != wall_slide_x_before) apply_selected_wall_slide_x_to_edit(app);
+        if (multi_wall_edit && app->brush_wall_slide_y != wall_slide_y_before) apply_selected_wall_slide_y_to_edit(app);
+        y += 34.0f;
+
+        if (!multi_wall_edit) sync_selected_wall_from_editor(app);
     } else if (app->brush == BRUSH_ENTITY) {
         bool multi_entity_edit = app->selection_kind == SELECTION_ENTITY && app->selected_entities.length > 1;
         bool name_was_editing = app->entity_name_edit;
@@ -5624,7 +6184,17 @@ static void init_app(App *app, const char *asset_dir, const char *output_path, c
 
     app->surface_target = SURFACE_FLOOR;
     app->entity_tab = ENTITY_TAB_PROPERTIES;
-    wall_map_init(&app->map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
+    // App is otherwise zero-initialized, and WALL_KIND_EMPTY == 0, so the
+    // paint-brush default must be set explicitly or new walls would paint
+    // as empty.
+    app->brush_wall_kind = WALL_KIND_FULL;
+    app->brush_wall_textured = true;
+    app->brush_wall_color = WHITE;
+    app->brush_wall_slide_x = 0;
+    app->brush_wall_slide_y = 0;
+    snprintf(app->brush_wall_slide_x_text, sizeof(app->brush_wall_slide_x_text), "0");
+    snprintf(app->brush_wall_slide_y_text, sizeof(app->brush_wall_slide_y_text), "0");
+    wall_grid_init(&app->map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     wall_map_init(&app->floor_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     wall_map_init(&app->ceil_map, DEFAULT_MAP_COLS, DEFAULT_MAP_ROWS);
     app->selected_animation = -1;
@@ -5718,7 +6288,7 @@ int main(int argc, char **argv) {
     }
 
     free_assets(&app.assets);
-    wall_map_free(&app.map);
+    wall_grid_free(&app.map);
     wall_map_free(&app.floor_map);
     wall_map_free(&app.ceil_map);
     da_free(&app.entities);

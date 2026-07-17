@@ -1,7 +1,6 @@
 idf_component_register(
     SRCS
         "yari.c"
-        "colors.c"
         "physics.c"
         "renderer_common.c"
         "yari_utils.c"

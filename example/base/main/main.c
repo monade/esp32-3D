@@ -9,24 +9,23 @@
 #define COLS 20
 #define ROWS 20
 // 0 null, 1-127 texture_id, 128-255 color_id
-static uint8_t map[ROWS][COLS] = {0};
-
+static YrWall walls[ROWS][COLS] = {0};
 
 void init_map() {
     // border
     for (int i = 0; i < ROWS; i++) {
-        map[i][0] = YR_WALL_GREEN;
-        map[i][COLS - 1] = YR_WALL_GREEN;
+        walls[i][0] = YrColoredWall(YR_GREEN);
+        walls[i][COLS - 1] = YrColoredWall(YR_GREEN);
     }
     for (int j = 0; j < COLS; j++) {
-        map[0][j] = YR_WALL_GREEN;
-        map[ROWS - 1][j] = YR_WALL_GREEN;
+        walls[0][j] = YrColoredWall(YR_GREEN);
+        walls[ROWS - 1][j] = YrColoredWall(YR_GREEN);
     }
 
     // inner blocks
-    map[7][7] = YR_WALL_RED;
-    map[8][8] = YR_WALL_BLUE;
-    map[9][9] = YR_WALL_YELLOW;
+    walls[7][7] = YrColoredWall(YR_RED);
+    walls[8][8] = YrColoredWall(YR_BLUE);
+    walls[9][9] = YrColoredWall(YR_YELLOW);
 }
 
 void move_player(Context *ctx) {
@@ -51,9 +50,11 @@ void move_player(Context *ctx) {
 // Main game functions
 void yr_init_game(Context *ctx) {
   init_map();
-  ctx->map = (uint8_t *)map;
-  ctx->map_cols = COLS;
-  ctx->map_rows = ROWS;
+  ctx->map = (YrMap){
+    .walls = (YrWall *)walls,
+    .cols = COLS,
+    .rows = ROWS,
+  };
   ctx->camera = (Camera){.pos = {14.5, 5.5}, .dir = {-0.8, 0.5}};
 }
 

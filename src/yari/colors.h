@@ -6,6 +6,9 @@
 
 #ifdef COLOR_565 // 16-bit color in 5-6-5 format
 typedef uint16_t yr_pixel_t;
+
+#define YR_COLOR(r, g, b) ((yr_pixel_t)(((int)((r)*31) << 11) | ((int)((g)*63) << 5) | (int)((b)*31))) 
+
 #define YR_EMPTY_PIXEL 0
 #define YR_BLACK       0x0001
 #define YR_WHITE       0xFFFF
@@ -67,6 +70,9 @@ static inline yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor) {
 }
 #else // 32-bit color with alpha, in ARGB format
 typedef uint32_t yr_pixel_t;
+
+#define YR_COLOR(r, g, b) ((yr_pixel_t)(((int)((r)*255) << 24) | ((int)((g)*255) << 16) | ((int)((b)*255) << 8) | 0xFF)) 
+
 #define YR_EMPTY_PIXEL 0xFF
 #define YR_BLACK       0x000001FF
 #define YR_WHITE       0xFFFFFFFF
@@ -126,33 +132,6 @@ static inline yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor) {
     return ((int)red << 24) | ((int)green << 16) | ((int)blue << 8) | 0xFF;
 }
 #endif
-
-
-extern yr_pixel_t yr_color_map[];
-
-enum wall_color {
-    YR_WALL_BLACK = 128,
-    YR_WALL_WHITE,
-    YR_WALL_RED,
-    YR_WALL_GREEN,
-    YR_WALL_BLUE,
-    YR_WALL_YELLOW,
-    YR_WALL_PURPLE,
-    YR_WALL_ORANGE,
-    YR_WALL_CYAN,
-    YR_WALL_PINK,
-    YR_WALL_GRAY,
-    YR_WALL_SILVER,
-    YR_WALL_MAROON,
-    YR_WALL_DARK_RED,
-    YR_WALL_DARK_GREEN,
-    YR_WALL_DARK_BLUE,
-    YR_WALL_OLIVE,
-    YR_WALL_TEAL,
-    YR_WALL_NAVY,
-    YR_WALL_BROWN,
-    YR_WALL_SKY_BLUE
-};
 
 #ifdef YARI_NO_PREFIX
 #define color_brightness yr_color_brightness

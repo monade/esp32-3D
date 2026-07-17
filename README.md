@@ -376,13 +376,14 @@ For an animation not tied to an entity (a HUD weapon sprite, say), call `yr_get_
 
 ### Map Format
 
-The map is a linear `uint8_t` array with `map_rows * map_cols` cells.
+The map is a linear `YrWall` array with `rows * cols` cells.
 
-| Cell value | Meaning |
+| Attribute | Meaning |
 | --- | --- |
-| `0` | empty space |
-| `1..127` | texture id, indexed through `assets_map` |
-| `128..255` | solid color mapped in enums YR_WALL_RED, ... |
+| kind | YR_WK_EMPTY (empty cell), YR_WK_FULL, ... |
+| textured | if false color will be applied instead of texture_id |
+| texture_id | texture id, indexed through `assets_map` |
+| color | solid color |
 
 Player and entity coordinates are floating-point values in the same map space.
 Cell `(x, y)` covers the area `[x, x+1)`, `[y, y+1)`.
