@@ -5,9 +5,7 @@ Quick reference for every function exported by the `yari` engine (`src/yari/`).
 All engine symbols are prefixed `yr_`/`Yr`. If you `#define YARI_NO_PREFIX`
 before `#include <yari.h>`, an unprefixed alias is generated for every
 function, macro and type below (e.g. `yr_draw_rectangle` → `draw_rectangle`,
-`YrContext` → `Context`). Math functions from `raymath.h` (`Vector2Add`,
-`MatrixMultiply`, ...) are never prefixed, matching raylib.
-
+`YrContext` → `Context`). Math functions from `raymath.h` (`Vector2Add`, `Vector2Scale`...)
 ## Table of Contents
 
 - [Core Types](#core-types)
@@ -20,6 +18,7 @@ function, macro and type below (e.g. `yr_draw_rectangle` → `draw_rectangle`,
 - [Input](#input-inputsh)
 - [Utils - Timers](#utils--timers-yari_utilsh)
 - [Utils - Sprite Animation](#utils--sprite-animation-yari_utilsh)
+- [Utils - Layout Helpers](#utils--layout-helpers-yari_utilsh)
 - [Utils - Entities](#utils--entities-yarih)
 - [Dynamic Array](#dynamic-array-dah)
 - [Hash Map & Hash Set](#hash-map--hash-set-hth)
@@ -34,8 +33,8 @@ YrContext     // central engine state: camera, map, entities, screen, assets (se
 YrCamera        // { Vector2 pos; Vector2 dir; float horizon; float angle; }
 YrEntity        // a sprite/object: pos, texture_id, kind, embedded animation stack, collision info, init/update/cleanup callbacks (see README - `Entities`)
 YrEntityMap     // yr_Hm(size_t, YrEntity) - hash map of entity id -> YrEntity, backs ctx->entities
-yr_pixel_t      // framebuffer pixel: uint16_t (RGB565, ESP32/COLOR_565) or uint32_t (ARGB, desktop/web)
-yr_font_t       // baked bitmap font: 1-bit atlas + yr_glyph_t[96] (ASCII 32-127)
+yr_pixel_t      // framebuffer pixel: uint16_t (RGB565, ESP32/YR_RGB565), uint8_t (L8/YR_L8), or uint32_t (ARGB, desktop/web)
+yr_font_t       // baked bitmap font: 1-bit atlas + yr_glyph_t[96] (ASCII 32-127), float size (pixel height)
 yr_glyph_t      // one glyph's atlas bounds, offset and advance (mirrors stbtt_bakedchar)
 
 YrCollisionInfo // result of a collision/ray query: type + wall cell or entity pointer
@@ -53,6 +52,11 @@ YR_TEXTURE_SIZE        // wall/floor/ceiling/sprite texture size in pixels (defa
 YR_CMSK_NONE           // collision mask: matches nothing (0)
 YR_CMSK_WALL           // collision mask: walls only (1)
 YR_CMSK_ALL            // collision mask: everything (-1)
+
+// Color mode selection (define before including yari.h)
+YR_RGB565              // 16-bit 5-6-5 pixels (auto-defined on ESP32 unless YR_L8 is set)
+YR_L8                  // 8-bit grayscale luminance pixels
+YR_MONOCROME           // implies YR_L8; simulates dithered 1bpp on desktop
 ```
 
 ---
@@ -85,6 +89,10 @@ void yr_draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, yr_pixel_t
 void yr_draw_triangle_line(int x0, int y0, int x1, int y1, int x2, int y2, int thickness, yr_pixel_t color); // Draws a triangle outline
 void yr_draw_texture(int x, int y, int width, int height, const yr_pixel_t *texture, int texture_width, int texture_height, bool skip_empty); // Draws a scaled 2D texture (HUD/UI elements)
 void yr_draw_text(const char *text, int x, int y, const yr_font_t *font, yr_pixel_t c); // Draws bitmap text using a baked font (YR_FONT_SM/MD/LG/XL)
+
+size_t yr_get_text_length(const char *text, size_t len, const yr_font_t *font);  // Pixel width of len characters (len=0 auto-calculates)
+int yr_screen_width(void);                           // Framebuffer width in pixels
+int yr_screen_height(void);                          // Framebuffer height in pixels
 ```
 
 Color filters (full-screen post-processing, applied once per pixel regardless
@@ -109,17 +117,42 @@ yr_pixel_t *get_framebuffer(void);                                // Returns the
 
 ## Colors (`colors.h`)
 
+### Pixel modes
+
+`yr_pixel_t` and color constants adapt to the active build mode:
+
+| Mode | `yr_pixel_t` | `YR_COLOR(r,g,b)` |
+|------|-------------|-------------------|
+| `YR_RGB565` (ESP32 default) | `uint16_t` | 5-6-5 bit packing |
+| `YR_L8` | `uint8_t` | Luminance `(r*0.299 + g*0.587 + b*0.114) * 255` |
+| default (desktop/web) | `uint32_t` | ARGB 8-8-8-8 |
+
+`YR_RGB565` is auto-defined on ESP32 unless `YR_L8` is set. `YR_MONOCROME` implies `YR_L8` (the desktop simulation thresholds to 1bpp only at the final blit).
+
+### Functions
+
 ```c
 yr_pixel_t yr_color_darken(yr_pixel_t color, int scale);         // Darkens a color; scale 0..256 (0 = black, 256 = unchanged)
 yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor);  // Brightens (factor > 0) or darkens (factor < 0) a color, factor in -1..1
 ```
 
-Named color constants (`YR_BLACK`, `YR_WHITE`, `YR_RED`, `YR_GREEN`,
+### Named color constants
+
+Available in all modes (`YR_BLACK`, `YR_WHITE`, `YR_RED`, `YR_GREEN`,
 `YR_BLUE`, `YR_YELLOW`, `YR_PURPLE`, `YR_ORANGE`, `YR_CYAN`, `YR_PINK`,
 `YR_GRAY`, `YR_SILVER`, `YR_MAROON`, `YR_DARK_RED`, `YR_DARK_GREEN`,
 `YR_DARK_BLUE`, `YR_OLIVE`, `YR_TEAL`, `YR_NAVY`, `YR_BROWN`, `YR_SKY_BLUE`,
-`YR_EMPTY_PIXEL`) are defined as `yr_pixel_t` values, in RGB565 or ARGB form
-depending on whether `COLOR_565` is defined.
+`YR_EMPTY_PIXEL`) – values adapt to the pixel mode automatically.
+
+### Monochrome dithering
+
+```c
+static const uint8_t yr_bayer4x4[4][4];          // Bayer 4×4 ordered dithering matrix (accessible from any TU)
+int yr_mono_dither_lit(uint8_t luma, int x, int y); // Returns 1 if luma exceeds the Bayer threshold at (x,y), 0 otherwise
+```
+
+These are used internally by the ESP32 monochrome blit path and the `YR_MONOCROME`
+desktop simulation, but are also available for custom dither effects in game code.
 
 ## Physics & Collisions (`physics.h`)
 
@@ -183,6 +216,92 @@ int  yr_get_animation_texture(YrAnimationStack *animation); // Advances the top 
 ```
 
 Entities carry their own `animation` (a `YrAnimationStack` field on `YrEntity`) which `yr_draw_entities` advances automatically every frame, writing the result into `entity->texture_id` - push onto `&self->animation` and the sprite animates with no extra per-frame call. Use `yr_get_animation_texture` directly only for animations not tied to an entity (e.g. a HUD weapon sprite).
+
+## Utils - Layout Helpers (`yari_utils.h`)
+
+Coordinate conversion and alignment utilities for HUD/UI layout.
+
+```c
+// Screen coordinate conversions
+Vector2 yr_screen_coord(Vector2 pos);              // Normalized -1..1 → screen pixel coords
+Vector2 yr_screen_coord_abs(Vector2 pos);          // Normalized 0..1 → screen pixel coords
+```
+
+### Layout enums
+
+```c
+enum lay_pos {       // Alignment anchor
+    YR_LAY_NONE,     //  raw x,y (same as TL)
+    YR_LAY_CENTER,   //  centered in box
+    YR_LAY_CB,       //  center-bottom
+    YR_LAY_CT,       //  center-top
+    YR_LAY_CL,       //  center-left
+    YR_LAY_CR,       //  center-right
+    YR_LAY_TL,       //  top-left
+    YR_LAY_TR,       //  top-right
+    YR_LAY_BR,       //  bottom-right
+    YR_LAY_BL,       //  bottom-left
+};
+
+enum lay_dis {       // Coordinate space
+    YR_LAY_SCREEN,   //  absolute pixel x, y
+    YR_LAY_NORM,     //  normalized 0..1 nx, ny
+};
+```
+
+### Layout-aware drawing (variadic macros)
+
+```c
+yr_draw_text_ex(txt, font, ...);       // [macro → yr__draw_text_ex] Variadic struct init
+yr_draw_texture_ex(texture, txw, txh, ...); // [macro → yr__draw_texture_ex] Variadic struct init
+```
+
+The variadic params fill a `struct yr_dtxt` / `struct yr_dtex`:
+
+```c
+struct yr_dtxt {              // text layout params
+    yr_pixel_t color;
+    enum lay_pos align;        //  alignment anchor (YR_LAY_CENTER, ...)
+    enum lay_dis display;      //  YR_LAY_SCREEN (use x,y) or YR_LAY_NORM (use nx,ny)
+    struct {int width, height;} box;  //  bounding box (defaults to screen size)
+    size_t length;             //  character count (0 = auto via strlen)
+    union {
+        struct {float nx, ny;};  // normalized 0..1 position (YR_LAY_NORM)
+        struct {int x, y;};      // absolute pixel position (YR_LAY_SCREEN)
+    };
+};
+
+struct yr_dtex {              // texture layout params
+    enum lay_pos align;
+    enum lay_dis display;
+    int width, height;         //  draw size (0 = auto from texture, single-0 = proportional)
+    struct {int width, height;} box;  //  bounding box (defaults to screen size)
+    bool draw_empty;           //  if false, skips transparent pixels (default)
+    union {
+        struct {float nx, ny;};
+        struct {int x, y;};
+    };
+};
+```
+
+Examples:
+
+```c
+// Centered text on screen
+yr_draw_text_ex("Hello", &font, .color=YR_WHITE, .align=YR_LAY_CENTER);
+
+// Bottom-right screen text with offset
+yr_draw_text_ex("Score: 100", &font, .color=YR_GREEN,
+    .align=YR_LAY_BR, .display=YR_LAY_SCREEN, .x=-10, .y=-10);
+
+// Centered texture inside a 200x100 box, normalized position
+yr_draw_texture_ex(tex, 64, 64, .align=YR_LAY_CENTER,
+    .box={200, 100}, .display=YR_LAY_NORM, .nx=0.5, .ny=0.5);
+
+// Full-screen centered texture, auto-sized to fit
+yr_draw_texture_ex(tex, 64, 64, .align=YR_LAY_CENTER,
+    .width=0, .height=120);  // width auto-computed from texture ratio
+```
 
 ## Utils - Entities (`yari.h`)
 

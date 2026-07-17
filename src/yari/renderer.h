@@ -39,17 +39,23 @@ typedef struct {
     const uint8_t *atlas;   // 1-bit packed bitmap, LSB-first: pixel i → bit i%8 of byte i/8
     const yr_glyph_t *glyphs;  // glyph info for ASCII 32–127 (96 entries)
     int atlas_w, atlas_h;
+    float size;
 } yr_font_t;
 
 void yr_draw_texture(int x, int y, int width, int height, const yr_pixel_t *texture, int texture_width, int texture_height, bool skip_empty);
 
 void yr_draw_text(const char *text, int x, int y, const yr_font_t *font, yr_pixel_t c);
+size_t yr_get_text_length(const char *text, size_t len, const yr_font_t *font);
 
 float yr_get_frame_time();
 
 float yr_get_time();
 
 void yr_clear_screen(yr_pixel_t color);
+
+int yr_screen_width();
+int yr_screen_height();
+void yr_fill_span(int x, int y, int width, yr_pixel_t color);
 
 void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color);
 #define yr_draw_pixel(x, y, color) yr_draw_rectangle(x, y, 1, 1, color)
@@ -89,6 +95,9 @@ void yr_run_split(void (*job)(void *ctx, int start, int end), void *ctx, int tot
 #ifdef YARI_NO_PREFIX
 #define draw_texture yr_draw_texture
 #define draw_text yr_draw_text
+#define get_text_length yr_get_text_length
+#define screen_width yr_screen_width
+#define screen_height yr_screen_height
 #define get_frame_time yr_get_frame_time
 #define get_time yr_get_time
 #define clear_screen yr_clear_screen

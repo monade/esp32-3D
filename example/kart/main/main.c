@@ -39,10 +39,10 @@ PlayerCtx playerCtx;
 int game_state = 0;
 
 #define is_slowing(ctx) \
-    ((ctx)->map_floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map_cols)] != tx_wal_000 && \
-     (ctx)->map_floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map_cols)] != tx_wal_002 && \
-     (ctx)->map_floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map_cols)] != tx_wal_005 && \
-     (ctx)->map_floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map_cols)] != 0)
+    ((ctx)->map.floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map.cols)] != tx_wal_000 && \
+     (ctx)->map.floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map.cols)] != tx_wal_002 && \
+     (ctx)->map.floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map.cols)] != tx_wal_005 && \
+     (ctx)->map.floor[(int)(ctx)->camera.pos.x + ((int)(ctx)->camera.pos.y * (ctx)->map.cols)] != 0)
 
 
 void move_player(Context *ctx) {
@@ -118,16 +118,16 @@ void draw_hud(Context *ctx) {
 
     char hp_text[32];
     sprintf(hp_text, "Speed: %.1f", playerCtx.speed);
-    draw_text(hp_text, 10, 15, fonts[YR_FONT_SM], YR_GREEN);
+    draw_text_ex(hp_text, fonts[YR_FONT_SM], YR_GREEN, .align=YR_LAY_TL, .x=10, .y=16);
 
     int size = ctx->screen_height / 4;
     if(playerCtx.is_colliding) {
-        draw_texture(0, ctx->screen_height - size, ctx->screen_width, size, assets_map[tx_auto04], 256, 64, true);
+        draw_texture_ex(assets_map[tx_auto04], 256, 64, .align=YR_LAY_CB, .height=size);
     } else {
         switch(playerCtx.stearing) {
-            case -1: draw_texture(0, ctx->screen_height - size, ctx->screen_width, size, assets_map[tx_auto03], 256, 64, true); break;
-            case 0: draw_texture(0, ctx->screen_height - size, ctx->screen_width, size, assets_map[tx_auto01], 256, 64, true); break;
-            case 1: draw_texture(0, ctx->screen_height - size, ctx->screen_width, size, assets_map[tx_auto02], 256, 64, true); break;
+            case -1: draw_texture_ex(assets_map[tx_auto03], 256, 64, .align=YR_LAY_CB, .height=size); break;
+            case  0: draw_texture_ex(assets_map[tx_auto01], 256, 64, .align=YR_LAY_CB, .height=size); break;
+            case  1: draw_texture_ex(assets_map[tx_auto02], 256, 64, .align=YR_LAY_CB, .height=size); break;
         }
     }
 }
@@ -136,14 +136,15 @@ void print_fps() {
     float fps = get_fps();
     char fps_text[32];
     sprintf(fps_text, "FPS: %.1f", fps);
-    draw_text(fps_text, SCREEN_W - 100, 15, fonts[YR_FONT_SM], YR_WHITE);
+    draw_text_ex(fps_text, fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_TR, .x=10, .y=16);
 }
 
 
 // ── Menu ─────────────────────────────────────────────────────────────────────
 
 static void draw_menu(Context *ctx) {
-    draw_text("Press SPACE to start", ctx->screen_width/2-140, ctx->screen_height/2-10, fonts[YR_FONT_MD], YR_WHITE);
+    (void)ctx;
+    draw_text_ex("Press SPACE to start", fonts[YR_FONT_MD], YR_WHITE, .align=YR_LAY_CENTER);
     if (is_key_pressed(YR_KEY_SPACE)) {
         game_state = 1;
     }

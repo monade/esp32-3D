@@ -7,15 +7,10 @@
 #include "level1.h"
 #include "level2.h"
 
-#define RAY_RES 1
 #ifdef ESP32
 #define TARGET_FPS 30
-#define SCREEN_W 240
-#define SCREEN_H 136
 #else
 #define TARGET_FPS 60
-#define SCREEN_W 960
-#define SCREEN_H 544
 #endif
 
 #define PLAYER_ROTATION_SPEED 2.0
@@ -177,14 +172,15 @@ void pickup_medikit(YrContext *ctx, YrEntity *self, size_t index) {
 }
 
 void trigger_end(YrContext *ctx, YrEntity *self, size_t index) {
+    (void)ctx;
     (void)index;
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         if (game.player.has_key && game.player.has_killed_boss) {
             game.state = GAME_MENU2;
         } else if (!game.player.has_key) {
-            draw_text("You need the key to exit!", ctx->screen_width / 2 - 120, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
+            draw_text_ex("You need the key to exit!", fonts[YR_FONT_MD], YR_RED, .align=YR_LAY_CENTER);
         } else if (!game.player.has_killed_boss) {
-            draw_text("Kill the boss!", ctx->screen_width / 2 - 120, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_RED);
+            draw_text_ex("Kill the boss!", fonts[YR_FONT_MD], YR_RED, .align=YR_LAY_CENTER);
         }
     }
 }
@@ -495,26 +491,24 @@ void print_fps() {
     float fps = get_fps();
     char fps_text[32];
     sprintf(fps_text, "FPS: %.1f", fps);
-    draw_text(fps_text, SCREEN_W - 100, 15, fonts[YR_FONT_SM], YR_WHITE);
+    draw_text_ex(fps_text, fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_TR, .x=10, .y=16);
 }
 
 void draw_hud(Context *ctx) {
     char hp_text[32];
     sprintf(hp_text, "HP: %d", game.player.hp);
-    draw_text(hp_text, 10, 15, fonts[YR_FONT_SM], YR_GREEN);
+    draw_text_ex(hp_text, fonts[YR_FONT_SM], YR_GREEN, .align=YR_LAY_TL, .x=10, .y=16);
 
     int gun_asset_id = 0;
     gun_asset_id = get_animation_texture(&game.player.gun.shot_animation);
     if(gun_asset_id<0) gun_asset_id = game.player.gun.tx_id;
 
     if (gun_asset_id) {
-        int gun_h = SCREEN_H * GUN_SCALE;
-        int gun_w = gun_h/2;
-        draw_texture((ctx->screen_width - gun_w) / 2, ctx->screen_height - gun_h, gun_w, gun_h, assets_map[gun_asset_id], 64, 128, true);
+        draw_texture_ex(assets_map[gun_asset_id], 64, 128, .align=YR_LAY_CB, .height=ctx->screen_height * GUN_SCALE);
     }
 
     if (game.player.has_key) {
-        draw_texture(0, ctx->screen_height - 55, 64, 64, assets_map[tx_spr_092], 64, 64, true);
+        draw_texture_ex(assets_map[tx_spr_092], 64, 64, .align=YR_LAY_BL);
     }
     print_fps();
 }
@@ -549,7 +543,7 @@ static inline void sepia_filter(int x, int y, yr_pixel_t *color, void *user_data
     (void)x;
     (void)y;
     (void)user_data;
-#ifdef COLOR_565
+#ifdef YR_RGB565
     int r = (*color >> 11) & 0x1F;
     int g = (*color >> 6) & 0x1F; // top 5 bits of green, same scale as r/b
     int b = (*color) & 0x1F;
@@ -579,8 +573,8 @@ static inline void sepia_filter(int x, int y, yr_pixel_t *color, void *user_data
 static inline void red_vignette_filter(int x, int y, yr_pixel_t *color, void *user_data) {
     (void)user_data;
 
-    int half_w = SCREEN_W / 2;
-    int half_h = SCREEN_H / 2;
+    int half_w = screen_width() / 2;
+    int half_h = screen_height() / 2;
     int inv_w = (256 * 65536) / half_w;
     int inv_h = (256 * 65536) / half_h;
 
@@ -596,7 +590,7 @@ static inline void red_vignette_filter(int x, int y, yr_pixel_t *color, void *us
     int smooth = (t * t * (768 - 2 * t)) >> 16;
     int vignette = (smooth * 256) >> 8;
 
-#ifdef COLOR_565
+#ifdef YR_RGB565
     int r = (*color >> 11) & 0x1F;
     int g = (*color >> 5) & 0x3F;
     int b = (*color) & 0x1F;
@@ -654,9 +648,8 @@ void reset_game(Context *ctx) {
 
 // Main game functions
 void yr_init_game(Context *ctx) {
-    ctx->screen_width = SCREEN_W;
-    ctx->screen_height = SCREEN_H;
-    ctx->ray_res = RAY_RES;
+    ctx->screen_width = 960;
+    ctx->screen_height = 544;
     ctx->target_fps = TARGET_FPS;
 
     joystick_id = esp_joystick_init(32, 36);
@@ -672,8 +665,8 @@ void yr_update_game(Context *ctx) {
     switch (game.state) {
     case GAME_MENU: {
         clear_screen(YR_BLACK);
-        draw_text("YARI FPS", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press SPACE to start", ctx->screen_width / 2 - 100, ctx->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text_ex("YARI FPS", fonts[YR_FONT_MD], YR_WHITE, .align=YR_LAY_CENTER, .y=-16);
+        draw_text_ex("Press SPACE to start", fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_CENTER, .y=16);
         if (is_key_pressed(YR_KEY_SPACE)) {
             game.state = GAME_LEVEL1;
             load_level1(ctx);
@@ -697,8 +690,8 @@ void yr_update_game(Context *ctx) {
     } break;
     case GAME_MENU2: {
         clear_screen(YR_BLACK);
-        draw_text("Level 2", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press SPACE to start", ctx->screen_width / 2 - 100, ctx->screen_height / 2 + 10, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text_ex("Level 2", fonts[YR_FONT_MD], YR_WHITE, .align=YR_LAY_CENTER, .y=-16);
+        draw_text_ex("Press SPACE to start", fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_CENTER, .y=16);
         if (is_key_pressed(YR_KEY_SPACE)) {
             reset_game(ctx);
             game.state = GAME_LEVEL2;
@@ -725,16 +718,16 @@ void yr_update_game(Context *ctx) {
     } break;
     case GAME_WIN: {
         clear_screen(YR_BLACK);
-        draw_text("You win!", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press R to restart", ctx->screen_width / 2 - 80, ctx->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text_ex("You win!", fonts[YR_FONT_MD], YR_WHITE, .align=YR_LAY_CENTER, .y=-16);
+        draw_text_ex("Press R to restart", fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_CENTER, .y=16);
         if (is_key_pressed(YR_KEY_R)) {
             reset_game(ctx);
         }
     } break;
     case GAME_OVER: {
         clear_screen(YR_BLACK);
-        draw_text("Game Over", ctx->screen_width / 2 - 60, ctx->screen_height / 2 - 10, fonts[YR_FONT_MD], YR_WHITE);
-        draw_text("Press R to restart", ctx->screen_width / 2 - 80, ctx->screen_height / 2 + 20, fonts[YR_FONT_SM], YR_WHITE);
+        draw_text_ex("Game Over", fonts[YR_FONT_MD], YR_WHITE, .align=YR_LAY_CENTER, .y=-16);
+        draw_text_ex("Press R to restart", fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_CENTER, .y=16);
         if (is_key_pressed(YR_KEY_R)) {
             reset_game(ctx);
         }

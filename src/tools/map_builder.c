@@ -791,7 +791,7 @@ static WallCell current_brush_wall_cell(const App *app) {
 // append_level_state/parse_state_line) - always a fixed 32-bit RRGGBBAA
 // encoding, independent of whatever yr_pixel_t format the exported game is
 // built with (that switch is handled separately in the codegen, directly in
-// the generated header, since it depends on the *consumer's* COLOR_565
+// the generated header, since it depends on the *consumer's* YR_RGB565
 // define, not on anything map_builder itself controls).
 static uint32_t color_to_yr_pixel(Color c) {
     return ((uint32_t)c.r << 24) | ((uint32_t)c.g << 16) | ((uint32_t)c.b << 8) | (uint32_t)c.a;

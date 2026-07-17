@@ -1,45 +1,65 @@
 #include "../../renderer.h"
 #include <raylib.h>
 #include <math.h>
+#include <stdlib.h>
 
-static Image frame_buffer;
+static yr_pixel_t *framebuffer = NULL;
+static int framebuffer_width = 0;
+static int framebuffer_height = 0;
 static Texture2D frame_texture;
+
+// yr_pixel_t's bit layout (see colors.h) matches these raylib formats
+// exactly, so the framebuffer uploads to the GPU with no per-pixel
+// conversion, the same way the ESP32 backend blits its native format.
+static int display_pixel_format(void) {
+#if defined(YR_RGB565)
+    return PIXELFORMAT_UNCOMPRESSED_R5G6B5;
+#elif defined(YR_L8)
+    return PIXELFORMAT_UNCOMPRESSED_GRAYSCALE;
+#else
+    return PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+#endif
+}
 
 float yr_get_frame_time() {
     return GetFrameTime();
 }
 
-void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color) {
-    ImageDrawRectangle(&frame_buffer, x, y, width, height, GetColor(color));
+int yr_screen_width(void) {
+    return framebuffer_width;
+}
+
+int yr_screen_height(void) {
+    return framebuffer_height;
+}
+
+// Precondition (guaranteed by yr_draw_rectangle in renderer_common.c): the
+// whole [x, x+width) run at row y is in bounds.
+void yr_fill_span(int x, int y, int width, yr_pixel_t color) {
+    yr_pixel_t *dst = &framebuffer[y * framebuffer_width + x];
+    for (int col = 0; col < width; col++) dst[col] = color;
 }
 
 void yr_clear_screen(yr_pixel_t color) {
-    ImageClearBackground(&frame_buffer, GetColor(color));
+    if (!framebuffer) return;
+
+    int count = framebuffer_width * framebuffer_height;
+    for (int i = 0; i < count; i++) framebuffer[i] = color;
 }
 
 void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data) {
-    if (!apply || !frame_buffer.data) return;
+    if (!apply || !framebuffer) return;
 
-    // GenImageColor gives an R8G8B8A8 image: repack each Color into the
-    // 0xRRGGBBAA yr_pixel_t layout for the filter and back.
-    Color *px = frame_buffer.data;
-    for (int y = 0; y < frame_buffer.height; y++) {
-        for (int x = 0; x < frame_buffer.width; x++, px++) {
-            yr_pixel_t c = ((yr_pixel_t)px->r << 24)
-                         | ((yr_pixel_t)px->g << 16)
-                         | ((yr_pixel_t)px->b << 8)
-                         | px->a;
-            apply(x, y, &c, user_data);
-            px->r = (unsigned char)(c >> 24);
-            px->g = (unsigned char)(c >> 16);
-            px->b = (unsigned char)(c >> 8);
-            px->a = (unsigned char)c;
+    yr_pixel_t *px = framebuffer;
+    for (int y = 0; y < framebuffer_height; y++) {
+        for (int x = 0; x < framebuffer_width; x++, px++) {
+            apply(x, y, px, user_data);
         }
     }
 }
 
 yr_pixel_t *get_framebuffer() {
-    return (yr_pixel_t *)frame_buffer.data;
+    return framebuffer;
 }
 
 void yr_renderer_init(int width, int height, const char *title, unsigned int target_fps) {
@@ -47,8 +67,19 @@ void yr_renderer_init(int width, int height, const char *title, unsigned int tar
     InitWindow(width, height, title);
     if(target_fps > 0) SetTargetFPS(target_fps);
     SetTraceLogLevel(LOG_WARNING);
-    frame_buffer = GenImageColor(width, height, BLACK);
-    frame_texture = LoadTextureFromImage(frame_buffer);
+
+    framebuffer_width = width;
+    framebuffer_height = height;
+    framebuffer = calloc((size_t)width * (size_t)height, sizeof(yr_pixel_t));
+
+    Image src = {
+        .data = framebuffer,
+        .width = width,
+        .height = height,
+        .mipmaps = 1,
+        .format = display_pixel_format(),
+    };
+    frame_texture = LoadTextureFromImage(src);
 }
 
 bool yr_game_should_close() {
@@ -58,9 +89,24 @@ bool yr_game_should_close() {
 void yr_begin_drawing() {
     BeginDrawing();
 }
-  
+
 void yr_render_screen() {
-    UpdateTexture(frame_texture, frame_buffer.data);
+#if defined(YR_MONOCROME)
+    int count = framebuffer_width * framebuffer_height;
+    for (int i = 0; i < count; i++)
+        framebuffer[i] = yr_mono_dither_lit(framebuffer[i], i % framebuffer_width, i / framebuffer_width) ? 255 : 0;
+    UpdateTexture(frame_texture, framebuffer);
+#elif !defined(YR_RGB565) && !defined(YR_L8)
+    int count = framebuffer_width * framebuffer_height;
+    uint32_t *pixels = (uint32_t *)framebuffer;
+    for (int i = 0; i < count; i++) {
+        uint32_t c = pixels[i];
+        pixels[i] = __builtin_bswap32(c);
+    }
+    UpdateTexture(frame_texture, framebuffer);
+#else
+    UpdateTexture(frame_texture, framebuffer);
+#endif
 
     int screen_w = GetScreenWidth();
     int screen_h = GetScreenHeight();

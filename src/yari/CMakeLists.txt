@@ -25,3 +25,5 @@ target_compile_options(${COMPONENT_LIB} PRIVATE
     -ftree-switch-conversion
     -funroll-loops
 )
+
+target_compile_definitions(${COMPONENT_LIB} PUBLIC ESP32)

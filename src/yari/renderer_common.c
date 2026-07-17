@@ -1,6 +1,40 @@
 #include <math.h>
 #include "renderer.h"
 
+// Clipping lives here once instead of duplicated per platform; each
+// platform only implements yr_fill_span (an unclipped horizontal run),
+// which lets it stay a tight, easily-optimized loop (e.g. the ESP32 backend
+// batches it into 32-bit writes).
+void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color) {
+    if (width == 1 && height == 1) {
+        if ((unsigned)x < (unsigned)yr_screen_width() && (unsigned)y < (unsigned)yr_screen_height()) {
+            yr_fill_span(x, y, 1, color);
+        }
+        return;
+    }
+
+    if (width <= 0 || height <= 0) return;
+
+    int screen_w = yr_screen_width();
+    int screen_h = yr_screen_height();
+
+    if (x < 0) {
+        width += x;
+        x = 0;
+    }
+    if (y < 0) {
+        height += y;
+        y = 0;
+    }
+    if (x + width > screen_w) width = screen_w - x;
+    if (y + height > screen_h) height = screen_h - y;
+    if (width <= 0 || height <= 0) return;
+
+    for (int row = 0; row < height; row++) {
+        yr_fill_span(x, y + row, width, color);
+    }
+}
+
 void yr_draw_texture(
     int x,
     int y,
@@ -65,6 +99,17 @@ void yr_draw_text(
         }
         cursor_x += (int)g.xadvance;
     }
+}
+
+size_t yr_get_text_length(const char *text, size_t len, const yr_font_t *font) {
+    size_t res = 0;
+    for(size_t i=0; i<len; i++) {
+        char ch = text[i];
+        if(ch == 0) break;
+        if(ch<32) continue;
+        res += font->glyphs[ch-32].xadvance + font->glyphs[ch-32].xoff;
+    }
+    return res;
 }
 
 void yr_draw_line(int x0, int y0, int x1, int y1, int thickness, yr_pixel_t color) {

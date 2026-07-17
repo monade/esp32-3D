@@ -1,0 +1,18 @@
+version: "0.1.0"
+description: "YARI - Yet Another Raycasting Implementation, a small C 3D engine for ESP32"
+url: "https://github.com/monade/esp32-3D"
+repository: "https://github.com/monade/esp32-3D.git"
+documentation: "https://github.com/monade/esp32-3D#readme"
+issues: "https://github.com/monade/esp32-3D/issues"
+
+targets:
+  - esp32
+
+dependencies:
+  idf: ">=4.1.0"
+
+files:
+  include:
+    - "**/*"
+  exclude:
+    - "build/**/*"

@@ -152,6 +152,7 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end);
 void yr__draw_sprites_range( YrContext *ctx, YrEntity **entities, size_t active_entities_count, int x_start, int x_end);
 size_t yr__entities_prep(YrContext *ctx, YrEntity ***out_entities);
 void yr__update_entities(YrContext *ctx);
+
 #ifdef ESP32_MULTITHREAD
 void yr__draw_game_multithread();
 #endif

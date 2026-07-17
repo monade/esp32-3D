@@ -242,7 +242,7 @@ void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
                 hit_vertical = false;
             }
 
-            if (cell_x >= ctx->map.cols || cell_y < 0 || cell_y >= ctx->map.rows) {
+            if (cell_x >= ctx->map.cols || cell_y >= ctx->map.rows) {
                 break;
             }
         }
@@ -720,6 +720,10 @@ void yr__init_game() {
     yr_context.ray_res = 1;
     yr_context.next_entity_id = 0;
     yr_init_game(&yr_context);
+    #ifdef ESP32
+    yr_context.screen_width = YR_LCD_W;
+    yr_context.screen_height = YR_LCD_H;
+    #endif
     if (yr_context.ray_res == 0) yr_context.ray_res = 1;
     yr_context.camera.dir = Vector2Normalize(yr_context.camera.dir);
     yr_context.zbuffer = malloc(sizeof(float) * ((yr_context.screen_width + yr_context.ray_res - 1) / yr_context.ray_res));

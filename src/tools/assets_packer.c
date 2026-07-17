@@ -79,10 +79,38 @@ void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, 
   str_appendf(buffer, "\n};\n");
 }
 
+void generate_asset(String *out, const char *name, uint8_t *bitmap, int x, int y, int ch, bool want_565, bool want_mono) {
+    if (want_565) {
+        str_append(out, "#ifdef YR_RGB565\n");
+        generate_rgb_565(out, name, bitmap, x, y, ch);
+    }
+    if (want_mono) {
+        str_append(out, want_565 ? "#elif defined(YR_L8)\n" : "#ifdef YR_L8\n");
+        generate_mono(out, name, bitmap, x, y, ch);
+    }
+    if (want_565 || want_mono) {
+        str_append(out, "#else\n");
+    }
+    generate_rgb_32(out, name, bitmap, x, y, ch);
+    if (want_565 || want_mono) {
+        str_append(out, "#endif\n");
+    }
+}
+
 int main(int argc, char **argv) {
-    if(argc != 3) {
-        log_error("Usage: ./assets_packer <input_dir> <output_file>\n");
+    if(argc < 3) {
+        log_error("Usage: ./assets_packer <input_dir> <output_file> [565] [mono]\n");
         exit(1);
+    }
+    bool want_565 = (argc == 3); // no format args at all => default to 565
+    bool want_mono = false;
+    for (int i = 3; i < argc; i++) {
+        if (strcmp(argv[i], "565") == 0) want_565 = true;
+        else if (strcmp(argv[i], "mono") == 0) want_mono = true;
+        else {
+            log_error("Unknown format '%s' (expected 565 or mono)\n", argv[i]);
+            exit(1);
+        }
     }
     String out = {0};
     StringArr assets = {0};
@@ -120,13 +148,8 @@ int main(int argc, char **argv) {
         }
         
         str_appendf(&out, "// %s\n", dir->d_name);
-        str_append(&out, "#ifdef COLOR_565\n");
-        generate_rgb_565(&out, name, bitmap, x, y, ch);
-        str_append(&out, "#elif defined(COLOR_MONO)\n");
-        generate_mono(&out, name, bitmap, x, y, ch);
-        str_append(&out, "#else\n");
-        generate_rgb_32(&out, name, bitmap, x, y, ch);
-        str_append(&out, "#endif\n\n");
+        generate_asset(&out, name, bitmap, x, y, ch, want_565, want_mono);
+        str_append(&out, "\n");
         STBI_FREE(bitmap);
     }
     closedir(d);

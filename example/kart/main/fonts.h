@@ -184,7 +184,7 @@ static const yr_glyph_t _press_start_2p_sm_glyphs[96] = {
     {1,92,10,97,0.000f,-8.000f,10.000f},
     {11,92,18,95,1.000f,-4.000f,10.000f},
 };
-static const yr_font_t press_start_2p_sm = { _press_start_2p_sm_atlas, _press_start_2p_sm_glyphs, 100, 100 };
+static const yr_font_t press_start_2p_sm = { .atlas=_press_start_2p_sm_atlas, .glyphs=_press_start_2p_sm_glyphs, .atlas_w=100, .atlas_h=100, .size=10.00f };
 
 static const uint8_t _press_start_2p_md_atlas[8125] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -794,7 +794,7 @@ static const yr_glyph_t _press_start_2p_md_glyphs[96] = {
     {57,78,72,85,0.000f,-13.000f,16.000f},
     {73,78,84,83,2.000f,-7.000f,16.000f},
 };
-static const yr_font_t press_start_2p_md = { _press_start_2p_md_atlas, _press_start_2p_md_glyphs, 260, 250 };
+static const yr_font_t press_start_2p_md = { .atlas=_press_start_2p_md_atlas, .glyphs=_press_start_2p_md_glyphs, .atlas_w=260, .atlas_h=250, .size=16.00f };
 
 static const uint8_t _press_start_2p_lg_atlas[8125] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1404,7 +1404,7 @@ static const yr_glyph_t _press_start_2p_lg_glyphs[96] = {
     {194,212,219,223,0.000f,-21.000f,28.000f},
     {220,212,238,220,3.000f,-11.000f,28.000f},
 };
-static const yr_font_t press_start_2p_lg = { _press_start_2p_lg_atlas, _press_start_2p_lg_glyphs, 260, 250 };
+static const yr_font_t press_start_2p_lg = { .atlas=_press_start_2p_lg_atlas, .glyphs=_press_start_2p_lg_glyphs, .atlas_w=260, .atlas_h=250, .size=28.00f };
 
 static const uint8_t _press_start_2p_xl_atlas[25000] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -3069,7 +3069,7 @@ static const yr_glyph_t _press_start_2p_xl_glyphs[96] = {
     {236,308,278,326,0.000f,-36.000f,48.000f},
     {279,308,309,320,6.000f,-18.000f,48.000f},
 };
-static const yr_font_t press_start_2p_xl = { _press_start_2p_xl_atlas, _press_start_2p_xl_glyphs, 500, 400 };
+static const yr_font_t press_start_2p_xl = { .atlas=_press_start_2p_xl_atlas, .glyphs=_press_start_2p_xl_glyphs, .atlas_w=500, .atlas_h=400, .size=48.00f };
 
 static const yr_font_t *fonts[4] = {
     &press_start_2p_sm,

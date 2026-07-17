@@ -96,15 +96,19 @@
 #endif
 #endif
 
-// Panel color depth. 1 = monochrome (packed per the controller's native
-// GDDRAM layout), 16 = RGB565 (the fast, zero-copy path), anything else is
-// treated as N bytes/pixel and filled by expanding RGB565 per channel.
-// COLOR_MONO mirrors COLOR_565 as a project-wide pixel-format switch (see
-// colors.h); a monochrome build defaults to the 1bpp wire path here too,
-// even without a monochrome controller selected above.
+// Panel color depth. 1 = monochrome (dithered, packed per the controller's
+// native GDDRAM layout), 8 = grayscale (YR_L8, direct passthrough), 16 =
+// RGB565 (the fast, zero-copy path), anything else is treated as N
+// bytes/pixel and filled by expanding RGB565 per channel. YR_MONOCROME and
+// YR_L8 mirror the project-wide pixel-format switches of the same name (see
+// colors.h): YR_MONOCROME always wants the dithered 1bpp wire path (even
+// without a monochrome controller selected above), while YR_L8 alone means
+// an actual grayscale panel.
 #ifndef LCD_BITS_PER_PIXEL
-#if defined(LCD_CONTROLLER_SSD1306) || defined(COLOR_MONO)
+#if defined(LCD_CONTROLLER_SSD1306) || defined(YR_MONOCROME)
 #define LCD_BITS_PER_PIXEL 1
+#elif defined(YR_L8)
+#define LCD_BITS_PER_PIXEL 8
 #else
 #define LCD_BITS_PER_PIXEL 16
 #endif
@@ -271,11 +275,12 @@ static uint8_t lcd_wire_buffer[LCD_WIRE_BUFFER_SIZE];
 
 #define LCD_LUMA_MAX ((31 * 8) + (63 * 4) + (31 * 2))
 // Cheap RGB565 luminance approximation (weights are just the per-channel bit
-// ranges, not a proper colorimetric formula) - good enough to threshold into
-// on/off for a monochrome panel.
-static inline bool lcd_pixel_is_lit(uint16_t c) {
+// ranges, not a proper colorimetric formula), rescaled to 0..255 and handed
+// to the shared Bayer-dithered threshold (see colors.h) so the panel gets
+// the same ordered dithering as the YR_MONOCROME desktop simulation.
+static inline bool lcd_pixel_is_lit(uint16_t c, int x, int y) {
     int luma = ((c >> 11) & 0x1F) * 8 + ((c >> 5) & 0x3F) * 4 + (c & 0x1F) * 2;
-    return luma > LCD_LUMA_MAX / 2;
+    return yr_mono_dither_lit((uint8_t)(luma * 255 / LCD_LUMA_MAX), x, y);
 }
 
 // Packs the canonical RGB565 framebuffer into the SSD1306/SH110x-style
@@ -288,9 +293,22 @@ static const void *lcd_prepare_frame(void) {
         uint8_t bit = (uint8_t)(1 << (y % 8));
         const uint16_t *src = fb_back + y * YR_LCD_W;
         for (int x = 0; x < YR_LCD_W; x++) {
-            if (lcd_pixel_is_lit(src[x])) page[x] |= bit;
+            if (lcd_pixel_is_lit(src[x], x, y)) page[x] |= bit;
         }
     }
+    return lcd_wire_buffer;
+}
+#elif LCD_BITS_PER_PIXEL == 8
+static uint8_t lcd_wire_buffer[LCD_WIRE_BUFFER_SIZE];
+
+// YR_L8 stores a plain 0..255 luma value per pixel widened into the
+// framebuffer's uint16_t slots (see lcd_color()), so this is a straight
+// byte copy - no RGB565 bit extraction needed, unlike the other panel
+// formats below.
+static const void *lcd_prepare_frame(void) {
+    uint8_t *dst = lcd_wire_buffer;
+    const uint16_t *src = fb_back;
+    for (int i = 0; i < SCREEN_PIXEL_COUNT; i++, src++) *dst++ = (uint8_t)*src;
     return lcd_wire_buffer;
 }
 #else
@@ -315,44 +333,24 @@ static const void *lcd_prepare_frame(void) {
 }
 #endif
 
-void IRAM_ATTR yr_draw_rectangle(int posX, int posY, int width, int height, yr_pixel_t color) {
-    if (width == 1 && height == 1) {
-        if ((unsigned)posX < YR_LCD_W && (unsigned)posY < YR_LCD_H) {
-            fb_back[posY * YR_LCD_W + posX] = lcd_color(color);
-        }
-        return;
-    }
+int yr_screen_width(void) {
+    return YR_LCD_W;
+}
 
-    if (width <= 0 || height <= 0) return;
+int yr_screen_height(void) {
+    return YR_LCD_H;
+}
 
-    // Clipping
-    if (posX < 0) {
-        width += posX;
-        posX = 0;
-    }
-    if (posY < 0) {
-        height += posY;
-        posY = 0;
-    }
-    if (posX + width > YR_LCD_W) width = YR_LCD_W - posX;
-    if (posY + height > YR_LCD_H) height = YR_LCD_H - posY;
-    if (width <= 0 || height <= 0) return;
-
-    uint16_t native_color = lcd_color(color);
-    uint16_t *dst = fb_back + posY * YR_LCD_W + posX;
-
+// Precondition (guaranteed by yr_draw_rectangle in renderer_common.c): the
+// whole [x, x+width) run at row y is in bounds. width == 1 skips
+// fill_pixels's 32-bit batching, not worth it for a single pixel.
+void IRAM_ATTR yr_fill_span(int x, int y, int width, yr_pixel_t color) {
+    uint16_t *dst = fb_back + y * YR_LCD_W + x;
     if (width == 1) {
-        for (int y = 0; y < height; y++) {
-            *dst = native_color;
-            dst += YR_LCD_W;
-        }
+        *dst = lcd_color(color);
         return;
     }
-
-    for (int y = 0; y < height; y++) {
-        fill_pixels(dst, width, native_color);
-        dst += YR_LCD_W;
-    }
+    fill_pixels(dst, width, lcd_color(color));
 }
 
 void IRAM_ATTR yr_clear_screen(yr_pixel_t color) {

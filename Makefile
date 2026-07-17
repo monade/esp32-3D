@@ -1,12 +1,17 @@
-YARI_CFLAGS = -Wall -Wextra -O3
+# Extra defines for desktop builds, e.g.: make run EXTRA_CFLAGS=-DYR_RGB565
+# Run `make clean` first when switching, otherwise stale .o files with a
+# different pixel format get relinked silently.
+EXTRA_CFLAGS ?=
+
+YARI_CFLAGS = -Wall -Wextra -O3 $(EXTRA_CFLAGS)
 RAYLIB_CFLAGS = $(shell pkg-config --cflags raylib)
 RAYLIB_LIBS = $(shell pkg-config --libs raylib) -lm
 SDL2_CFLAGS = $(shell pkg-config --cflags sdl2)
 SDL2_LIBS = $(shell pkg-config --libs sdl2) -lm
-RAYLIB_WEB_CFLAGS = -Wall -Wextra -O3 -DPLATFORM_WEB -DGRAPHICS_API_OPENGL_ES2 -Iexternal/web/raylib/include -Ibuild/yari/include
+RAYLIB_WEB_CFLAGS = -Wall -Wextra -O3 -DPLATFORM_WEB -DGRAPHICS_API_OPENGL_ES2 -Iexternal/web/raylib/include -Ibuild/yari/include $(EXTRA_CFLAGS)
 RAYLIB_WEB_LDFLAGS = -s USE_GLFW=3 -s ASSERTIONS=1 -s INITIAL_MEMORY=33554432 --shell-file src/yari/platform/raylib/shell.html
 
-MAIN_CFLAGS = -Wall -Wextra -O3 -Ibuild/yari/include
+MAIN_CFLAGS = -Wall -Wextra -O3 -Ibuild/yari/include $(EXTRA_CFLAGS)
 MAIN_LIBS = -Lbuild/yari/lib -lyari_raylib
 SDL_MAIN_LIBS = -Lbuild/yari/lib -lyari_sdl
 
@@ -21,9 +26,14 @@ ESP32_HOME = ~/esp/v5.5.*/esp-idf
 
 $(shell mkdir -p build)
 
-.PHONY: all
+.PHONY: all clean
 
 all: build/yari/lib/libyari_raylib.a build/yari/lib/libyari_sdl.a build/yari/lib/libyari_web.a build/yari/esp32 build/yari/bin/assets_packer build/yari/bin/font_baker build/yari/bin/map_builder
+
+# Desktop/web build artifacts only; ESP32 build dirs have their own
+# esp32-*-clean targets. Run before switching EXTRA_CFLAGS between builds.
+clean:
+	rm -rf build/*.o build/yari build/ray-base build/fps-raylib build/fps-sdl build/kart-raylib build/kart-sdl build/win
 
 # Lib yari
 
@@ -103,9 +113,9 @@ build/yari/bin/font_baker: build/yari src/tools/font_baker.c
 	$(CC) -o build/yari/bin/font_baker src/tools/font_baker.c -lm
 
 assets: build/yari/bin/assets_packer build/yari/bin/font_baker
-	build/yari/bin/assets_packer example/fps/assets example/fps/main/assets.h
+	build/yari/bin/assets_packer example/fps/assets example/fps/main/assets.h 565 mono
 	build/yari/bin/font_baker example/fps/assets/font example/fps/main/fonts.h
-	build/yari/bin/assets_packer example/kart/assets example/kart/main/assets.h
+	build/yari/bin/assets_packer example/kart/assets example/kart/main/assets.h 565 mono
 	build/yari/bin/font_baker example/kart/assets/font example/kart/main/fonts.h
 
 build/yari/bin/map_builder: src/tools/map_builder.c src/tools/raygui.h

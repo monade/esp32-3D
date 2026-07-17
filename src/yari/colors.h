@@ -2,9 +2,36 @@
 #define YR_COLORS_H
 #include <stdint.h>
 
+// YR_MONOCROME simulates on desktop the dithered 1bpp path the ESP32 backend
+// uses for monochrome panels: it's plain YR_L8 everywhere in the engine
+// (same type, same palette) - only the backend's render/upload step
+// thresholds it to black/white, so nothing else needs to know about it.
+#if defined(YR_MONOCROME) && !defined(YR_L8)
+#define YR_L8
+#endif
 
+// ESP32 defaults to RGB565 unless YR_L8 was chosen (desktop/web default
+// to ARGB32 below). Defined as a real macro, not just branched on here, so
+// every other `#ifdef YR_RGB565` check stays consistent, including
+// generated headers like assets.h.
+#if defined(ESP32) && !defined(YR_L8) && !defined(YR_RGB565)
+#define YR_RGB565
+#endif
 
-#if defined(COLOR_565) // 16-bit color in 5-6-5 format
+// Ordered (Bayer 4x4) dithering for every monochrome blit path - the ESP32
+// hardware panel and the YR_MONOCROME desktop simulation both call this.
+static const uint8_t yr_bayer4x4[4][4] = {
+    { 0,  8,  2, 10},
+    {12,  4, 14,  6},
+    { 3, 11,  1,  9},
+    {15,  7, 13,  5},
+};
+
+static inline int yr_mono_dither_lit(uint8_t luma, int x, int y) {
+    return luma > yr_bayer4x4[y & 3][x & 3] * 17;
+}
+
+#if defined(YR_RGB565) // 16-bit color in 5-6-5 format
 typedef uint16_t yr_pixel_t;
 
 #define YR_COLOR(r, g, b) ((yr_pixel_t)(((int)((r)*31) << 11) | ((int)((g)*63) << 5) | (int)((b)*31))) 
@@ -68,7 +95,7 @@ static inline yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor) {
 
     return (red << 11) | (green << 5) | blue;
 }
-#elif defined(COLOR_MONO) // 8-bit grayscale; dithered to 1bpp only at the final display blit
+#elif defined(YR_L8) // 8-bit grayscale; dithered to 1bpp only at the final display blit
 typedef uint8_t yr_pixel_t;
 
 #define YR_COLOR(r, g, b) ((yr_pixel_t)(int)(((r) * 0.299f + (g) * 0.587f + (b) * 0.114f) * 255))

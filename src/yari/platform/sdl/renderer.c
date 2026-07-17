@@ -17,6 +17,13 @@ static uint64_t last_frame_start = 0;
 static uint64_t frame_start = 0;
 static float cached_frame_time = 0.0f;
 
+#if defined(YR_L8)
+// SDL2 has no accelerated-texture-safe 8bpp pixel format (indexed textures
+// aren't reliably supported by streaming/accelerated renderers), so the
+// grayscale framebuffer is expanded into this RGBA8888 buffer on upload.
+static uint32_t *upload_buffer = NULL;
+#endif
+
 static void fail_sdl(const char *message) {
     fprintf(stderr, "SDL backend error: %s: %s\n", message, SDL_GetError());
     exit(1);
@@ -25,6 +32,11 @@ static void fail_sdl(const char *message) {
 static void yr_sdl_shutdown(void) {
     free(framebuffer);
     framebuffer = NULL;
+
+#if defined(YR_L8)
+    free(upload_buffer);
+    upload_buffer = NULL;
+#endif
 
     if (frame_texture) SDL_DestroyTexture(frame_texture);
     if (renderer) SDL_DestroyRenderer(renderer);
@@ -37,9 +49,11 @@ static void yr_sdl_shutdown(void) {
 }
 
 static uint32_t sdl_pixel_format(void) {
-#ifdef COLOR_565
+#if defined(YR_RGB565)
     return SDL_PIXELFORMAT_RGB565;
 #else
+    // YR_L8 also lands here: the framebuffer is expanded to RGBA8888 on
+    // upload (see yr_render_screen), same as the plain 32-bit ARGB format.
     return SDL_PIXELFORMAT_RGBA8888;
 #endif
 }
@@ -95,6 +109,14 @@ void yr_renderer_init(int width, int height, const char *title, unsigned int fps
         exit(1);
     }
 
+#if defined(YR_L8)
+    upload_buffer = malloc((size_t)width * (size_t)height * sizeof(uint32_t));
+    if (!upload_buffer) {
+        fprintf(stderr, "SDL backend error: upload buffer allocation failed\n");
+        exit(1);
+    }
+#endif
+
     atexit(yr_sdl_shutdown);
 }
 
@@ -108,12 +130,30 @@ void yr_begin_drawing(void) {
 }
 
 void yr_render_screen(void) {
+#if defined(YR_L8)
+    int count = framebuffer_width * framebuffer_height;
+#if defined(YR_MONOCROME)
+    for (int i = 0; i < count; i++)
+        framebuffer[i] = yr_mono_dither_lit(framebuffer[i], i % framebuffer_width, i / framebuffer_width) ? 255 : 0;
+#endif
+    for (int i = 0; i < count; i++) {
+        uint32_t v = framebuffer[i];
+        upload_buffer[i] = (v << 24) | (v << 16) | (v << 8) | 0xFF;
+    }
+    SDL_UpdateTexture(
+        frame_texture,
+        NULL,
+        upload_buffer,
+        framebuffer_width * (int)sizeof(uint32_t)
+    );
+#else
     SDL_UpdateTexture(
         frame_texture,
         NULL,
         framebuffer,
         framebuffer_width * (int)sizeof(framebuffer[0])
     );
+#endif
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, frame_texture, NULL, NULL);
@@ -146,25 +186,19 @@ float yr_get_fps(void) {
     return 1.0f / cached_frame_time;
 }
 
-void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color) {
-    if (width <= 0 || height <= 0 || !framebuffer) return;
+int yr_screen_width(void) {
+    return framebuffer_width;
+}
 
-    if (x < 0) {
-        width += x;
-        x = 0;
-    }
-    if (y < 0) {
-        height += y;
-        y = 0;
-    }
-    if (x + width > framebuffer_width) width = framebuffer_width - x;
-    if (y + height > framebuffer_height) height = framebuffer_height - y;
-    if (width <= 0 || height <= 0) return;
+int yr_screen_height(void) {
+    return framebuffer_height;
+}
 
-    for (int row = 0; row < height; row++) {
-        yr_pixel_t *dst = &framebuffer[(y + row) * framebuffer_width + x];
-        for (int col = 0; col < width; col++) dst[col] = color;
-    }
+// Precondition (guaranteed by yr_draw_rectangle in renderer_common.c): the
+// whole [x, x+width) run at row y is in bounds.
+void yr_fill_span(int x, int y, int width, yr_pixel_t color) {
+    yr_pixel_t *dst = &framebuffer[y * framebuffer_width + x];
+    for (int col = 0; col < width; col++) dst[col] = color;
 }
 
 void yr_clear_screen(yr_pixel_t color) {

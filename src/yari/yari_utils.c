@@ -1,7 +1,5 @@
 #include <stdbool.h>
 #include "yari_utils.h"
-#include "renderer.h"
-#include "da.h"
 
 YrTimer yr_timer_start(float duration) {
     YrTimer timer;
@@ -51,4 +49,131 @@ start:
     yr_timer_loop(&anim->timer, anim->duration);
     int frame_index = anim->timer.count % anim->frame_count;
     return anim->frames[frame_index];
+}
+
+// Denormalize screen coordinates
+Vector2 yr_screen_coord(Vector2 pos) {
+    Vector2 center = {(yr_screen_width()-1)/2.0, (yr_screen_height()-1)/2.0};
+    return (Vector2) {pos.x * center.x + center.x, pos.y * center.y + center.y};
+}
+
+Vector2 yr_screen_coord_abs(Vector2 pos) {
+    Vector2 center = {yr_screen_width()-1, yr_screen_height()-1};
+    return (Vector2) {pos.x * center.x, pos.y * center.y};
+}
+
+void yr__draw_text_ex(const char *txt, const yr_font_t *font, struct yr_dtxt param) {
+    size_t len = param.length == 0 ? strlen(txt): param.length;
+    Vector2 dx = param.display == YR_LAY_SCREEN ? (Vector2){param.x, param.y} : yr_screen_coord_abs((Vector2){param.nx, param.ny});
+    float h = font->size;
+    float hh = h/2.0f;
+    if(param.box.width == 0 && param.box.height == 0) {
+        param.box.width = yr_screen_width();
+        param.box.height = yr_screen_height();
+    }
+
+    switch(param.align) {
+    case YR_LAY_CENTER: {
+        float w = yr_get_text_length(txt, len, font);
+        float x = (param.box.width - w + dx.x)/2.0f;
+        float y = param.box.height/2.0f + dx.y + hh;
+        yr_draw_text(txt, x, y, font, param.color);
+    } break;
+    case YR_LAY_CB: {
+        float w = yr_get_text_length(txt, len, font);
+        float x = (param.box.width - w + dx.x)/2.0f;
+        float y = param.box.height + dx.y;
+        yr_draw_text(txt, x, y, font, param.color);
+    } break;
+    case YR_LAY_CT: {
+        float w = yr_get_text_length(txt, len, font);
+        float x = (param.box.width - w + dx.x)/2.0f;
+        yr_draw_text(txt, x, dx.y + h, font, param.color);
+    } break;
+    case YR_LAY_CL: {
+        float y = param.box.height/2.0f + dx.y + hh;
+        yr_draw_text(txt, dx.x, y, font, param.color);
+    } break;
+    case YR_LAY_CR: {
+        float w = yr_get_text_length(txt, len, font);
+        float x = param.box.width - w + dx.x;
+        float y = param.box.height/2.0f + dx.y + hh;
+        yr_draw_text(txt, x, y, font, param.color);
+    } break;
+    case YR_LAY_NONE:
+    case YR_LAY_TL: {
+        yr_draw_text(txt, dx.x, dx.y + h, font, param.color);
+    } break;
+    case YR_LAY_TR: {
+        float x = param.box.width - (dx.x + yr_get_text_length(txt, len, font));
+        yr_draw_text(txt, x, dx.y + h, font, param.color);
+    } break;
+    case YR_LAY_BR: {
+        float x = param.box.width - (dx.x + yr_get_text_length(txt, len, font));
+        float y = param.box.height + dx.y;
+        yr_draw_text(txt, x, y, font, param.color);
+    } break;
+    case YR_LAY_BL: {
+        float y = param.box.height + dx.y;
+        yr_draw_text(txt, dx.x, y, font, param.color);
+    } break;
+    }
+}
+
+void yr__draw_texture_ex(const yr_pixel_t *texture, size_t txw, size_t txh, struct yr_dtex param) {
+    Vector2 dx = param.display == YR_LAY_SCREEN ? (Vector2){param.x, param.y} : yr_screen_coord_abs((Vector2){param.nx, param.ny});
+    if (param.box.width == 0 && param.box.height == 0) {
+        param.box.width = yr_screen_width();
+        param.box.height = yr_screen_height();
+    }
+    if (param.width == 0 && param.height == 0) {
+        param.width = txw;
+        param.height = txh;
+    } else if (param.width == 0) {
+        param.width = (txw*param.height)/txh;
+    } else if (param.height == 0) {
+        param.height = (txh*param.width)/txw;
+    }
+    switch(param.align) {
+    case YR_LAY_CENTER: {
+        float x = (param.box.width - (param.width - dx.x))/2.0f;
+        float y = (param.box.height - (param.height - dx.y))/2.0f;
+        yr_draw_texture(x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_CB: {
+        float x = (param.box.width - param.width + dx.x)/2.0f;
+        float y = param.box.height - param.height + dx.y;
+        yr_draw_texture(x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_CT: {
+        float x = (param.box.width - param.width + dx.x)/2.0f;
+        yr_draw_texture(x, dx.y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_CL: {
+        float y = (param.box.height - param.height + dx.y)/2.0f;
+        yr_draw_texture(dx.x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_CR: {
+        float x = param.box.width - param.width + dx.x;
+        float y = (param.box.height - param.height + dx.y)/2.0f;
+        yr_draw_texture(x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_NONE:
+    case YR_LAY_TL: {
+        yr_draw_texture(dx.x, dx.y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_TR: {
+        float x = param.box.width - param.width + dx.x;
+        yr_draw_texture(x, dx.y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_BR: {
+        float x = param.box.width - param.width + dx.x;
+        float y = param.box.height - param.height + dx.y;
+        yr_draw_texture(x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    case YR_LAY_BL: {
+        float y = param.box.height - param.height + dx.y;
+        yr_draw_texture(dx.x, y, param.width, param.height, texture, txw, txh, !param.draw_empty);
+    } break;
+    }
 }

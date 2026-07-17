@@ -45,10 +45,10 @@ static void emit_glyphs(String *out, const char *name, const char *size,
 }
 
 static void emit_font_t(String *out, const char *name, const char *size,
-                        int w, int h) {
+                        int w, int h, float sizepx) {
     str_appendf(out,
-        "static const yr_font_t %s_%s = { _%s_%s_atlas, _%s_%s_glyphs, %d, %d };\n\n",
-        name, size, name, size, name, size, w, h);
+        "static const yr_font_t %s_%s = { .atlas=_%s_%s_atlas, .glyphs=_%s_%s_glyphs, .atlas_w=%d, .atlas_h=%d, .size=%.2ff };\n\n",
+        name, size, name, size, name, size, w, h, sizepx);
 }
 
 static void bake_font(String *out, const char *name, unsigned char *ttf_data) {
@@ -80,7 +80,7 @@ static void bake_font(String *out, const char *name, unsigned char *ttf_data) {
 
         emit_atlas(out, name, SIZE_NAMES[s], packed, w, h);
         emit_glyphs(out, name, SIZE_NAMES[s], chars);
-        emit_font_t(out, name, SIZE_NAMES[s], w, h);
+        emit_font_t(out, name, SIZE_NAMES[s], w, h, PIXEL_HEIGHTS[s]);
         free(packed);
     }
 }

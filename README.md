@@ -223,7 +223,16 @@ Full function reference: [CHEATSHEET.md](CHEATSHEET.md).
 The raycaster assumes `64x64` textures for walls, floors, ceilings and
 entities (`YR_TEXTURE_SIZE`). HUD can be drawn with `yr_draw_texture(...)` and with the other drawing functions.
 
-`yr_pixel_t` is the pixel format used by the framebuffer. It is `uint16_t` in RGB565 builds (esp32) and `uint32_t` in desktop/web builds.
+
+`yr_pixel_t` is the pixel format used by the framebuffer:
+
+| Build | `yr_pixel_t` | Notes |
+|-------|-------------|-------|
+| `YR_RGB565` (ESP32 default) | `uint16_t` | RGB565 5-6-5 format |
+| `YR_L8` (desktop/web/mono) | `uint8_t` | 8-bit grayscale luminance |
+| default (desktop/web) | `uint32_t` | ARGB 8-8-8-8 format |
+
+On ESP32, `YR_RGB565` is defined automatically unless `YR_L8` (or `YR_MONOCROME`) is set. Desktop/web default to ARGB32.
 
 ### Color filters
 
@@ -245,6 +254,14 @@ draw_hud(state); // drawn after, so the HUD stays unfiltered
 The `apply` callback receives the pixel coordinates and a pointer to the color
 value, which can be modified in-place. The `user_data` pointer is passed through unchanged and can be used to pass extra parameters to the callback.
 The pixel format is `yr_pixel_t`, which is `uint16_t` in RGB565 builds and `uint32_t` in desktop/web builds, take care of that in your callback.
+
+### Monochrome / L8 mode
+
+Define `YR_L8` or `YR_MONOCROME` (which implies `YR_L8`) to use 8-bit grayscale pixels everywhere. Colors are stored as luminance (0–255). The pixel type is `uint8_t`.
+
+`YR_MONOCROME` simulates on desktop the dithered 1bpp path used by the ESP32 backend for monochrome panels (e.g. SSD1306). The engine runs normally in L8; only the final blit to the display thresholds each pixel to black/white using a Bayer 4×4 ordered dithering matrix (`yr_bayer4x4`, accessible as `yr_mono_dither_lit(luma, x, y)`).
+
+On ESP32 an `#elif` branch for `LCD_CONTROLLER_SSD1306` in `lcd_init()` selects the monochrome panel driver; the same Bayer dithering is applied in the blit path.
 
 Regardless of the mode, keep `apply` in integer math on ESP32: the Xtensa FPU
 is single-precision only, so `double` arithmetic (bare float literals like
@@ -346,6 +363,27 @@ The `count` field on `YrTimer` increments each time `yr_timer_loop` fires.
 
 Every `YrEntity` has its own `animation` stack, and `yr_draw_entities` advances each entity's stack and writes the result into `texture_id` automatically every frame - game code only ever pushes animations, it never needs to call an "advance" function for entities.
 
+### Layout Helpers
+
+Designate HUD/UI elements in normalized (`-1..1`) or absolute screen coordinates, with alignment and an optional bounding box, through variadic macros:
+
+```c
+// Screen coordinate conversions
+Vector2 yr_screen_coord(Vector2 pos);        // normalized -1..1 → screen pixels from center origin
+Vector2 yr_screen_coord_abs(Vector2 pos);    // normalized 0..1 → screen pixels
+
+
+// Layout-aware text and texture drawing (variadic struct params)
+yr_draw_text_ex(txt, font, .color=YR_WHITE, .align=YR_LAY_CENTER, ...);
+yr_draw_texture_ex(texture, txw, txh, .align=YR_LAY_CENTER, .box={200, 100}, ...);
+```
+
+Alignment values (`enum lay_pos`): `YR_LAY_NONE`, `YR_LAY_CENTER`, `YR_LAY_CB` (center-bottom), `YR_LAY_CT` (center-top), `YR_LAY_CL` (center-left), `YR_LAY_CR` (center-right), `YR_LAY_TL` (top-left), `YR_LAY_TR`, `YR_LAY_BR`, `YR_LAY_BL`.
+
+Display modes (`enum lay_dis`): `YR_LAY_SCREEN` (position as absolute pixel x, y), `YR_LAY_NORM` (position as normalized 0..1 nx, ny).
+
+The struct params accept `.color`, `.align`, `.display`, `.box` (bounding box), and `.length`/`.draw_empty` as needed. See CHEATSHEET.md for all fields.
+
 Example - looping idle with a one-shot attack that auto-pops, driven from an entity's `init`/`update` callbacks:
 
 ```c
@@ -403,7 +441,7 @@ make assets
 - generates one `yr_pixel_t` array per image;
 - generates a `TextureId` enum with `tx_<file_name>` symbols;
 - generates `assets_map[]`;
-- emits both RGB565 data for `COLOR_565` builds and 32-bit data for
+- emits both RGB565 data for `YR_RGB565` builds and 32-bit data for
   desktop/web builds.
 - the output file is written to the path passed as the second argument.
 
@@ -430,10 +468,13 @@ make assets
 - `YR_FONT_LG`;
 - `YR_FONT_XL`.
 
+`yr_get_text_length(text, len, font)` measures the pixel width of `len` characters in the given font (pass `SIZE_MAX` or `0` to measure the full null-terminated string).
+
 Example:
 
 ```c
 yr_draw_text("HP: 100", 10, 15, fonts[YR_FONT_SM], YR_GREEN);
+float w = yr_get_text_length("HP: 100", 0, fonts[YR_FONT_SM]); // pixel width
 ```
 
 ## Map Builder
@@ -633,27 +674,23 @@ managed component via `idf_component.yml`), add an `#elif` branch next to
 `esp_lcd_new_panel_xxx()` constructor — the SPI bus setup, framebuffer,
 rotation and blit/pack code are all controller-agnostic already.
 
-The ESP-IDF examples already add:
+`ESP32` is defined automatically by the `yari` component itself. The pixel
+format is your choice, so the ESP-IDF examples add it explicitly:
 
 ```cmake
-idf_build_set_property(COMPILE_OPTIONS "-DESP32" APPEND)
-idf_build_set_property(COMPILE_OPTIONS "-DCOLOR_565" APPEND)
+idf_build_set_property(COMPILE_OPTIONS "-DYR_RGB565" APPEND)
 ```
 
-To use YARI as an ESP-IDF component in another project:
+To use YARI as an ESP-IDF component in another project, add it as a
+dependency in your `main/idf_component.yml`:
 
-```cmake
-set(EXTRA_COMPONENT_DIRS "/path/to/yari/src/yari")
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-```
-
-Then require `yari` from your `main` component:
-
-```cmake
-idf_component_register(
-    SRCS "main.c"
-    REQUIRES yari
-)
+```yaml
+dependencies:
+  idf: ">=4.1.0"
+  yari:
+    git: "https://github.com/monade/esp32-3D.git"
+    path: "src/yari"
+    version: "main"   # pin to a tag or commit for reproducible builds
 ```
 ### SDK configs
 
