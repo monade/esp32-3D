@@ -242,7 +242,7 @@ void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
                 hit_vertical = false;
             }
 
-            if (cell_x < 0 || cell_x >= ctx->map.cols || cell_y < 0 || cell_y >= ctx->map.rows) {
+            if (cell_x >= ctx->map.cols || cell_y < 0 || cell_y >= ctx->map.rows) {
                 break;
             }
         }
@@ -459,7 +459,7 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
                     if (ctx->map.ceil) {
                         size_t cell_x = (size_t)world_x;
                         size_t cell_y = (size_t)world_y;
-                        if (cell_x >= 0 && cell_x < ctx->map.cols && cell_y >= 0 && cell_y < ctx->map.rows) {
+                        if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
                             uint8_t tex_id = ctx->map.ceil[cell_y * ctx->map.cols + cell_x];
                             if (tex_id) tex = ctx->assets_map[tex_id];
                         }
@@ -495,7 +495,7 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
                     if (ctx->map.floor) {
                         size_t cell_x = (size_t)world_x;
                         size_t cell_y = (size_t)world_y;
-                        if (cell_x >= 0 && cell_x < ctx->map.cols && cell_y >= 0 && cell_y < ctx->map.rows) {
+                        if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
                             uint8_t tex_id = ctx->map.floor[cell_y * ctx->map.cols + cell_x];
                             if (tex_id) tex = ctx->assets_map[tex_id];
                         }
@@ -538,7 +538,7 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
                 if (ctx->map.ceil) {
                     size_t cell_x = (size_t)w.x;
                     size_t cell_y = (size_t)w.y;
-                    if (cell_x >= 0 && cell_x < ctx->map.cols && cell_y >= 0 && cell_y < ctx->map.rows && ctx->map.ceil[cell_y * ctx->map.cols + cell_x]) {
+                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows && ctx->map.ceil[cell_y * ctx->map.cols + cell_x]) {
                         ceil_tex = ctx->assets_map[ctx->map.ceil[cell_y * ctx->map.cols + cell_x]];
                     } else {
                         ceil_tex = ctx->assets_map[ctx->map.ceil_texture];
@@ -565,7 +565,7 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
                 if (ctx->map.floor && w.x >= 0 && (size_t)w.x < ctx->map.cols && w.y >= 0 && (size_t)w.y < ctx->map.rows) {
                     size_t cell_x = (size_t)w.x;
                     size_t cell_y = (size_t)w.y;
-                    if (cell_x >= 0 && cell_x < ctx->map.cols && cell_y >= 0 && cell_y < ctx->map.rows && ctx->map.floor[cell_y * ctx->map.cols + cell_x]) {
+                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows && ctx->map.floor[cell_y * ctx->map.cols + cell_x]) {
                         floor_tex = ctx->assets_map[ctx->map.floor[cell_y * ctx->map.cols + cell_x]];
                     } else {
                         floor_tex = ctx->assets_map[ctx->map.floor_texture];

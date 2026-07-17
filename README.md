@@ -580,30 +580,58 @@ use narrower targets such as `make run` or `make esp32-flash`.
 
 ## ESP32 Configuration
 
-The ESP32 backend is implemented in `src/yari/platform/esp32/renderer.c` and
-targets an ST7789 display over SPI in landscape orientation.
+The ESP32 backend is implemented in `src/yari/platform/esp32/renderer.c` on
+top of ESP-IDF's `esp_lcd` component, over SPI. It defaults to an ST7789
+panel in landscape orientation (the T-Display's display), but every pin,
+bus parameter and panel trait is a `#define` so it can be reconfigured, or
+retargeted to a different controller, from your build without touching the
+file.
 
 Main configuration macros:
 
 ```c
-// Framebuffer
-// Display
+// Framebuffer / active area
 #define YR_LCD_W 240
 #define YR_LCD_H 136
-#define LCD_X_OFF 40
+#define LCD_X_OFF 40   // gap between GRAM origin and visible glass
 #define LCD_Y_OFF 53
 
-// ST7789 pins
+// SPI pins and bus
 #define PIN_MOSI 19
 #define PIN_CLK 18
 #define PIN_CS 5
 #define PIN_DC 16
-#define PIN_RST 23
-#define PIN_BL 4
-
-// SPI
+#define PIN_RST 23      // set to -1 if the panel has no reset line
+#define PIN_BL 4        // set to -1 if the backlight isn't GPIO-controlled
+#define LCD_BL_ACTIVE_LOW false
+#define LCD_SPI_HOST SPI2_HOST
+#define LCD_SPI_MODE 0
 #define SPI_CLOCK_SPEED (80 * 1000 * 1000)
+
+// Panel controller: define one to select it (defaults to LCD_CONTROLLER_ST7789)
+#define LCD_CONTROLLER_ST7789
+// #define LCD_CONTROLLER_SSD1306
+
+// Rotation / color, applied through esp_lcd's portable panel ops
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y false
+#define LCD_SWAP_XY true
+#define LCD_BGR_ORDER false
+#define LCD_INVERT_COLOR true   // defaults to false for non-ST7789 controllers
+
+// Color depth: 1 = monochrome (packed per the controller's native GDDRAM
+// layout), 16 = RGB565 (fast path, zero-copy blit), anything else is
+// treated as N bytes/pixel and produced by expanding RGB565 per channel.
+#define LCD_BITS_PER_PIXEL 16
 ```
+
+`esp_lcd` ships ST7789 and SSD1306 (monochrome) drivers with no extra
+dependencies; both are wired up above. To target another `esp_lcd`-compatible
+controller (e.g. ILI9341, GC9A01, either built into `esp_lcd` or added as a
+managed component via `idf_component.yml`), add an `#elif` branch next to
+`esp_lcd_new_panel_st7789(...)` in `lcd_init()` calling its own
+`esp_lcd_new_panel_xxx()` constructor — the SPI bus setup, framebuffer,
+rotation and blit/pack code are all controller-agnostic already.
 
 The ESP-IDF examples already add:
 

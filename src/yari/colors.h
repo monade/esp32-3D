@@ -4,7 +4,7 @@
 
 
 
-#ifdef COLOR_565 // 16-bit color in 5-6-5 format
+#if defined(COLOR_565) // 16-bit color in 5-6-5 format
 typedef uint16_t yr_pixel_t;
 
 #define YR_COLOR(r, g, b) ((yr_pixel_t)(((int)((r)*31) << 11) | ((int)((g)*63) << 5) | (int)((b)*31))) 
@@ -67,6 +67,54 @@ static inline yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor) {
     }
 
     return (red << 11) | (green << 5) | blue;
+}
+#elif defined(COLOR_MONO) // 8-bit grayscale; dithered to 1bpp only at the final display blit
+typedef uint8_t yr_pixel_t;
+
+#define YR_COLOR(r, g, b) ((yr_pixel_t)(int)(((r) * 0.299f + (g) * 0.587f + (b) * 0.114f) * 255))
+
+#define YR_EMPTY_PIXEL 0
+#define YR_BLACK       1
+#define YR_WHITE       255
+#define YR_RED         76
+#define YR_GREEN       150
+#define YR_BLUE        29
+#define YR_YELLOW      226
+#define YR_PURPLE      105
+#define YR_ORANGE      151
+#define YR_CYAN        179
+#define YR_PINK        212
+#define YR_GRAY        128
+#define YR_SILVER      192
+#define YR_MAROON      38
+#define YR_DARK_RED    42
+#define YR_DARK_GREEN  75
+#define YR_DARK_BLUE   16
+#define YR_OLIVE       113
+#define YR_TEAL        90
+#define YR_NAVY        15
+#define YR_BROWN       79
+#define YR_SKY_BLUE    188
+
+static inline yr_pixel_t yr_color_darken(yr_pixel_t color, int scale) {
+    if (scale <= 0) return 0;
+    if (scale >= 256) return color;
+
+    return (yr_pixel_t)((color * scale) >> 8);
+}
+
+static inline yr_pixel_t yr_color_brightness(yr_pixel_t color, float factor) {
+    if (factor < 0.0f) {
+        if (factor <= -1.0f) return 0;
+
+        int scale = (int)((1.0f + factor) * 256.0f);
+        return yr_color_darken(color, scale);
+    } else {
+        if (factor >= 1.0f) return YR_WHITE;
+
+        int scale = (int)(factor * 256.0f);
+        return (yr_pixel_t)(color + (((255 - color) * scale) >> 8));
+    }
 }
 #else // 32-bit color with alpha, in ARGB format
 typedef uint32_t yr_pixel_t;

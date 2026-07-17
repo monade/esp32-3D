@@ -14,6 +14,7 @@ idf_component_register(
         driver
         esp_timer
         esp_adc
+        esp_lcd
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE

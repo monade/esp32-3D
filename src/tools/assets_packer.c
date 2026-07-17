@@ -31,6 +31,30 @@ void generate_rgb_32(String *buffer, const char *name, uint8_t *bitmap, int x, i
   str_appendf(buffer, "\n};\n");
 }
 
+void generate_mono(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
+  str_appendf(buffer, "static const yr_pixel_t %s[] = { \n    ", name);
+  for(int i = 0; i < x * y; i++) {
+    uint8_t r = bitmap[i * ch + 0];
+    uint8_t g = bitmap[i * ch + 1];
+    uint8_t b = bitmap[i * ch + 2];
+    uint8_t a = ch >= 4 ? bitmap[i * ch + 3] : 255;
+    uint8_t pixel = (uint8_t)((r * 299 + g * 587 + b * 114) / 1000);
+    if (a == 0) pixel = 0;
+    else if (pixel == 0 && ch >= 4) pixel = 1;
+    str_appendf(buffer, "0x%02X", pixel);
+    if (i % 8 == 7) {
+      if (i != (x * y) - 1) {
+        str_appendf(buffer, ",\n    ");
+      } else {
+        str_appendf(buffer, ", ");
+      }
+    } else {
+      str_appendf(buffer, ", ");
+    }
+  }
+  str_appendf(buffer, "\n};\n");
+}
+
 void generate_rgb_565(String *buffer, const char *name, uint8_t *bitmap, int x, int y, int ch) {
   str_appendf(buffer, "static const yr_pixel_t %s[] = { \n    ", name);
   for(int i = 0; i < x * y; i++) {
@@ -98,6 +122,8 @@ int main(int argc, char **argv) {
         str_appendf(&out, "// %s\n", dir->d_name);
         str_append(&out, "#ifdef COLOR_565\n");
         generate_rgb_565(&out, name, bitmap, x, y, ch);
+        str_append(&out, "#elif defined(COLOR_MONO)\n");
+        generate_mono(&out, name, bitmap, x, y, ch);
         str_append(&out, "#else\n");
         generate_rgb_32(&out, name, bitmap, x, y, ch);
         str_append(&out, "#endif\n\n");
