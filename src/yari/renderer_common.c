@@ -5,7 +5,7 @@
 // platform only implements yr_fill_span (an unclipped horizontal run),
 // which lets it stay a tight, easily-optimized loop (e.g. the ESP32 backend
 // batches it into 32-bit writes).
-void yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color) {
+void YR_PERF_ATTR yr_draw_rectangle(int x, int y, int width, int height, yr_pixel_t color) {
     if (width == 1 && height == 1) {
         if ((unsigned)x < (unsigned)yr_screen_width() && (unsigned)y < (unsigned)yr_screen_height()) {
             yr_fill_span(x, y, 1, color);

@@ -2,6 +2,7 @@
 #ifndef _WIN32
 #include <dirent.h>
 #endif
+#include <limits.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -61,6 +62,8 @@
 #define LEVEL_GEN_FILE_NAME "level_gen.h"
 #define ANIM_NAME_SIZE 64
 #define MAX_ANIM_FRAMES 64
+#define TRIGGER_NAME_SIZE 64
+#define MAX_TRIGGER_POINTS 64
 
 #define TOPBAR_HEIGHT 40.0f
 #define KIND_NAME_SIZE 32
@@ -123,6 +126,32 @@ typedef struct {
     float speed;
 } Animation;
 
+typedef enum {
+    TRIGGER_RECT = 0,
+    TRIGGER_CIRCLE = 1,
+    TRIGGER_POLY = 2,
+} TriggerShape;
+
+typedef struct {
+    int x;
+    int y;
+} TriggerPoint;
+
+typedef struct {
+    char name[TRIGGER_NAME_SIZE];
+    TriggerShape shape;
+    int rect_x;
+    int rect_y;
+    int rect_w;
+    int rect_h;
+    Vector2 circle_center;
+    float circle_radius;
+    TriggerPoint points[MAX_TRIGGER_POINTS];
+    int point_count;
+    float cooldown; // seconds; 0 = no cooldown gate
+    bool once; // fire on the first successful activation only
+} Trigger;
+
 typedef struct {
     int cols;
     int rows;
@@ -176,6 +205,7 @@ typedef enum {
 typedef enum {
     SURFACE_FLOOR = 0,
     SURFACE_CEIL = 1,
+    SURFACE_TRIGGERS = 2,
 } SurfaceTarget;
 
 typedef enum {
@@ -218,6 +248,7 @@ da_declare(SelectedWalls, SelectedWall);
 da_declare(ClipboardEntities, ClipboardEntity);
 da_declare(ClipboardWalls, ClipboardWall);
 da_declare(Animations, Animation);
+da_declare(Triggers, Trigger);
 
 typedef enum {
     STATUS_INFO = 0,
@@ -227,7 +258,7 @@ typedef enum {
 } StatusKind;
 
 // Deep copy of everything undo/redo can restore: the map layers, entities, shared
-// definitions (collision layers, fn names, kinds, animations) and the player.
+// definitions (collision layers, fn names, kinds, animations), triggers and the player.
 typedef struct {
     WallGrid map;
     WallMap floor_map;
@@ -239,6 +270,7 @@ typedef struct {
     CleanupFns cleanup_fns;
     EntityKinds kinds;
     Animations animations;
+    Triggers triggers;
     int floor_asset;
     int ceil_asset;
     Vector2 player_pos;
@@ -253,6 +285,7 @@ typedef struct {
     SurfaceTarget target_surface;
     char target_entity_name[ENTITY_NAME_SIZE];
     char target_animation_name[ANIM_NAME_SIZE];
+    char target_trigger_name[TRIGGER_NAME_SIZE];
 } UndoState;
 
 da_declare(UndoStates, UndoState);
@@ -405,6 +438,40 @@ typedef struct {
     bool anim_speed_edit;
     char anim_speed_text[32];
 
+    Triggers triggers;
+    int selected_trigger;
+    float trigger_list_scroll;
+    float trigger_points_scroll;
+    bool new_trigger_edit;
+    char new_trigger_name[TRIGGER_NAME_SIZE];
+    bool trigger_name_edit;
+    bool trigger_rect_x_edit;
+    bool trigger_rect_y_edit;
+    bool trigger_rect_w_edit;
+    bool trigger_rect_h_edit;
+    char trigger_rect_x_text[16];
+    char trigger_rect_y_text[16];
+    char trigger_rect_w_text[16];
+    char trigger_rect_h_text[16];
+    bool trigger_circle_x_edit;
+    bool trigger_circle_y_edit;
+    bool trigger_circle_r_edit;
+    char trigger_circle_x_text[32];
+    char trigger_circle_y_text[32];
+    char trigger_circle_r_text[32];
+    int new_trigger_point_x;
+    int new_trigger_point_y;
+    char new_trigger_point_x_text[16];
+    char new_trigger_point_y_text[16];
+    bool new_trigger_point_x_edit;
+    bool new_trigger_point_y_edit;
+    bool trigger_dragging;
+    int trigger_drag_start_x;
+    int trigger_drag_start_y;
+    int trigger_drag_point_index;
+    bool trigger_cooldown_edit;
+    char trigger_cooldown_text[32];
+
     UndoStates undo_stack;
     UndoStates redo_stack;
     bool selection_move_snapshotted;
@@ -422,6 +489,7 @@ typedef struct {
     CleanupFns cleanup_fns;
     EntityKinds kinds;
     Animations animations;
+    Triggers triggers;
     int floor_asset;
     int ceil_asset;
     Vector2 player_pos;
@@ -433,6 +501,9 @@ typedef struct {
 
 static void set_status(App *app, const char *fmt, ...);
 static void set_status_kind(App *app, StatusKind kind, const char *fmt, ...);
+static int trigger_index_by_name(const App *app, const char *name);
+static void refresh_trigger_field_text(App *app);
+static void draw_triggers_section(App *app, float x, float *y, float w);
 
 static char *copy_string(const char *text) {
     size_t len = strlen(text);
@@ -674,6 +745,7 @@ static void free_undo_state(UndoState *state) {
     da_free(&state->cleanup_fns);
     da_free(&state->kinds);
     da_free(&state->animations);
+    da_free(&state->triggers);
 }
 
 static UndoState capture_undo_state(App *app) {
@@ -688,6 +760,7 @@ static UndoState capture_undo_state(App *app) {
     da_append_many(&state.cleanup_fns, app->cleanup_fns.data, app->cleanup_fns.length);
     da_append_many(&state.kinds, app->kinds.data, app->kinds.length);
     da_append_many(&state.animations, app->animations.data, app->animations.length);
+    da_append_many(&state.triggers, app->triggers.data, app->triggers.length);
     state.floor_asset = app->floor_asset;
     state.ceil_asset = app->ceil_asset;
     state.player_pos = app->player_pos;
@@ -704,6 +777,9 @@ static UndoState capture_undo_state(App *app) {
     bool has_animation_focus = app->selected_animation >= 0 && app->selected_animation < (int)app->animations.length;
     snprintf(state.target_animation_name, sizeof(state.target_animation_name), "%s",
         has_animation_focus ? app->animations.data[app->selected_animation].name : "");
+    bool has_trigger_focus = app->selected_trigger >= 0 && app->selected_trigger < (int)app->triggers.length;
+    snprintf(state.target_trigger_name, sizeof(state.target_trigger_name), "%s",
+        has_trigger_focus ? app->triggers.data[app->selected_trigger].name : "");
     return state;
 }
 
@@ -1045,7 +1121,19 @@ static bool app_is_editing(const App *app) {
         app->anim_name_edit ||
         app->anim_speed_edit ||
         app->brush_wall_slide_x_edit ||
-        app->brush_wall_slide_y_edit;
+        app->brush_wall_slide_y_edit ||
+        app->new_trigger_edit ||
+        app->trigger_name_edit ||
+        app->trigger_rect_x_edit ||
+        app->trigger_rect_y_edit ||
+        app->trigger_rect_w_edit ||
+        app->trigger_rect_h_edit ||
+        app->trigger_circle_x_edit ||
+        app->trigger_circle_y_edit ||
+        app->trigger_circle_r_edit ||
+        app->new_trigger_point_x_edit ||
+        app->new_trigger_point_y_edit ||
+        app->trigger_cooldown_edit;
 }
 
 static void set_status(App *app, const char *fmt, ...) {
@@ -1678,6 +1766,8 @@ static void clear_edit_selection(App *app) {
     app->selection_move_dragging = false;
     app->selection_move_moved = false;
     app->wall_dragging = false;
+    app->trigger_dragging = false;
+    app->trigger_drag_point_index = -1;
 }
 
 static void load_entity_fields_into_editor(App *app, int entity_index) {
@@ -2701,6 +2791,7 @@ static void apply_undo_state(App *app, UndoState *state) {
     da_free(&app->cleanup_fns);
     da_free(&app->kinds);
     da_free(&app->animations);
+    da_free(&app->triggers);
 
     app->map = state->map;
     app->floor_map = state->floor_map;
@@ -2712,6 +2803,7 @@ static void apply_undo_state(App *app, UndoState *state) {
     app->cleanup_fns = state->cleanup_fns;
     app->kinds = state->kinds;
     app->animations = state->animations;
+    app->triggers = state->triggers;
     app->floor_asset = state->floor_asset;
     app->ceil_asset = state->ceil_asset;
     app->player_dir = state->player_dir;
@@ -2725,11 +2817,13 @@ static void apply_undo_state(App *app, UndoState *state) {
     if (app->selected_animation >= 0) {
         snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
     }
+    app->selected_trigger = app->triggers.length > 0 ? 0 : -1;
+    if (app->selected_trigger >= 0) refresh_trigger_field_text(app);
     if (!asset_index_is_valid(app, app->selected_asset)) app->selected_asset = app->assets.length > 0 ? 0 : -1;
     clear_edit_selection(app);
 
     // Jump the sidebar to wherever the user was when they made the change being
-    // undone/redone, re-selecting the specific entity/animation when we can find it.
+    // undone/redone, re-selecting the specific entity/animation/trigger when we can find it.
     app->brush = state->target_brush;
     app->entity_tab = state->target_entity_tab;
     app->surface_target = state->target_surface;
@@ -2741,6 +2835,12 @@ static void apply_undo_state(App *app, UndoState *state) {
         if (idx >= 0) {
             app->selected_animation = idx;
             snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[idx].speed);
+        }
+    } else if (app->brush == BRUSH_SURFACE) {
+        int idx = trigger_index_by_name(app, state->target_trigger_name);
+        if (idx >= 0) {
+            app->selected_trigger = idx;
+            refresh_trigger_field_text(app);
         }
     }
 }
@@ -3290,6 +3390,27 @@ static void append_level_state(String *out, const App *app) {
             entity->animation[0] != '\0' ? entity->animation : "-");
     }
 
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        const Trigger *trig = &app->triggers.data[i];
+        switch (trig->shape) {
+            case TRIGGER_RECT:
+                str_appendf(out, "// trigger %s rect %.9g %d %d %d %d %d\n", trig->name, trig->cooldown, trig->once ? 1 : 0,
+                    trig->rect_x, trig->rect_y, trig->rect_w, trig->rect_h);
+                break;
+            case TRIGGER_CIRCLE:
+                str_appendf(out, "// trigger %s circle %.9g %d %.9g %.9g %.9g\n", trig->name, trig->cooldown, trig->once ? 1 : 0,
+                    trig->circle_center.x, trig->circle_center.y, trig->circle_radius);
+                break;
+            case TRIGGER_POLY:
+                str_appendf(out, "// trigger %s poly %.9g %d %d", trig->name, trig->cooldown, trig->once ? 1 : 0, trig->point_count);
+                for (int pi = 0; pi < trig->point_count; pi++) {
+                    str_appendf(out, " %d %d", trig->points[pi].x, trig->points[pi].y);
+                }
+                str_append(out, "\n");
+                break;
+        }
+    }
+
     str_append(out, "// " MAP_BUILDER_STATE_END "\n\n");
 }
 
@@ -3360,6 +3481,7 @@ static void loaded_level_free(LoadedLevel *loaded) {
     da_free(&loaded->cleanup_fns);
     da_free(&loaded->kinds);
     da_free(&loaded->animations);
+    da_free(&loaded->triggers);
     loaded_level_init(loaded);
 }
 
@@ -3690,6 +3812,48 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
         return true;
     }
 
+    char trigger_name_buf[TRIGGER_NAME_SIZE] = {0};
+    char trigger_shape_buf[16] = {0};
+    float trigger_cooldown_val = 0.0f;
+    int trigger_once_val = 0;
+    int trigger_header_consumed = 0;
+    if (sscanf(payload, "trigger %63s %15s %f %d%n", trigger_name_buf, trigger_shape_buf, &trigger_cooldown_val, &trigger_once_val, &trigger_header_consumed) == 4) {
+        Trigger trig = {0};
+        sanitize_identifier(trig.name, sizeof(trig.name), trigger_name_buf, "trigger", false);
+        trig.once = trigger_once_val != 0;
+        trig.cooldown = (!trig.once && trigger_cooldown_val > 0.0f) ? trigger_cooldown_val : 0.0f;
+        const char *rest = payload + trigger_header_consumed;
+        if (strcmp(trigger_shape_buf, "rect") == 0) {
+            trig.shape = TRIGGER_RECT;
+            trig.rect_w = 1;
+            trig.rect_h = 1;
+            sscanf(rest, "%d %d %d %d", &trig.rect_x, &trig.rect_y, &trig.rect_w, &trig.rect_h);
+            da_append(&loaded->triggers, trig);
+        } else if (strcmp(trigger_shape_buf, "circle") == 0) {
+            trig.shape = TRIGGER_CIRCLE;
+            trig.circle_radius = 1.0f;
+            sscanf(rest, "%f %f %f", &trig.circle_center.x, &trig.circle_center.y, &trig.circle_radius);
+            da_append(&loaded->triggers, trig);
+        } else if (strcmp(trigger_shape_buf, "poly") == 0) {
+            trig.shape = TRIGGER_POLY;
+            int count = 0;
+            int poly_consumed = 0;
+            if (sscanf(rest, "%d%n", &count, &poly_consumed) == 1) {
+                const char *pp = rest + poly_consumed;
+                for (int pi = 0; pi < count && pi < MAX_TRIGGER_POINTS; pi++) {
+                    int px = 0, py = 0, pt_consumed = 0;
+                    if (sscanf(pp, "%d %d%n", &px, &py, &pt_consumed) != 2) break;
+                    trig.points[pi].x = px;
+                    trig.points[pi].y = py;
+                    trig.point_count++;
+                    pp += pt_consumed;
+                }
+            }
+            da_append(&loaded->triggers, trig);
+        }
+        return true;
+    }
+
     return true;
 }
 
@@ -3722,6 +3886,10 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     if (app->selected_animation >= 0) {
         snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "%.3f", app->animations.data[0].speed);
     }
+    da_free(&app->triggers);
+    app->triggers = loaded->triggers;
+    app->selected_trigger = app->triggers.length > 0 ? 0 : -1;
+    if (app->selected_trigger >= 0) refresh_trigger_field_text(app);
     loaded->map = (WallGrid){0};
     loaded->floor_map = (WallMap){0};
     loaded->ceil_map = (WallMap){0};
@@ -3732,6 +3900,7 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     loaded->cleanup_fns = (CleanupFns){0};
     loaded->kinds = (EntityKinds){0};
     loaded->animations = (Animations){0};
+    loaded->triggers = (Triggers){0};
     loaded->has_size = false;
 
     app->pending_cols = app->map.cols;
@@ -3783,6 +3952,20 @@ static void apply_loaded_level(App *app, LoadedLevel *loaded, Rectangle map_boun
     app->brush_cleanup_fn[0] = '\0';
     app->brush_animation[0] = '\0';
     app->entity_anim_scroll = 0.0f;
+    app->trigger_list_scroll = 0.0f;
+    app->trigger_points_scroll = 0.0f;
+    app->new_trigger_edit = false;
+    app->new_trigger_name[0] = '\0';
+    app->trigger_name_edit = false;
+    app->trigger_rect_x_edit = false;
+    app->trigger_rect_y_edit = false;
+    app->trigger_rect_w_edit = false;
+    app->trigger_rect_h_edit = false;
+    app->trigger_circle_x_edit = false;
+    app->trigger_circle_y_edit = false;
+    app->trigger_circle_r_edit = false;
+    app->new_trigger_point_x_edit = false;
+    app->new_trigger_point_y_edit = false;
     sync_init_fns_from_entities(app);
     sync_update_fns_from_entities(app);
     sync_cleanup_fns_from_entities(app);
@@ -4093,7 +4276,6 @@ static bool write_level_header(App *app) {
         append_float_literal(&out, player_dir_val.y);
         str_append(&out, "},\n");
         str_append(&out, "        .horizon = 0.0f,\n");
-        str_append(&out, "        .angle = 0.0f\n");
         str_append(&out, "    };\n");
         str_append(&out, "}\n\n");
     }
@@ -4105,6 +4287,76 @@ static bool write_level_header(App *app) {
     append_float_literal(&out, app->player_pos.y);
     str_append(&out, "});\n");
     str_append(&out, "}\n\n");
+
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        const Trigger *trig = &app->triggers.data[i];
+        bool gated = trig->cooldown > 0.0f || trig->once;
+        str_appendf(&out, "static inline bool trigger_%s%s(Vector2 pos) {\n", trig->name, fn_suffix);
+        switch (trig->shape) {
+            case TRIGGER_RECT:
+                str_append(&out, "    bool inside = pos.x >= ");
+                append_float_literal(&out, (float)trig->rect_x);
+                str_append(&out, " && pos.x <= ");
+                append_float_literal(&out, (float)(trig->rect_x + trig->rect_w));
+                str_append(&out, " && pos.y >= ");
+                append_float_literal(&out, (float)trig->rect_y);
+                str_append(&out, " && pos.y <= ");
+                append_float_literal(&out, (float)(trig->rect_y + trig->rect_h));
+                str_append(&out, ";\n");
+                break;
+            case TRIGGER_CIRCLE:
+                str_append(&out, "    Vector2 center = (Vector2){");
+                append_float_literal(&out, trig->circle_center.x);
+                str_append(&out, ", ");
+                append_float_literal(&out, trig->circle_center.y);
+                str_append(&out, "};\n");
+                str_append(&out, "    float radius = ");
+                append_float_literal(&out, trig->circle_radius);
+                str_append(&out, ";\n");
+                str_append(&out, "    bool inside = Vector2DistanceSqr(pos, center) <= radius * radius;\n");
+                break;
+            case TRIGGER_POLY:
+                if (trig->point_count < 3) {
+                    str_append(&out, "    bool inside = false;\n");
+                } else {
+                    str_append(&out, "    static const Vector2 points[] = {");
+                    for (int pi = 0; pi < trig->point_count; pi++) {
+                        if (pi > 0) str_append(&out, ", ");
+                        str_append(&out, "{");
+                        append_float_literal(&out, (float)trig->points[pi].x);
+                        str_append(&out, ", ");
+                        append_float_literal(&out, (float)trig->points[pi].y);
+                        str_append(&out, "}");
+                    }
+                    str_append(&out, "};\n");
+                    str_appendf(&out, "    int count = %d;\n", trig->point_count);
+                    str_append(&out, "    bool inside = false;\n");
+                    str_append(&out, "    for (int vi = 0, vj = count - 1; vi < count; vj = vi++) {\n");
+                    str_append(&out, "        if (((points[vi].y > pos.y) != (points[vj].y > pos.y)) &&\n");
+                    str_append(&out, "            (pos.x < (points[vj].x - points[vi].x) * (pos.y - points[vi].y) / (points[vj].y - points[vi].y) + points[vi].x)) {\n");
+                    str_append(&out, "            inside = !inside;\n");
+                    str_append(&out, "        }\n");
+                    str_append(&out, "    }\n");
+                }
+                break;
+        }
+        if (!gated) {
+            str_append(&out, "    return inside;\n");
+        } else {
+            str_append(&out, "    if (!inside) return false;\n");
+            if (trig->once) str_append(&out, "    static bool triggered = false;\n");
+            if (trig->once) str_append(&out, "    if (triggered) return false;\n");
+            if (trig->cooldown > 0.0f) {
+                str_appendf(&out, "    static YrTimer timer_trigger_%s%s = {0};\n", trig->name, fn_suffix);
+                str_appendf(&out, "    if (!yr_timer_loop(&timer_trigger_%s%s, ", trig->name, fn_suffix);
+                append_float_literal(&out, trig->cooldown);
+                str_append(&out, ")) return false;\n");
+            }
+            if (trig->once) str_append(&out, "    triggered = true;\n");
+            str_append(&out, "    return true;\n");
+        }
+        str_append(&out, "}\n\n");
+    }
 
     for (size_t i = 0; i < app->entities.length; i++) {
         PlacedEntity *entity = &app->entities.data[i];
@@ -4377,6 +4629,120 @@ static void place_entity(App *app, Vector2 pos) {
     da_append(&app->selected_entities, app->editing_entity);
 }
 
+static float trigger_point_pick_radius(const App *app) {
+    return fmaxf(0.3f, 10.0f / app->camera.zoom);
+}
+
+static int trigger_point_at(const Trigger *trig, Vector2 world, float radius) {
+    float best_dist_sqr = radius * radius;
+    int best = -1;
+    for (int pi = 0; pi < trig->point_count; pi++) {
+        Vector2 p = {(float)trig->points[pi].x, (float)trig->points[pi].y};
+        float dx = p.x - world.x;
+        float dy = p.y - world.y;
+        float dist_sqr = dx * dx + dy * dy;
+        if (dist_sqr <= best_dist_sqr) {
+            best_dist_sqr = dist_sqr;
+            best = pi;
+        }
+    }
+    return best;
+}
+
+// Trigger geometry is edited by dragging directly on the map, tool depending on the
+// selected trigger's shape: Rect drags out corners, Circle drags out a radius from the
+// press point, Poly grabs an existing point to move it or creates+drags a new one.
+// Right-click removes the point under the cursor (Poly only).
+static void handle_trigger_map_input(App *app, Vector2 world, int cell_x, int cell_y) {
+    if (app->selected_trigger < 0 || app->selected_trigger >= (int)app->triggers.length) {
+        app->trigger_dragging = false;
+        return;
+    }
+    Trigger *trig = &app->triggers.data[app->selected_trigger];
+
+    if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+        app->trigger_dragging = false;
+        if (trig->shape == TRIGGER_POLY) {
+            int idx = trigger_point_at(trig, world, trigger_point_pick_radius(app));
+            if (idx >= 0) {
+                push_undo_snapshot(app, "remove point from %s", trig->name);
+                if (idx + 1 < trig->point_count) {
+                    memmove(&trig->points[idx], &trig->points[idx + 1], (size_t)(trig->point_count - idx - 1) * sizeof(trig->points[0]));
+                }
+                trig->point_count--;
+            }
+        }
+        return;
+    }
+
+    if (trig->shape == TRIGGER_RECT) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            push_undo_snapshot(app, "resize trigger %s", trig->name);
+            app->trigger_dragging = true;
+            app->trigger_drag_start_x = cell_x;
+            app->trigger_drag_start_y = cell_y;
+        }
+        if (app->trigger_dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            int min_x = app->trigger_drag_start_x < cell_x ? app->trigger_drag_start_x : cell_x;
+            int max_x = app->trigger_drag_start_x > cell_x ? app->trigger_drag_start_x : cell_x;
+            int min_y = app->trigger_drag_start_y < cell_y ? app->trigger_drag_start_y : cell_y;
+            int max_y = app->trigger_drag_start_y > cell_y ? app->trigger_drag_start_y : cell_y;
+            trig->rect_x = min_x;
+            trig->rect_y = min_y;
+            trig->rect_w = max_x - min_x + 1;
+            trig->rect_h = max_y - min_y + 1;
+            refresh_trigger_field_text(app);
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) app->trigger_dragging = false;
+        return;
+    }
+
+    if (trig->shape == TRIGGER_CIRCLE) {
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            push_undo_snapshot(app, "resize trigger %s", trig->name);
+            app->trigger_dragging = true;
+            trig->circle_center = world;
+            trig->circle_radius = 0.0f;
+            refresh_trigger_field_text(app);
+        }
+        if (app->trigger_dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            trig->circle_radius = distance_between(trig->circle_center, world);
+            refresh_trigger_field_text(app);
+        }
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) app->trigger_dragging = false;
+        return;
+    }
+
+    // TRIGGER_POLY: grab the nearest existing point within pick range and drag it,
+    // or start a brand new one at the click and drag that instead.
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        int idx = trigger_point_at(trig, world, trigger_point_pick_radius(app));
+        if (idx >= 0) {
+            push_undo_snapshot(app, "move point in %s", trig->name);
+            app->trigger_drag_point_index = idx;
+            app->trigger_dragging = true;
+        } else if (trig->point_count < MAX_TRIGGER_POINTS) {
+            push_undo_snapshot(app, "add point to %s", trig->name);
+            trig->points[trig->point_count].x = cell_x;
+            trig->points[trig->point_count].y = cell_y;
+            app->trigger_drag_point_index = trig->point_count;
+            trig->point_count++;
+            app->trigger_dragging = true;
+        } else {
+            set_status_kind(app, STATUS_WARNING, "Max points reached (%d)", MAX_TRIGGER_POINTS);
+        }
+    }
+    if (app->trigger_dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT) &&
+        app->trigger_drag_point_index >= 0 && app->trigger_drag_point_index < trig->point_count) {
+        trig->points[app->trigger_drag_point_index].x = cell_x;
+        trig->points[app->trigger_drag_point_index].y = cell_y;
+    }
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        app->trigger_dragging = false;
+        app->trigger_drag_point_index = -1;
+    }
+}
+
 static void handle_map_input(App *app, Rectangle map_bounds) {
     Vector2 mouse = GetMousePosition();
 
@@ -4401,7 +4767,7 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
     }
 
     bool mouse_in_map = CheckCollisionPointRec(mouse, map_bounds);
-    if ((!mouse_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging) || app_is_editing(app)) return;
+    if ((!mouse_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging && !app->trigger_dragging) || app_is_editing(app)) return;
 
     if (app->suppress_left_drag) {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) return;
@@ -4441,14 +4807,21 @@ static void handle_map_input(App *app, Rectangle map_bounds) {
     }
 
     Vector2 world = GetScreenToWorld2D(mouse, app->camera);
-    if (!mouse_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging) return;
+    if (!mouse_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging && !app->trigger_dragging) return;
     bool world_in_map = world.x >= 0.0f && world.y >= 0.0f && world.x < (float)app->map.cols && world.y < (float)app->map.rows;
-    if (!world_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging) return;
+    if (!world_in_map && !app->wall_dragging && !app->selection_dragging && !app->selection_move_dragging && !app->trigger_dragging) return;
 
     int cell_x = 0;
     int cell_y = 0;
     world_to_cell_clamped(app, world, &cell_x, &cell_y);
     bool shift = shift_is_down();
+
+    // Triggers are edited by dragging directly on the map instead of the generic
+    // wall/floor/entity flows below - handle them entirely here.
+    if (app->brush == BRUSH_SURFACE && app->surface_target == SURFACE_TRIGGERS) {
+        handle_trigger_map_input(app, world, cell_x, cell_y);
+        return;
+    }
 
     if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
         app->wall_dragging = false;
@@ -4684,7 +5057,7 @@ static void draw_map(App *app, Rectangle map_bounds) {
     // elsewhere only the floor is shown, faintly, as a reference. Ceil is only ever
     // visible while editing it (Floor/Ceil mode with the ceil target selected).
     {
-        bool surface_mode = app->brush == BRUSH_SURFACE;
+        bool surface_mode = app->brush == BRUSH_SURFACE && app->surface_target != SURFACE_TRIGGERS;
         bool show_ceil = surface_mode && app->surface_target == SURFACE_CEIL;
         const WallMap *smap = show_ceil ? &app->ceil_map : &app->floor_map;
         int general = show_ceil ? app->ceil_asset : app->floor_asset;
@@ -4827,7 +5200,7 @@ static void draw_map(App *app, Rectangle map_bounds) {
         Asset *asset = NULL;
         if (entity->asset_index >= 0 && entity->asset_index < (int)app->assets.length) asset = &app->assets.data[entity->asset_index];
 
-        bool surface_mode = app->brush == BRUSH_SURFACE;
+        bool surface_mode = app->brush == BRUSH_SURFACE && app->surface_target != SURFACE_TRIGGERS;
         Rectangle dst = {entity->pos.x - 0.35f, entity->pos.y - 0.35f, 0.7f, 0.7f};
         unsigned char fill_alpha = surface_mode ? (entity->disabled ? 48 : 110) : (entity->disabled ? 96 : 255);
         draw_texture_preview(asset, dst, (Color){255, 255, 255, fill_alpha});
@@ -4852,12 +5225,52 @@ static void draw_map(App *app, Rectangle map_bounds) {
         line_width * 4.0f,
         (Color){80, 210, 145, 255});
 
+    if (app->brush == BRUSH_SURFACE && app->surface_target == SURFACE_TRIGGERS) {
+        for (size_t i = 0; i < app->triggers.length; i++) {
+            const Trigger *trig = &app->triggers.data[i];
+            bool selected = (int)i == app->selected_trigger;
+            Color line_color = selected ? (Color){255, 200, 80, 255} : (Color){255, 200, 80, 100};
+            Color fill_color = selected ? (Color){255, 200, 80, 50} : (Color){255, 200, 80, 20};
+            float lw = selected ? line_width * 3.0f : line_width * 1.5f;
+            switch (trig->shape) {
+                case TRIGGER_RECT: {
+                    Rectangle r = {(float)trig->rect_x, (float)trig->rect_y, (float)trig->rect_w, (float)trig->rect_h};
+                    DrawRectangleRec(r, fill_color);
+                    DrawRectangleLinesEx(r, lw, line_color);
+                    break;
+                }
+                case TRIGGER_CIRCLE:
+                    DrawCircleV(trig->circle_center, trig->circle_radius, fill_color);
+                    DrawCircleLinesV(trig->circle_center, trig->circle_radius, line_color);
+                    break;
+                case TRIGGER_POLY:
+                    if (trig->point_count >= 2) {
+                        for (int pi = 0; pi < trig->point_count; pi++) {
+                            int pj = (pi + 1) % trig->point_count;
+                            Vector2 a = {(float)trig->points[pi].x, (float)trig->points[pi].y};
+                            Vector2 b = {(float)trig->points[pj].x, (float)trig->points[pj].y};
+                            DrawLineEx(a, b, lw, line_color);
+                        }
+                    }
+                    if (selected) {
+                        for (int pi = 0; pi < trig->point_count; pi++) {
+                            Vector2 p = {(float)trig->points[pi].x, (float)trig->points[pi].y};
+                            DrawCircleV(p, fmaxf(0.06f, 3.0f / app->camera.zoom), (Color){255, 200, 80, 255});
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
     Vector2 mouse = GetMousePosition();
     if (CheckCollisionPointRec(mouse, map_bounds) && !app_is_editing(app)) {
         Vector2 world = GetScreenToWorld2D(mouse, app->camera);
         if (world.x >= 0.0f && world.y >= 0.0f && world.x < (float)app->map.cols && world.y < (float)app->map.rows) {
             if (app->brush == BRUSH_WALL) {
                 DrawRectangleLinesEx((Rectangle){floorf(world.x), floorf(world.y), 1.0f, 1.0f}, line_width * 3.0f, (Color){80, 180, 255, 230});
+            } else if (app->brush == BRUSH_SURFACE && app->surface_target == SURFACE_TRIGGERS) {
+                DrawCircleLinesV(world, fmaxf(0.08f, 4.0f / app->camera.zoom), (Color){255, 200, 80, 230});
             } else if (app->brush == BRUSH_SURFACE) {
                 DrawRectangleLinesEx((Rectangle){floorf(world.x), floorf(world.y), 1.0f, 1.0f}, line_width * 3.0f, (Color){120, 220, 160, 230});
             } else if (app->brush == BRUSH_ENTITY) {
@@ -4970,21 +5383,33 @@ static void draw_floor_ceil_section(App *app, float x, float *y, float w) {
 
     GuiLabel((Rectangle){x, *y, w, 20.0f}, "Draw target");
     *y += 22.0f;
-    Rectangle floor_toggle = {x, *y, half_w, 26.0f};
-    Rectangle ceil_toggle = {x + half_w + gap, *y, half_w, 26.0f};
+    float third_w = (w - gap * 2.0f) / 3.0f;
+    Rectangle floor_toggle = {x, *y, third_w, 26.0f};
+    Rectangle ceil_toggle = {x + third_w + gap, *y, third_w, 26.0f};
+    Rectangle triggers_toggle = {x + (third_w + gap) * 2.0f, *y, third_w, 26.0f};
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         SurfaceTarget prev_target = app->surface_target;
         if (CheckCollisionPointRec(mouse, floor_toggle)) app->surface_target = SURFACE_FLOOR;
         else if (CheckCollisionPointRec(mouse, ceil_toggle)) app->surface_target = SURFACE_CEIL;
+        else if (CheckCollisionPointRec(mouse, triggers_toggle)) app->surface_target = SURFACE_TRIGGERS;
         if (app->surface_target != prev_target) clear_edit_selection(app);
     }
     bool floor_active = app->surface_target == SURFACE_FLOOR;
     bool ceil_active = app->surface_target == SURFACE_CEIL;
+    bool triggers_active = app->surface_target == SURFACE_TRIGGERS;
     GuiLock();
     GuiToggle(floor_toggle, "Floor", &floor_active);
     GuiToggle(ceil_toggle, "Ceil", &ceil_active);
+    GuiToggle(triggers_toggle, "Triggers", &triggers_active);
     GuiUnlock();
     *y += 32.0f;
+
+    // Triggers is a peer of Floor/Ceil, not a paintable surface - it replaces the rest
+    // of this panel entirely instead of stacking below it.
+    if (app->surface_target == SURFACE_TRIGGERS) {
+        draw_triggers_section(app, x, y, w);
+        return;
+    }
 
     GuiLabel((Rectangle){x, *y, w, 20.0f}, "Insert");
     *y += 22.0f;
@@ -5041,6 +5466,305 @@ static void draw_int_field(App *app, const char *subject, const char *label, Rec
             *value = parsed;
             snprintf(text, text_size, "%d", parsed);
         }
+    }
+}
+
+static const char *trigger_shape_name(TriggerShape shape) {
+    switch (shape) {
+        case TRIGGER_RECT: return "rect";
+        case TRIGGER_CIRCLE: return "circle";
+        case TRIGGER_POLY: return "poly";
+    }
+    return "?";
+}
+
+static bool trigger_name_exists(const App *app, const char *name) {
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        if (strcmp(app->triggers.data[i].name, name) == 0) return true;
+    }
+    return false;
+}
+
+static int trigger_index_by_name(const App *app, const char *name) {
+    if (!name || name[0] == '\0') return -1;
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        if (strcmp(app->triggers.data[i].name, name) == 0) return (int)i;
+    }
+    return -1;
+}
+
+static void refresh_trigger_field_text(App *app) {
+    if (app->selected_trigger < 0 || app->selected_trigger >= (int)app->triggers.length) return;
+    const Trigger *trig = &app->triggers.data[app->selected_trigger];
+    snprintf(app->trigger_rect_x_text, sizeof(app->trigger_rect_x_text), "%d", trig->rect_x);
+    snprintf(app->trigger_rect_y_text, sizeof(app->trigger_rect_y_text), "%d", trig->rect_y);
+    snprintf(app->trigger_rect_w_text, sizeof(app->trigger_rect_w_text), "%d", trig->rect_w);
+    snprintf(app->trigger_rect_h_text, sizeof(app->trigger_rect_h_text), "%d", trig->rect_h);
+    snprintf(app->trigger_circle_x_text, sizeof(app->trigger_circle_x_text), "%.3f", trig->circle_center.x);
+    snprintf(app->trigger_circle_y_text, sizeof(app->trigger_circle_y_text), "%.3f", trig->circle_center.y);
+    snprintf(app->trigger_circle_r_text, sizeof(app->trigger_circle_r_text), "%.3f", trig->circle_radius);
+    snprintf(app->trigger_cooldown_text, sizeof(app->trigger_cooldown_text), "%.3f", trig->cooldown);
+}
+
+static void add_trigger(App *app, const char *raw_name) {
+    push_undo_snapshot(app, "add trigger %s", raw_name);
+    char base[TRIGGER_NAME_SIZE] = {0};
+    sanitize_identifier(base, sizeof(base), raw_name, "trigger", false);
+
+    char name[TRIGGER_NAME_SIZE] = {0};
+    snprintf(name, sizeof(name), "%s", base);
+    if (trigger_name_exists(app, name)) {
+        for (unsigned int s = 2; s < 10000; s++) {
+            snprintf(name, sizeof(name), "%s_%u", base, s);
+            if (!trigger_name_exists(app, name)) break;
+        }
+    }
+
+    Trigger trig = {0};
+    snprintf(trig.name, sizeof(trig.name), "%s", name);
+    trig.shape = TRIGGER_RECT;
+    trig.rect_w = 1;
+    trig.rect_h = 1;
+    trig.circle_radius = 1.0f;
+    da_append(&app->triggers, trig);
+    app->selected_trigger = (int)app->triggers.length - 1;
+    app->new_trigger_name[0] = '\0';
+    app->new_trigger_edit = false;
+    app->trigger_points_scroll = 0.0f;
+    refresh_trigger_field_text(app);
+    set_status_kind(app, STATUS_SUCCESS, "Added trigger %s", name);
+}
+
+// Named-list CRUD panel (list + selected-item detail editor) mirroring draw_anim_section.
+// Reached via the "Triggers" toggle in draw_floor_ceil_section's Draw target row, which
+// replaces that panel's Floor/Ceil-specific content with this one entirely.
+static void draw_triggers_section(App *app, float x, float *y, float w) {
+    float gap = 8.0f;
+    float half_w = (w - gap) * 0.5f;
+    float row_h = 26.0f;
+    float label_w = 58.0f;
+    float add_btn_w = 64.0f;
+    Vector2 mouse = GetMousePosition();
+
+    GuiLabel((Rectangle){x, *y, label_w, row_h}, "New");
+    if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_btn_w - 28.0f, row_h}, app->new_trigger_name, (int)sizeof(app->new_trigger_name), app->new_trigger_edit)) {
+        app->new_trigger_edit = !app->new_trigger_edit;
+    }
+    if (GuiButton((Rectangle){x + w - add_btn_w, *y, add_btn_w, row_h}, "Add")) {
+        if (!text_is_empty(app->new_trigger_name)) add_trigger(app, app->new_trigger_name);
+    }
+    *y += 34.0f;
+
+    float list_h = 90.0f;
+    Rectangle list = {x, *y, w, list_h};
+    DrawRectangleRec(list, (Color){31, 33, 38, 255});
+    DrawRectangleLinesEx(list, 1.0f, (Color){88, 94, 104, 255});
+
+    float rh = 24.0f;
+    float content_h = (float)app->triggers.length * rh;
+    float min_scroll = list_h - content_h;
+    if (min_scroll > 0.0f) min_scroll = 0.0f;
+    if (CheckCollisionPointRec(mouse, list)) {
+        float wheel = GetMouseWheelMove();
+        if (wheel != 0.0f) app->trigger_list_scroll += wheel * rh;
+    }
+    app->trigger_list_scroll = clamp_float(app->trigger_list_scroll, min_scroll, 0.0f);
+
+    BeginScissorMode((int)list.x, (int)list.y, (int)list.width, (int)list.height);
+    size_t delete_trigger_index = (size_t)-1;
+    float del_w = 42.0f;
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        Rectangle row = {list.x + 4.0f, list.y + app->trigger_list_scroll + (float)i * rh + 3.0f, list.width - 8.0f, rh - 4.0f};
+        if (row.y + row.height < list.y || row.y > list.y + list.height) continue;
+        bool sel = (int)i == app->selected_trigger;
+        bool hov = CheckCollisionPointRec(mouse, row);
+        DrawRectangleRec(row, sel ? (Color){49, 83, 115, 255} : hov ? (Color){45, 48, 55, 255} : (Color){37, 39, 44, 255});
+        DrawRectangleLinesEx(row, sel ? 2.0f : 1.0f, sel ? (Color){113, 190, 255, 255} : (Color){69, 74, 84, 255});
+        char label[96];
+        snprintf(label, sizeof(label), "%s  (%s)", app->triggers.data[i].name, trigger_shape_name(app->triggers.data[i].shape));
+        GuiLabel((Rectangle){row.x + 8.0f, row.y + 2.0f, row.width - del_w - 16.0f, row.height - 4.0f}, label);
+        if (GuiButton((Rectangle){row.x + row.width - del_w, row.y + 1.0f, del_w, row.height - 2.0f}, "Del")) {
+            delete_trigger_index = i;
+        }
+        if (!sel && hov && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            app->selected_trigger = (int)i;
+            app->trigger_points_scroll = 0.0f;
+            refresh_trigger_field_text(app);
+        }
+    }
+    if (app->triggers.length == 0) {
+        GuiLabel((Rectangle){list.x + 8.0f, list.y + 8.0f, list.width - 16.0f, 20.0f}, "No triggers");
+    }
+    EndScissorMode();
+
+    if (delete_trigger_index != (size_t)-1) {
+        push_undo_snapshot(app, "remove trigger %s", app->triggers.data[delete_trigger_index].name);
+        if (delete_trigger_index + 1 < app->triggers.length) {
+            memmove(
+                &app->triggers.data[delete_trigger_index],
+                &app->triggers.data[delete_trigger_index + 1],
+                (app->triggers.length - delete_trigger_index - 1) * sizeof(app->triggers.data[0]));
+        }
+        app->triggers.length--;
+        if (app->selected_trigger >= (int)app->triggers.length) {
+            app->selected_trigger = (int)app->triggers.length - 1;
+        }
+        refresh_trigger_field_text(app);
+        set_status_kind(app, STATUS_SUCCESS, "Removed trigger");
+    }
+
+    *y += list_h + gap;
+
+    if (app->selected_trigger < 0 || app->selected_trigger >= (int)app->triggers.length) return;
+    Trigger *trig = &app->triggers.data[app->selected_trigger];
+
+    GuiLabel((Rectangle){x, *y, 52.0f, row_h}, "Name");
+    char name_buf[TRIGGER_NAME_SIZE];
+    snprintf(name_buf, sizeof(name_buf), "%s", trig->name);
+    bool trigger_name_was_editing = app->trigger_name_edit;
+    if (GuiTextBox((Rectangle){x + 62.0f, *y, w - 62.0f, row_h}, name_buf, (int)sizeof(name_buf), app->trigger_name_edit)) {
+        if (!trigger_name_was_editing) push_undo_snapshot(app, "rename trigger %s", trig->name);
+        if (app->trigger_name_edit) {
+            char sanitized[TRIGGER_NAME_SIZE] = {0};
+            sanitize_identifier(sanitized, sizeof(sanitized), name_buf, "trigger", false);
+            if (sanitized[0] != '\0') snprintf(trig->name, sizeof(trig->name), "%s", sanitized);
+        }
+        app->trigger_name_edit = !app->trigger_name_edit;
+    }
+    *y += 32.0f;
+
+    {
+        bool once_value = trig->once;
+        GuiCheckBox((Rectangle){x, *y + 2.0f, 18.0f, 18.0f}, "Trigger only once", &once_value);
+        if (once_value != trig->once) {
+            push_undo_snapshot(app, "change trigger %s once", trig->name);
+            trig->once = once_value;
+            // Once and cooldown are mutually exclusive - a once-only trigger has no
+            // recurring cooldown to speak of, so clear it the moment once is turned on.
+            if (trig->once) {
+                trig->cooldown = 0.0f;
+                app->trigger_cooldown_edit = false;
+                snprintf(app->trigger_cooldown_text, sizeof(app->trigger_cooldown_text), "%.3f", trig->cooldown);
+            }
+        }
+    }
+    *y += 30.0f;
+
+    if (trig->once) GuiDisable();
+    draw_float_field(app, trig->name, "Cooldown", (Rectangle){x, *y, w, row_h}, app->trigger_cooldown_text, &trig->cooldown, &app->trigger_cooldown_edit);
+    if (trig->once) GuiEnable();
+    if (!app->trigger_cooldown_edit && trig->cooldown < 0.0f) {
+        trig->cooldown = 0.0f;
+        snprintf(app->trigger_cooldown_text, sizeof(app->trigger_cooldown_text), "%.3f", trig->cooldown);
+    }
+    *y += 34.0f;
+
+    GuiLabel((Rectangle){x, *y, w, 20.0f}, "Shape");
+    *y += 22.0f;
+    float shape_w = (w - gap * 2.0f) / 3.0f;
+    Rectangle shape_rect_toggle = {x, *y, shape_w, 24.0f};
+    Rectangle shape_circle_toggle = {x + shape_w + gap, *y, shape_w, 24.0f};
+    Rectangle shape_poly_toggle = {x + (shape_w + gap) * 2.0f, *y, shape_w, 24.0f};
+    TriggerShape new_shape = trig->shape;
+    if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+        if (CheckCollisionPointRec(mouse, shape_rect_toggle)) new_shape = TRIGGER_RECT;
+        else if (CheckCollisionPointRec(mouse, shape_circle_toggle)) new_shape = TRIGGER_CIRCLE;
+        else if (CheckCollisionPointRec(mouse, shape_poly_toggle)) new_shape = TRIGGER_POLY;
+    }
+    bool shape_rect_active = trig->shape == TRIGGER_RECT;
+    bool shape_circle_active = trig->shape == TRIGGER_CIRCLE;
+    bool shape_poly_active = trig->shape == TRIGGER_POLY;
+    GuiLock();
+    GuiToggle(shape_rect_toggle, "Rect", &shape_rect_active);
+    GuiToggle(shape_circle_toggle, "Circle", &shape_circle_active);
+    GuiToggle(shape_poly_toggle, "Poly", &shape_poly_active);
+    GuiUnlock();
+    if (new_shape != trig->shape) {
+        push_undo_snapshot(app, "change trigger %s shape", trig->name);
+        trig->shape = new_shape;
+    }
+    *y += 34.0f;
+
+    if (trig->shape == TRIGGER_RECT) {
+        draw_int_field(app, trig->name, "x", (Rectangle){x, *y, half_w, row_h}, app->trigger_rect_x_text, sizeof(app->trigger_rect_x_text), &trig->rect_x, INT_MIN, INT_MAX, &app->trigger_rect_x_edit);
+        draw_int_field(app, trig->name, "y", (Rectangle){x + half_w + gap, *y, half_w, row_h}, app->trigger_rect_y_text, sizeof(app->trigger_rect_y_text), &trig->rect_y, INT_MIN, INT_MAX, &app->trigger_rect_y_edit);
+        *y += 34.0f;
+        draw_int_field(app, trig->name, "w", (Rectangle){x, *y, half_w, row_h}, app->trigger_rect_w_text, sizeof(app->trigger_rect_w_text), &trig->rect_w, 1, INT_MAX, &app->trigger_rect_w_edit);
+        draw_int_field(app, trig->name, "h", (Rectangle){x + half_w + gap, *y, half_w, row_h}, app->trigger_rect_h_text, sizeof(app->trigger_rect_h_text), &trig->rect_h, 1, INT_MAX, &app->trigger_rect_h_edit);
+        *y += 34.0f;
+    } else if (trig->shape == TRIGGER_CIRCLE) {
+        draw_float_field(app, trig->name, "cx", (Rectangle){x, *y, half_w, row_h}, app->trigger_circle_x_text, &trig->circle_center.x, &app->trigger_circle_x_edit);
+        draw_float_field(app, trig->name, "cy", (Rectangle){x + half_w + gap, *y, half_w, row_h}, app->trigger_circle_y_text, &trig->circle_center.y, &app->trigger_circle_y_edit);
+        *y += 34.0f;
+        draw_float_field(app, trig->name, "r", (Rectangle){x, *y, w, row_h}, app->trigger_circle_r_text, &trig->circle_radius, &app->trigger_circle_r_edit);
+        if (!app->trigger_circle_r_edit && trig->circle_radius < 0.001f) {
+            trig->circle_radius = 0.001f;
+            snprintf(app->trigger_circle_r_text, sizeof(app->trigger_circle_r_text), "%.3f", trig->circle_radius);
+        }
+        *y += 34.0f;
+    } else {
+        GuiLabel((Rectangle){x, *y, w, 20.0f}, "Points");
+        *y += 22.0f;
+
+        float pt_row_h = 24.0f;
+        float points_h = 80.0f;
+        Rectangle points_rect = {x, *y, w, points_h};
+        DrawRectangleRec(points_rect, (Color){31, 33, 38, 255});
+        DrawRectangleLinesEx(points_rect, 1.0f, (Color){88, 94, 104, 255});
+
+        float points_content_h = (float)trig->point_count * pt_row_h;
+        float points_min_scroll = points_h - points_content_h;
+        if (points_min_scroll > 0.0f) points_min_scroll = 0.0f;
+        if (CheckCollisionPointRec(mouse, points_rect)) {
+            float wheel = GetMouseWheelMove();
+            if (wheel != 0.0f) app->trigger_points_scroll += wheel * pt_row_h;
+        }
+        app->trigger_points_scroll = clamp_float(app->trigger_points_scroll, points_min_scroll, 0.0f);
+
+        int remove_point_idx = -1;
+        BeginScissorMode((int)points_rect.x, (int)points_rect.y, (int)points_rect.width, (int)points_rect.height);
+        for (int pi = 0; pi < trig->point_count; pi++) {
+            float ry = points_rect.y + app->trigger_points_scroll + (float)pi * pt_row_h + 3.0f;
+            if (ry + pt_row_h < points_rect.y || ry > points_rect.y + points_rect.height) continue;
+            char label[48];
+            snprintf(label, sizeof(label), "%d: (%d, %d)", pi, trig->points[pi].x, trig->points[pi].y);
+            GuiLabel((Rectangle){points_rect.x + 8.0f, ry, points_rect.width - 58.0f, 18.0f}, label);
+            if (GuiButton((Rectangle){points_rect.x + points_rect.width - 42.0f, ry - 1.0f, 38.0f, 20.0f}, "Del")) {
+                remove_point_idx = pi;
+            }
+        }
+        if (trig->point_count == 0) {
+            GuiLabel((Rectangle){points_rect.x + 8.0f, points_rect.y + 8.0f, points_rect.width - 16.0f, 20.0f}, "No points");
+        }
+        EndScissorMode();
+        *y += points_h + 4.0f;
+
+        if (remove_point_idx >= 0 && remove_point_idx < trig->point_count) {
+            push_undo_snapshot(app, "remove point from %s", trig->name);
+            if (remove_point_idx + 1 < trig->point_count) {
+                memmove(
+                    &trig->points[remove_point_idx],
+                    &trig->points[remove_point_idx + 1],
+                    (size_t)(trig->point_count - remove_point_idx - 1) * sizeof(trig->points[0]));
+            }
+            trig->point_count--;
+        }
+
+        draw_int_field(app, trig->name, "pt x", (Rectangle){x, *y, half_w, row_h}, app->new_trigger_point_x_text, sizeof(app->new_trigger_point_x_text), &app->new_trigger_point_x, INT_MIN, INT_MAX, &app->new_trigger_point_x_edit);
+        draw_int_field(app, trig->name, "pt y", (Rectangle){x + half_w + gap, *y, half_w, row_h}, app->new_trigger_point_y_text, sizeof(app->new_trigger_point_y_text), &app->new_trigger_point_y, INT_MIN, INT_MAX, &app->new_trigger_point_y_edit);
+        *y += 34.0f;
+
+        if (GuiButton((Rectangle){x, *y, w, row_h}, "Add point")) {
+            if (trig->point_count >= MAX_TRIGGER_POINTS) {
+                set_status_kind(app, STATUS_WARNING, "Max points reached (%d)", MAX_TRIGGER_POINTS);
+            } else {
+                push_undo_snapshot(app, "add point to %s", trig->name);
+                trig->points[trig->point_count].x = app->new_trigger_point_x;
+                trig->points[trig->point_count].y = app->new_trigger_point_y;
+                trig->point_count++;
+            }
+        }
+        *y += row_h + gap;
     }
 }
 
@@ -5867,7 +6591,7 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
     GuiCheckBox((Rectangle){x, y, 18.0f, 18.0f}, "Level name suffix", &app->use_level_suffix);
     y += row_h;
 
-    bool uses_textures = app->brush == BRUSH_SURFACE || app->brush == BRUSH_ANIM ||
+    bool uses_textures = (app->brush == BRUSH_SURFACE && app->surface_target != SURFACE_TRIGGERS) || app->brush == BRUSH_ANIM ||
         (app->brush == BRUSH_ENTITY && app->entity_tab != ENTITY_TAB_FUNCTIONS) ||
         (app->brush == BRUSH_WALL && app->brush_wall_textured);
 
@@ -6200,6 +6924,14 @@ static void init_app(App *app, const char *asset_dir, const char *output_path, c
     app->selected_animation = -1;
     app->new_anim_name[0] = '\0';
     snprintf(app->anim_speed_text, sizeof(app->anim_speed_text), "0.250");
+    app->selected_trigger = -1;
+    app->new_trigger_name[0] = '\0';
+    app->new_trigger_point_x = 0;
+    app->new_trigger_point_y = 0;
+    snprintf(app->new_trigger_point_x_text, sizeof(app->new_trigger_point_x_text), "0");
+    snprintf(app->new_trigger_point_y_text, sizeof(app->new_trigger_point_y_text), "0");
+    app->trigger_dragging = false;
+    app->trigger_drag_point_index = -1;
     scan_assets(&app->assets, asset_dir);
 }
 
@@ -6302,6 +7034,7 @@ int main(int argc, char **argv) {
     da_free(&app.cleanup_fns);
     da_free(&app.kinds);
     da_free(&app.animations);
+    da_free(&app.triggers);
     clear_undo_history(&app.undo_stack);
     clear_undo_history(&app.redo_stack);
     da_free(&app.undo_stack);

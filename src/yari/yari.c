@@ -10,6 +10,11 @@ static struct {
     float bg, walls, ents, game, tx, last;
     int frames;
 } yr_prof;
+#ifdef ESP32
+#include <esp_heap_caps.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#endif
 #endif
 
 #define THRESHOLD 0.0001
@@ -33,7 +38,7 @@ static inline int fixed16_to_int(int value) {
 // position along the segment, used directly as the texture coordinate) and
 // *out_side (which face of the segment the ray approaches from, for
 // texture mirroring).
-bool yr__thin_diagonal_hit(Vector2 pos, Vector2 dir, float ex0, float ey0, float ex1, float ey1, float *out_t, float *out_s, bool *out_side) {
+bool YR_PERF_ATTR yr__thin_diagonal_hit(Vector2 pos, Vector2 dir, float ex0, float ey0, float ex1, float ey1, float *out_t, float *out_s, bool *out_side) {
     float ddx = ex1 - ex0;
     float ddy = ey1 - ey0;
     float denom = dir.x * ddy - dir.y * ddx;
@@ -62,7 +67,7 @@ bool yr__thin_diagonal_hit(Vector2 pos, Vector2 dir, float ex0, float ey0, float
 // mirroring how the other kinds treat positive/negative slide) and slide_y
 // rigidly shifts the whole segment perpendicular to that direction (0 =
 // the true corner-to-corner diagonal) - both preserve the exact angle.
-void yr__wall_diagonal_endpoints(YrWall tile, size_t cell_x, size_t cell_y, bool slash, Vector2 *out_a, Vector2 *out_b) {
+void YR_PERF_ATTR yr__wall_diagonal_endpoints(YrWall tile, size_t cell_x, size_t cell_y, bool slash, Vector2 *out_a, Vector2 *out_b) {
     float length_frac = (float)tile.slide_x / 128.0f;
     float depth_frac = (float)tile.slide_y / 128.0f;
 
@@ -83,7 +88,7 @@ void yr__wall_diagonal_endpoints(YrWall tile, size_t cell_x, size_t cell_y, bool
 // The recede-by-slide box for FULL (its own solid volume) - a positive
 // slide recedes the cell's low corner, a negative one the high corner, the
 // box never leaves its own cell.
-void yr__wall_recede_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1) {
+void YR_PERF_ATTR yr__wall_recede_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1) {
     float slide_x = (float)tile.slide_x / 128.0f;
     float slide_y = (float)tile.slide_y / 128.0f;
     *x0 = (float)cell_x + (slide_x > 0.0f ? slide_x : 0.0f);
@@ -96,7 +101,7 @@ void yr__wall_recede_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, f
 // clips its length exactly like yr__wall_recede_box's recede, slide on the
 // other axis moves its depth within the cell (0 = centered). Only valid for
 // tile.kind == YR_WK_THIN_H or YR_WK_THIN_V.
-void yr__wall_thin_bar_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1) {
+void YR_PERF_ATTR yr__wall_thin_bar_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1) {
     float slide_x = (float)tile.slide_x / 128.0f;
     float slide_y = (float)tile.slide_y / 128.0f;
     if (tile.kind == YR_WK_THIN_H) {
@@ -173,11 +178,10 @@ static inline void yr_animate_entity(YrEntity *entity) {
  * @param dir The direction vector of the ray being cast.
  * @param slice_x The x-coordinate of the vertical slice on the screen to render.
  */
-void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
+void YR_PERF_ATTR yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
     YrCamera *p = &ctx->camera;
     float v_shift_base = p->horizon * ctx->screen_height * 0.5f;
-    float roll = ((float)slice_x - ctx->screen_width * 0.5f) * tanf(p->angle);
-    int v_shift = (int)(v_shift_base + roll);
+    int v_shift = (int)(v_shift_base);
     int z_index = slice_x / ctx->ray_res;
 
     if (dir.x > -THRESHOLD && dir.x < THRESHOLD) dir.x = (dir.x < 0.0f) ? -THRESHOLD : THRESHOLD;
@@ -434,151 +438,80 @@ void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
     if (ctx->map.floor_texture) floor_tex = ctx->assets_map[ctx->map.floor_texture];
     if (ctx->map.ceil_texture) ceil_tex = ctx->assets_map[ctx->map.ceil_texture];
 
-    if (p->angle == 0.0f) {
-        int hz = (int)(half_h + p->horizon * half_h);
-        if (hz < 0) hz = 0;
-        if (hz > sh) hz = sh;
+    int hz = (int)(half_h + p->horizon * half_h);
+    if (hz < 0) hz = 0;
+    if (hz > sh) hz = sh;
 
-        if (ceil_tex) {
-            for (int y = 0; y < hz; y += rr) {
-                float row_dist = h_cam / (float)(hz - y);
-                if (row_dist >= YR_MAX_RENDER_DIST) {
-                    yr_draw_rectangle(x_start, y, x_end - x_start, rr, YR_BLACK);
-                    continue;
-                }
-
-                float brightness = -(row_dist / YR_MAX_RENDER_DIST);
-                int brightness_scale = (int)((1.0f + brightness) * 256.0f);
-                float step_x = ray_dir.x * row_dist * (float)rr * inv_sw;
-                float step_y = ray_dir.y * row_dist * (float)rr * inv_sw;
-                float world_x = p->pos.x + r0.x * row_dist + step_x * (float)start_column;
-                float world_y = p->pos.y + r0.y * row_dist + step_y * (float)start_column;
-
-                for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
-                    const yr_pixel_t *tex = ceil_tex;
-                    if (ctx->map.ceil) {
-                        size_t cell_x = (size_t)world_x;
-                        size_t cell_y = (size_t)world_y;
-                        if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
-                            uint8_t tex_id = ctx->map.ceil[cell_y * ctx->map.cols + cell_x];
-                            if (tex_id) tex = ctx->assets_map[tex_id];
-                        }
-                    }
-
-                    int tx = ((int)(world_x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                    int ty = ((int)(world_y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                    yr_pixel_t c = yr_color_darken(tex[ty * YR_TEXTURE_SIZE + tx], brightness_scale);
-                    yr_draw_rectangle(x, y, rr, rr, c);
-                }
+    if (ceil_tex) {
+        for (int y = 0; y < hz; y += rr) {
+            float row_dist = h_cam / (float)(hz - y);
+            if (row_dist >= YR_MAX_RENDER_DIST) {
+                yr_draw_rectangle(x_start, y, x_end - x_start, rr, YR_BLACK);
+                continue;
             }
-        } else if (hz > 0) {
-            yr_draw_rectangle(x_start, 0, x_end - x_start, hz, YR_BLACK);
-        }
 
-        if (floor_tex) {
-            for (int y = hz; y < sh; y += rr) {
-                float row_dist = h_cam / (float)(y - hz + 1);
-                if (row_dist >= YR_MAX_RENDER_DIST) {
-                    yr_draw_rectangle(x_start, y, x_end - x_start, rr, YR_BLACK);
-                    continue;
-                }
+            float brightness = -(row_dist / YR_MAX_RENDER_DIST);
+            int brightness_scale = (int)((1.0f + brightness) * 256.0f);
+            float step_x = ray_dir.x * row_dist * (float)rr * inv_sw;
+            float step_y = ray_dir.y * row_dist * (float)rr * inv_sw;
+            float world_x = p->pos.x + r0.x * row_dist + step_x * (float)start_column;
+            float world_y = p->pos.y + r0.y * row_dist + step_y * (float)start_column;
 
-                float brightness = -(row_dist / YR_MAX_RENDER_DIST);
-                int brightness_scale = (int)((1.0f + brightness) * 256.0f);
-                float step_x = ray_dir.x * row_dist * (float)rr * inv_sw;
-                float step_y = ray_dir.y * row_dist * (float)rr * inv_sw;
-                float world_x = p->pos.x + r0.x * row_dist + step_x * (float)start_column;
-                float world_y = p->pos.y + r0.y * row_dist + step_y * (float)start_column;
-
-                for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
-                    const yr_pixel_t *tex = floor_tex;
-                    if (ctx->map.floor) {
-                        size_t cell_x = (size_t)world_x;
-                        size_t cell_y = (size_t)world_y;
-                        if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
-                            uint8_t tex_id = ctx->map.floor[cell_y * ctx->map.cols + cell_x];
-                            if (tex_id) tex = ctx->assets_map[tex_id];
-                        }
+            for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
+                const yr_pixel_t *tex = ceil_tex;
+                if (ctx->map.ceil) {
+                    size_t cell_x = (size_t)world_x;
+                    size_t cell_y = (size_t)world_y;
+                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
+                        uint8_t tex_id = ctx->map.ceil[cell_y * ctx->map.cols + cell_x];
+                        if (tex_id) tex = ctx->assets_map[tex_id];
                     }
-
-                    int tx = ((int)(world_x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                    int ty = ((int)(world_y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                    yr_pixel_t c = yr_color_darken(tex[ty * YR_TEXTURE_SIZE + tx], brightness_scale);
-                    yr_draw_rectangle(x, y, rr, rr, c);
                 }
-            }
-        } else if (sh - hz > 0) {
-            yr_draw_rectangle(x_start, hz, x_end - x_start, sh - hz, YR_BLACK);
-        }
 
-        return;
+                int tx = ((int)(world_x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
+                int ty = ((int)(world_y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
+                yr_pixel_t c = yr_color_darken(tex[ty * YR_TEXTURE_SIZE + tx], brightness_scale);
+                yr_draw_rectangle(x, y, rr, rr, c);
+            }
+        }
+    } else if (hz > 0) {
+        yr_draw_rectangle(x_start, 0, x_end - x_start, hz, YR_BLACK);
     }
 
-    float tan_angle = tanf(p->angle);
-    float half_w = (float)ctx->screen_width * 0.5f;
+    if (floor_tex) {
+        for (int y = hz; y < sh; y += rr) {
+            float row_dist = h_cam / (float)(y - hz + 1);
+            if (row_dist >= YR_MAX_RENDER_DIST) {
+                yr_draw_rectangle(x_start, y, x_end - x_start, rr, YR_BLACK);
+                continue;
+            }
 
-    for (int x = x_start; x < x_end; x += rr) {
-        float horizon = half_h + p->horizon * half_h + ((float)x - half_w) * tan_angle;
-        int hz = (int)horizon;
-        if (hz < 0) hz = 0;
-        if (hz > sh) hz = sh;
+            float brightness = -(row_dist / YR_MAX_RENDER_DIST);
+            int brightness_scale = (int)((1.0f + brightness) * 256.0f);
+            float step_x = ray_dir.x * row_dist * (float)rr * inv_sw;
+            float step_y = ray_dir.y * row_dist * (float)rr * inv_sw;
+            float world_x = p->pos.x + r0.x * row_dist + step_x * (float)start_column;
+            float world_y = p->pos.y + r0.y * row_dist + step_y * (float)start_column;
 
-        // Calculate the base ray direction for the current vertical slice
-        Vector2 base_ray = Vector2Add(r0, Vector2Scale(ray_dir, (float)x * inv_sw));
-
-        if (ceil_tex) {
-            for (int y = 0; y < hz; y += rr) {
-                float row_dist = h_cam / (float)(hz - y); // distance from the camera to the point on the ceiling corresponding to this pixel row
-                if (row_dist >= YR_MAX_RENDER_DIST) {
-                    yr_draw_rectangle(x, y, rr, rr, YR_BLACK);
-                    continue;
-                }
-                float brightness = -(row_dist / YR_MAX_RENDER_DIST);
-                Vector2 w = Vector2Add(p->pos, Vector2Scale(base_ray, row_dist)); // world coordinates of the point on the ceiling corresponding to this pixel row
-                if (ctx->map.ceil) {
-                    size_t cell_x = (size_t)w.x;
-                    size_t cell_y = (size_t)w.y;
-                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows && ctx->map.ceil[cell_y * ctx->map.cols + cell_x]) {
-                        ceil_tex = ctx->assets_map[ctx->map.ceil[cell_y * ctx->map.cols + cell_x]];
-                    } else {
-                        ceil_tex = ctx->assets_map[ctx->map.ceil_texture];
+            for (int x = x_start; x < x_end; x += rr, world_x += step_x, world_y += step_y) {
+                const yr_pixel_t *tex = floor_tex;
+                if (ctx->map.floor) {
+                    size_t cell_x = (size_t)world_x;
+                    size_t cell_y = (size_t)world_y;
+                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows) {
+                        uint8_t tex_id = ctx->map.floor[cell_y * ctx->map.cols + cell_x];
+                        if (tex_id) tex = ctx->assets_map[tex_id];
                     }
                 }
-                int tx = ((int)(w.x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                int ty = ((int)(w.y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                yr_pixel_t c = yr_color_brightness(ceil_tex[ty * YR_TEXTURE_SIZE + tx], brightness);
-                yr_draw_rectangle(x, y, rr, rr, c);
-            }
-        } else if (hz > 0) {
-            yr_draw_rectangle(x, 0, rr, hz, YR_BLACK);
-        }
 
-        if (floor_tex) {
-            for (int y = hz; y < sh; y += rr) {
-                float row_dist = h_cam / (float)(y - hz + 1); // distance from the camera to the point on the floor corresponding to this pixel row
-                if (row_dist >= YR_MAX_RENDER_DIST) {
-                    yr_draw_rectangle(x, y, rr, rr, YR_BLACK);
-                    continue;
-                }
-                float brightness = -(row_dist / YR_MAX_RENDER_DIST);
-                Vector2 w = Vector2Add(p->pos, Vector2Scale(base_ray, row_dist)); // world coordinates of the point on the floor corresponding to this pixel row
-                if (ctx->map.floor && w.x >= 0 && (size_t)w.x < ctx->map.cols && w.y >= 0 && (size_t)w.y < ctx->map.rows) {
-                    size_t cell_x = (size_t)w.x;
-                    size_t cell_y = (size_t)w.y;
-                    if (cell_x < ctx->map.cols && cell_y < ctx->map.rows && ctx->map.floor[cell_y * ctx->map.cols + cell_x]) {
-                        floor_tex = ctx->assets_map[ctx->map.floor[cell_y * ctx->map.cols + cell_x]];
-                    } else {
-                        floor_tex = ctx->assets_map[ctx->map.floor_texture];
-                    }
-                }
-                int tx = ((int)(w.x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                int ty = ((int)(w.y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
-                yr_pixel_t c = yr_color_brightness(floor_tex[ty * YR_TEXTURE_SIZE + tx], brightness);
+                int tx = ((int)(world_x * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
+                int ty = ((int)(world_y * (float)YR_TEXTURE_SIZE)) & (YR_TEXTURE_SIZE - 1);
+                yr_pixel_t c = yr_color_darken(tex[ty * YR_TEXTURE_SIZE + tx], brightness_scale);
                 yr_draw_rectangle(x, y, rr, rr, c);
             }
-        } else if (sh - hz > 0) {
-            yr_draw_rectangle(x, hz, rr, sh - hz, YR_BLACK);
         }
+    } else if (sh - hz > 0) {
+        yr_draw_rectangle(x_start, hz, x_end - x_start, sh - hz, YR_BLACK);
     }
 }
 
@@ -629,7 +562,6 @@ void yr__draw_sprites_range(
     int x_end) {
     YrCamera *p = &ctx->camera;
     float half_screen = ctx->screen_width * 0.5f;
-    float tan_angle = tanf(p->angle);
     float scale = yr_projection_plane_scale(ctx);
     float projection_scale = (float)ctx->screen_height;
     Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
@@ -653,7 +585,7 @@ void yr__draw_sprites_range(
         if (transform.y <= 0.0f || transform.y >= YR_MAX_RENDER_DIST) continue;
 
         int spriteScreenX = (int)(half_screen * (1 + transform.x / transform.y));
-        int v_shift = (int)(p->horizon * ctx->screen_height * 0.5f + ((float)spriteScreenX - half_screen) * tan_angle);
+        int v_shift = (int)(p->horizon * ctx->screen_height * 0.5f);
         int vmove = (int)((e->vmove * projection_scale) / transform.y);
 
         int spriteHeight = abs((int)((projection_scale * (1.0 - e->vdiv)) / transform.y));
@@ -762,7 +694,7 @@ void yr__update_game() {
 #if YR_PROFILE
     float f0 = yr_get_time();
     yr_begin_drawing();
-    yr_update_game(&ctx);
+    yr_update_game(&yr_context);
     float f1 = yr_get_time();
     yr_render_screen();
     float f2 = yr_get_time();
@@ -782,6 +714,11 @@ void yr__update_game() {
                1000.0f * yr_prof.ents / n,
                1000.0f * logic / n,
                1000.0f * yr_prof.tx / n);
+        #ifdef ESP32
+        uint32_t free_heap = esp_get_free_heap_size();
+        uint32_t max_slot = heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT);
+        printf("[mem] free=%lu, max_slot=%lu", free_heap, max_slot);
+        #endif
         memset(&yr_prof, 0, sizeof(yr_prof));
         yr_prof.last = f2;
     }

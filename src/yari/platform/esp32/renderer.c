@@ -182,7 +182,7 @@ static SemaphoreHandle_t lcd_trans_done_sem;
 // Runs in the SPI driver's ISR context once the frame's color data has been
 // fully clocked out, so yr_render_screen() can block until the framebuffer is
 // safe to overwrite again.
-static bool IRAM_ATTR lcd_on_color_trans_done(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
+static bool YR_PERF_ATTR lcd_on_color_trans_done(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx) {
     (void)io;
     (void)edata;
     BaseType_t high_task_awoken = pdFALSE;
@@ -344,7 +344,7 @@ int yr_screen_height(void) {
 // Precondition (guaranteed by yr_draw_rectangle in renderer_common.c): the
 // whole [x, x+width) run at row y is in bounds. width == 1 skips
 // fill_pixels's 32-bit batching, not worth it for a single pixel.
-void IRAM_ATTR yr_fill_span(int x, int y, int width, yr_pixel_t color) {
+void YR_PERF_ATTR yr_fill_span(int x, int y, int width, yr_pixel_t color) {
     uint16_t *dst = fb_back + y * YR_LCD_W + x;
     if (width == 1) {
         *dst = lcd_color(color);
@@ -353,7 +353,7 @@ void IRAM_ATTR yr_fill_span(int x, int y, int width, yr_pixel_t color) {
     fill_pixels(dst, width, lcd_color(color));
 }
 
-void IRAM_ATTR yr_clear_screen(yr_pixel_t color) {
+void YR_PERF_ATTR yr_clear_screen(yr_pixel_t color) {
     fill_pixels(fb_back, SCREEN_PIXEL_COUNT, lcd_color(color));
 }
 
@@ -365,7 +365,7 @@ typedef struct {
 // Applies the filter to framebuffer rows [y_start, y_end). With
 // ESP32_MULTITHREAD this runs concurrently on both cores over disjoint row
 // ranges, so the callback must be safe to call from either core.
-static void IRAM_ATTR yr_filter_rows(void *arg, int y_start, int y_end) {
+static void YR_PERF_ATTR yr_filter_rows(void *arg, int y_start, int y_end) {
     const yr_filter_job_ctx *ctx = (const yr_filter_job_ctx *)arg;
 
     uint16_t *px = fb_back + y_start * YR_LCD_W;
@@ -380,7 +380,7 @@ static void IRAM_ATTR yr_filter_rows(void *arg, int y_start, int y_end) {
     }
 }
 
-void IRAM_ATTR yr_apply_color_filter(YrColorFilterCallback apply, void *user_data) {
+void YR_PERF_ATTR yr_apply_color_filter(YrColorFilterCallback apply, void *user_data) {
     if (!apply) return;
 
     yr_filter_job_ctx ctx = { .apply = apply, .user_data = user_data };

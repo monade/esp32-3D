@@ -29,11 +29,8 @@
 
 #define MUMMY_SPEED 4.0
 #define MUMMY_DAMAGE_COOLDOWN 0.5
-#define MUMMY_SPAWN_INTERVAL 2.5
 #define BOSS_SHOT_COOLDOWN 1.5
 #define PROJECTILE_SPEED 8.0f
-
-#define SPAWN_POINT_COOLDOWN 24.8f
 
 int joystick_id;
 
@@ -93,37 +90,12 @@ typedef struct {
 
 GameData game = {0};
 
-Timer second_wave_cd = {0};
-Timer third_wave_cd = {0};
-Timer fourth_wave_cd = {0};
 Timer boss_spawn_animation = {0};
 
 struct v2i {
     int x;
     int y;
 };
-
-struct v2i second_wave_trigger_points[4] = {
-    {5, 11},
-    {6, 11},
-    {7, 11},
-    {8, 11}};
-
-struct v2i third_wave_trigger_points[5] = {
-    {14, 7},
-    {15, 7},
-    {16, 7},
-    {17, 7},
-    {18, 7}};
-
-struct v2i fourth_wave_trigger_points[5] = {
-    {39, 32},
-    {40, 32},
-    {41, 32},
-    {42, 32},
-    {42, 33}};
-
-struct v2i boss_trigger = {.x = 48, .y = 17};
 
 enum {
     WEP_HND,
@@ -253,28 +225,16 @@ void spawn_explosion(Context *ctx, Vector2 pos) {
 void check_monster_spawns(Context *ctx) {
     Vector2 player_pos = ctx->camera.pos;
 
-    for (size_t i = 0; i < ARRAY_LEN(second_wave_trigger_points); i++) {
-        if ((int)player_pos.x == second_wave_trigger_points[i].x && (int)player_pos.y == second_wave_trigger_points[i].y && timer_loop(&second_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_second_wave(ctx);
-            break;
-        }
+    if(trigger_second_wave_level1(player_pos)) {
+        spawn_second_wave(ctx);
     }
-
-    for (size_t i = 0; i < ARRAY_LEN(third_wave_trigger_points); i++) {
-        if ((int)player_pos.x == third_wave_trigger_points[i].x && (int)player_pos.y == third_wave_trigger_points[i].y && timer_loop(&third_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_third_wave(ctx);
-            break;
-        }
+    if(trigger_third_wave_level1(player_pos)) {
+        spawn_third_wave(ctx);
     }
-
-    for (size_t i = 0; i < ARRAY_LEN(fourth_wave_trigger_points); i++) {
-        if ((int)player_pos.x == fourth_wave_trigger_points[i].x && (int)player_pos.y == fourth_wave_trigger_points[i].y && timer_loop(&fourth_wave_cd, SPAWN_POINT_COOLDOWN)) {
-            spawn_fourth_wave(ctx);
-            break;
-        }
+    if(trigger_fourth_wave_level1(player_pos)) {
+        spawn_fourth_wave(ctx);
     }
-
-    if ((int)player_pos.x == boss_trigger.x && (int)player_pos.y == boss_trigger.y && !timer_is_started(&boss_spawn_animation)) {
+    if(trigger_boss_level1(player_pos)) {
         spawn_boss(ctx);
     }
 }

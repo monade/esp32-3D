@@ -1024,6 +1024,10 @@
 // entity entity_28 tx_spr_000 44.8793259 48.4047241 0 0 0 0 0.400000006 0x00000002 1 pickup_medikit 0 - - -
 // entity explosion tx_exp_000 3.12912941 41.43536 0 0 0 0 0.400000006 0x00000000 0 update_explosion 0 cleanup_data init_explosion -
 // entity entity_29 tx_spr_066 1.55209446 24.4778023 0 0 0 0 0.400000006 0x0000000C 1 - 0 - - dummy1
+// trigger second_wave rect 24.7999992 0 5 10 4 2
+// trigger third_wave circle 24.7999992 0 16.5653629 9.29599571 2.29107738
+// trigger fourth_wave poly 24.7999992 0 4 42 34 40 34 38 33 38 32
+// trigger boss rect 0 1 47 15 2 2
 // MAP_BUILDER_STATE_END
 
 #ifndef YR_LEVEL_H_LEVEL1
@@ -1049,12 +1053,54 @@ static inline YrCamera init_camera_pos_level1(Vector2 pos) {
         .pos = pos,
         .dir = (Vector2){0.0f, -1.0f},
         .horizon = 0.0f,
-        .angle = 0.0f
     };
 }
 
 static inline YrCamera init_camera_level1(void) {
     return init_camera_pos_level1((Vector2){3.549061f, 46.84634f});
+}
+
+static inline bool trigger_second_wave_level1(Vector2 pos) {
+    bool inside = pos.x >= 5.0f && pos.x <= 9.0f && pos.y >= 10.0f && pos.y <= 12.0f;
+    if (!inside) return false;
+    static YrTimer timer_trigger_second_wave_level1 = {0};
+    if (!yr_timer_loop(&timer_trigger_second_wave_level1, 24.799999f)) return false;
+    return true;
+}
+
+static inline bool trigger_third_wave_level1(Vector2 pos) {
+    Vector2 center = (Vector2){16.565363f, 9.295996f};
+    float radius = 2.291077f;
+    bool inside = Vector2DistanceSqr(pos, center) <= radius * radius;
+    if (!inside) return false;
+    static YrTimer timer_trigger_third_wave_level1 = {0};
+    if (!yr_timer_loop(&timer_trigger_third_wave_level1, 24.799999f)) return false;
+    return true;
+}
+
+static inline bool trigger_fourth_wave_level1(Vector2 pos) {
+    static const Vector2 points[] = {{42.0f, 34.0f}, {40.0f, 34.0f}, {38.0f, 33.0f}, {38.0f, 32.0f}};
+    int count = 4;
+    bool inside = false;
+    for (int vi = 0, vj = count - 1; vi < count; vj = vi++) {
+        if (((points[vi].y > pos.y) != (points[vj].y > pos.y)) &&
+            (pos.x < (points[vj].x - points[vi].x) * (pos.y - points[vi].y) / (points[vj].y - points[vi].y) + points[vi].x)) {
+            inside = !inside;
+        }
+    }
+    if (!inside) return false;
+    static YrTimer timer_trigger_fourth_wave_level1 = {0};
+    if (!yr_timer_loop(&timer_trigger_fourth_wave_level1, 24.799999f)) return false;
+    return true;
+}
+
+static inline bool trigger_boss_level1(Vector2 pos) {
+    bool inside = pos.x >= 47.0f && pos.x <= 49.0f && pos.y >= 15.0f && pos.y <= 17.0f;
+    if (!inside) return false;
+    static bool triggered = false;
+    if (triggered) return false;
+    triggered = true;
+    return true;
 }
 
 static inline YrEntity create_key_level1_pos(Vector2 pos, void *data, YrEntityInitFunc init, YrEntityCleanupFunc cleanup) {

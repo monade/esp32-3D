@@ -20,8 +20,16 @@ struct joystick_config_t {
   int center;
 };
 
+#ifndef YR_PERF_VAR_ATTR
+#if defined(ESP32) && !defined(ESP32_NO_PERF)
+#define YR_PERF_VAR_ATTR __attribute__((section(".iram1"))) 
+#else
+#define YR_PERF_VAR_ATTR
+#endif
+#endif
+
 static bool key_state[YR_KEYS_COUNT] = {0};
-__attribute__((section(".iram1"))) static int key_maps[YR_KEYS_COUNT] = {0};
+YR_PERF_VAR_ATTR static int key_maps[YR_KEYS_COUNT] = {0};
 static adc_oneshot_unit_handle_t adc_unit_handles[SOC_ADC_PERIPH_NUM] = {0};
 static struct joystick_config_t joysticks[YR_ESP_MAX_JOYSTICKS][YR_JOYSTICK_AXIS_COUNT] = {0};
 static int joystick_count = 0;

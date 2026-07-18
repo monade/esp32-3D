@@ -4,6 +4,15 @@
 #include <stdbool.h>
 #include "colors.h"
 
+#ifndef YR_PERF_ATTR
+#if defined(ESP32) && !defined(ESP32_NO_PERF)
+#include <esp_attr.h>
+#define YR_PERF_ATTR IRAM_ATTR
+#else
+#define YR_PERF_ATTR
+#endif
+#endif
+
 // Default screen/window size
 // use ESP32 TTGO size by default
 #ifndef YR_LCD_W

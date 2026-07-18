@@ -1859,7 +1859,6 @@ static inline YrCamera init_camera_pos(Vector2 pos) {
         .pos = pos,
         .dir = (Vector2){0.0f, -1.0f},
         .horizon = 0.0f,
-        .angle = 0.0f
     };
 }
 

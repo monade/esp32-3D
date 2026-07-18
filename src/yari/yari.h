@@ -12,8 +12,6 @@
 #include "ht.h"
 
 
-
-
 #define YR_CMSK_NONE    0
 #define YR_CMSK_WALL    1
 #define YR_CMSK_ALL    -1
@@ -47,19 +45,18 @@ typedef struct {
     Vector2 pos;
     Vector2 dir;
     float horizon;
-    float angle;
 } YrCamera;
 
 yr_hm_declare(YrEntityMap, size_t, YrEntity);
 
 enum yr_wall_kind {
     YR_WK_EMPTY,
-    YR_WK_FULL,
-    YR_WK_THIN_H,
-    YR_WK_THIN_V,
-    YR_WK_THIN_X,
-    YR_WK_THIN_D1,
-    YR_WK_THIN_D2,
+    YR_WK_FULL,    // ██
+    YR_WK_THIN_H,  // ━━
+    YR_WK_THIN_V,  // ▕
+    YR_WK_THIN_X,  // X
+    YR_WK_THIN_D1, // \.
+    YR_WK_THIN_D2, // /
 };
 typedef struct {
     uint8_t kind;
