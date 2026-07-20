@@ -247,16 +247,48 @@ YrCollisionInfo yr_check_collision_out_radius(YrContext *ctx, Vector2 next_pos, 
     return info;
 }
 
-YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask) {
-    YrCollisionInfo info = {0};
-    if (threshold <= 0.0f) return info;
+static inline void insert_ray_hit(YrCollisionInfo *out_info, float *dists, size_t *stored, size_t len, YrCollisionInfo info, float dist) {
+    size_t n = *stored;
+    if (n < len) {
+        size_t i = n;
+        while (i > 0 && dists[i - 1] > dist) {
+            dists[i] = dists[i - 1];
+            out_info[i] = out_info[i - 1];
+            i--;
+        }
+        dists[i] = dist;
+        out_info[i] = info;
+        (*stored)++;
+    } else if (len > 0 && dist < dists[len - 1]) {
+        size_t i = len - 1;
+        while (i > 0 && dists[i - 1] > dist) {
+            dists[i] = dists[i - 1];
+            out_info[i] = out_info[i - 1];
+            i--;
+        }
+        dists[i] = dist;
+        out_info[i] = info;
+    }
+}
+
+size_t yr_check_mult_ray_collisions(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask, YrCollisionInfo *out_info, size_t len) {
+    size_t total = 0;
+    size_t stored = 0;
+    if (threshold <= 0.0f) return 0;
 
     float dir_len = Vector2Length(dir);
-    if (dir_len < RAY_EPSILON) return info;
+    if (dir_len < RAY_EPSILON) return 0;
     dir = Vector2Scale(dir, 1.0f / dir_len);
 
-    float best_dist = threshold;
-    bool has_hit = false;
+    float limit = threshold;
+    YrCollisionInfo wall = {0};
+    if (collision_mask & YR_CMSK_WALL) {
+        float wall_dist = 0.0f;
+        wall = check_wall_ray_collision(ctx, origin, dir, threshold, &wall_dist);
+        if (wall.type != YR_COLLISION_NONE) limit = wall_dist;
+    }
+
+    float dists[(out_info && len > 0) ? len : 1];
 
     if (collision_mask & ~YR_CMSK_WALL) {
         for (size_t i = 0; i < ctx->entities.length; i++) {
@@ -282,25 +314,29 @@ YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 d
                 if (projection + offset < 0.0f) continue;
                 hit_dist = 0.0f;
             }
+            if (hit_dist > limit) continue;
 
-            if (hit_dist <= threshold && (!has_hit || hit_dist < best_dist)) {
-                info.type = YR_COLLISION_ENTITY;
-                info.entity = sprite;
-                info.entity_index = ctx->entities.data[i].key;
-                best_dist = hit_dist;
-                has_hit = true;
-            }
+            YrCollisionInfo info = {0};
+            info.type = YR_COLLISION_ENTITY;
+            info.entity = sprite;
+            info.entity_index = ctx->entities.data[i].key;
+
+            total++;
+            if (out_info && len > 0) insert_ray_hit(out_info, dists, &stored, len, info, hit_dist);
         }
     }
 
-    if (collision_mask & YR_CMSK_WALL) {
-        float wall_dist = 0.0f;
-        YrCollisionInfo wall = check_wall_ray_collision(ctx, origin, dir, threshold, &wall_dist);
-        if (wall.type != YR_COLLISION_NONE && (!has_hit || wall_dist < best_dist)) {
-            info = wall;
-        }
+    if (wall.type != YR_COLLISION_NONE) {
+        total++;
+        if (out_info && len > 0) insert_ray_hit(out_info, dists, &stored, len, wall, limit);
     }
 
+    return total;
+}
+
+YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask) {
+    YrCollisionInfo info = {0};
+    yr_check_mult_ray_collisions(ctx, origin, dir, threshold, collision_mask, &info, 1);
     return info;
 }
 

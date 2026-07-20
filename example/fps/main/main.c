@@ -48,8 +48,14 @@ typedef struct {
     float shot_cd;
     int damage;
     float range;
-    AnimationStack shot_animation;
     Animation fire_anim;
+    size_t spread;
+    float spread_step;
+} GunStat;
+
+typedef struct {
+    GunStat stat;
+    AnimationStack shot_animation;
 } GunData;
 
 typedef struct {
@@ -100,9 +106,10 @@ struct v2i {
 enum {
     WEP_HND,
     WEP_GUN,
+    WEP_SHOTGUN,
     WEP_BFG,
 };
-static const GunData WEAPONS[] = {
+static const GunStat WEAPONS[] = {
     // WEP_HND
     {
         .tx_id     = tx_wep_hnd0,
@@ -118,6 +125,16 @@ static const GunData WEAPONS[] = {
         .range     = YR_MAX_RENDER_DIST,
         .shot_cd   = 0.4,
         .fire_anim = {.frames=(int[]){tx_wep_gun1}, .frame_count=1, .duration=ANIMATION_SPEED},
+    },
+    //WEP_SHOTGUN
+    {
+        .tx_id     = tx_wep_shotgun0,
+        .damage    = 15,
+        .range     = 6.0,
+        .shot_cd   = 0.6,
+        .spread    = 5,
+        .spread_step = 0.07f,
+        .fire_anim = {.frames=(int[]){tx_wep_shotgun1, tx_wep_shotgun1b}, .frame_count=2, .duration=ANIMATION_SPEED/3},
     },
     //WEP_BFG
     {
@@ -164,11 +181,7 @@ void damage_player(int damage) {
 
 void set_gun(int gun_id) {
     game.player.gun.shot_animation.length=0;
-    game.player.gun.tx_id = WEAPONS[gun_id].tx_id;
-    game.player.gun.shot_cd = WEAPONS[gun_id].shot_cd;
-    game.player.gun.damage = WEAPONS[gun_id].damage;
-    game.player.gun.range = WEAPONS[gun_id].range;
-    game.player.gun.fire_anim = WEAPONS[gun_id].fire_anim;
+    game.player.gun.stat = WEAPONS[gun_id];
 }
 
 
@@ -353,13 +366,25 @@ void pickup_gun(YrContext *ctx, YrEntity *self, size_t index) {
     }
 }
 
-void pickup_shotgun(YrContext *ctx, YrEntity *self, size_t index) {
+void pickup_bfg(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
         set_gun(WEP_BFG);
         remove_entity(ctx, index);
-        spawn_first_wave(ctx);
     }
 }
+
+void pickup_shotgun(YrContext *ctx, YrEntity *self, size_t index) {
+    if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
+        set_gun(WEP_SHOTGUN);
+        remove_entity(ctx, index);
+    }
+}
+
+// static void fire_grenade(YrContext *state) {
+//     Vector2 origin = state->camera.pos;
+//     Vector2 dir = Vector2Normalize(state->camera.dir);
+//     spawn_grenade_rg(state, origin, dir, w);
+// }
 
 void update_explosion(YrContext *ctx, YrEntity *self, size_t index) {
     const float explosion_radius = 3.0f;
@@ -461,7 +486,7 @@ void draw_hud(Context *ctx) {
 
     int gun_asset_id = 0;
     gun_asset_id = get_animation_texture(&game.player.gun.shot_animation);
-    if(gun_asset_id<0) gun_asset_id = game.player.gun.tx_id;
+    if(gun_asset_id<0) gun_asset_id = game.player.gun.stat.tx_id;
 
     if (gun_asset_id) {
         draw_texture_ex(assets_map[gun_asset_id], 64, 128, .align=YR_LAY_CB, .height=ctx->screen_height * GUN_SCALE);
@@ -473,30 +498,49 @@ void draw_hud(Context *ctx) {
     print_fps();
 }
 
+void fire_default(Context *ctx, const GunStat gun, Vector2 dir) {
+        CollisionInfo hit = check_ray_collision(ctx, ctx->camera.pos, dir, gun.range, YR_CMSK_ENEMY | YR_CMSK_DECORATION | YR_CMSK_WALL);
+        if (hit.type != YR_COLLISION_ENTITY) return;
+    
+        if (hit.entity->kind == YR_KIND_EXPLOSIVE) {
+            spawn_explosion(ctx, hit.entity->pos);
+            remove_entity(ctx, hit.entity_index);
+            return;
+        }
+    
+        if (hit.entity->entity_data == NULL) {
+            remove_entity(ctx, hit.entity_index);
+            return;
+        }
+    
+        EnemyData *data = (EnemyData *)hit.entity->entity_data;
+        data->hp -= gun.damage;
+        start_animation_once(&hit.entity->animation, data->hit_anim);
+}
+
+void fire_gun(Context *ctx, const GunStat gun) {
+    size_t len = gun.spread;
+    if(len==0) len = 1;
+    size_t hlen = len/2;
+    float spread[len];
+    memset(spread, 0, len*sizeof(*spread));
+    for(size_t i=0;i<hlen; i++) {
+        spread[i] = -gun.spread_step*(hlen-i);
+        spread[len-1-i] = gun.spread_step*(hlen-i);
+    }
+    for(size_t i=0;i<ARRAY_LEN(spread); i++) {
+        fire_default(ctx, gun, Vector2Rotate(ctx->camera.dir, spread[i]));
+    }
+}
+
 void shoot_gun(Context *ctx) {
     if (!timer_is_done(&game.player.shot_timer)) return;
 
     GunData *gun = &game.player.gun;
-    game.player.shot_timer = timer_start(gun->shot_cd);
-    start_animation_once(&gun->shot_animation, gun->fire_anim);
+    game.player.shot_timer = timer_start(gun->stat.shot_cd);
+    start_animation_once(&gun->shot_animation, gun->stat.fire_anim);
 
-    CollisionInfo hit = check_ray_collision(ctx, ctx->camera.pos, ctx->camera.dir, gun->range, YR_CMSK_ENEMY | YR_CMSK_DECORATION | YR_CMSK_WALL);
-    if (hit.type != YR_COLLISION_ENTITY) return;
-
-    if (hit.entity->kind == YR_KIND_EXPLOSIVE) {
-        spawn_explosion(ctx, hit.entity->pos);
-        remove_entity(ctx, hit.entity_index);
-        return;
-    }
-
-    if (hit.entity->entity_data == NULL) {
-        remove_entity(ctx, hit.entity_index);
-        return;
-    }
-
-    EnemyData *data = (EnemyData *)hit.entity->entity_data;
-    data->hp -= gun->damage;
-    start_animation_once(&hit.entity->animation, data->hit_anim);
+    fire_gun(ctx, gun->stat);
 }
 
 static inline void sepia_filter(int x, int y, yr_pixel_t *color, void *user_data) {

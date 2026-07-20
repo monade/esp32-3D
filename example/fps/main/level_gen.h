@@ -20,6 +20,7 @@
 // update_fn update_boss_projectile
 // update_fn pickup_medikit
 // update_fn update_explosion
+// update_fn pickup_bfg
 // cleanup_fn cleanup_data
 // kind_def EXPLOSIVE 1
 // anim mummy 0.25 2 tx_spr_009 tx_spr_010
@@ -73,6 +74,7 @@ void update_boss(YrContext *ctx, YrEntity *self, size_t index);
 void update_boss_projectile(YrContext *ctx, YrEntity *self, size_t index);
 void pickup_medikit(YrContext *ctx, YrEntity *self, size_t index);
 void update_explosion(YrContext *ctx, YrEntity *self, size_t index);
+void pickup_bfg(YrContext *ctx, YrEntity *self, size_t index);
 
 void cleanup_data(YrEntity *self);
 

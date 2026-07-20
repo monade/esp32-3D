@@ -43,6 +43,7 @@ YrCollisionInfo yr_check_collision_out_radius(YrContext *ctx, Vector2 next_pos, 
 #define yr_check_collision(state, next_pos, threshold, collision_mask) \
     yr_check_collision_out_radius(state, next_pos, threshold, collision_mask, 0.0f)
 
+size_t yr_check_mult_ray_collisions(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask, YrCollisionInfo *out_info, size_t len);
 YrCollisionInfo yr_check_ray_collision(YrContext *ctx, Vector2 origin, Vector2 dir, float threshold, uint32_t collision_mask);
 
 Vector2 yr_slide_collision(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask);
@@ -60,6 +61,7 @@ Vector2 yr_move(Vector2 subject_position, Vector2 subject_direction, enum YrMove
 #define check_mult_collisions yr_check_mult_collisions
 #define check_mult_collisions_out_radius yr_check_mult_collisions_out_radius
 #define check_ray_collision yr_check_ray_collision
+#define check_mult_ray_collisions yr_check_mult_ray_collisions
 #define slide_collision yr_slide_collision
 #define slide_collision_out_radius yr_slide_collision_out_radius
 #define rotate yr_rotate
