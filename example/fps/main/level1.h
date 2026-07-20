@@ -1,637 +1,637 @@
 // File generated automatically by map_builder.c. DO NOT EDIT.
 // MAP_BUILDER_STATE_BEGIN
-// version 3
+// version 4
 // size 50 50
 // surface floor tx_wal_005
 // surface ceil tx_wal_016
 // player_pos 3.5490613 46.8463402 0 -1
 // level_suffix 1
-// wall 0 0 1 1 tx_wal_004 0 0
-// wall 1 0 1 1 tx_wal_004 0 0
-// wall 2 0 1 1 tx_wal_004 0 0
-// wall 3 0 1 1 tx_wal_004 0 0
-// wall 4 0 1 1 tx_wal_004 0 0
-// wall 5 0 1 1 tx_wal_004 0 0
-// wall 6 0 1 1 tx_wal_004 0 0
-// wall 7 0 1 1 tx_wal_004 0 0
-// wall 8 0 1 1 tx_wal_004 0 0
-// wall 9 0 1 1 tx_wal_004 0 0
-// wall 10 0 1 1 tx_wal_004 0 0
-// wall 11 0 1 1 tx_wal_004 0 0
-// wall 12 0 1 1 tx_wal_004 0 0
-// wall 13 0 1 1 tx_wal_004 0 0
-// wall 14 0 1 1 tx_wal_004 0 0
-// wall 15 0 1 1 tx_wal_004 0 0
-// wall 16 0 1 1 tx_wal_004 0 0
-// wall 17 0 1 1 tx_wal_004 0 0
-// wall 18 0 1 1 tx_wal_004 0 0
-// wall 19 0 1 1 tx_wal_004 0 0
-// wall 20 0 1 1 tx_wal_004 0 0
-// wall 21 0 1 1 tx_wal_004 0 0
-// wall 22 0 1 1 tx_wal_004 0 0
-// wall 23 0 1 1 tx_wal_004 0 0
-// wall 24 0 1 1 tx_wal_004 0 0
-// wall 25 0 1 1 tx_wal_004 0 0
-// wall 26 0 1 1 tx_wal_004 0 0
-// wall 27 0 1 1 tx_wal_004 0 0
-// wall 28 0 1 1 tx_wal_004 0 0
-// wall 29 0 1 1 tx_wal_004 0 0
-// wall 30 0 1 1 tx_wal_004 0 0
-// wall 31 0 1 1 tx_wal_004 0 0
-// wall 32 0 1 1 tx_wal_004 0 0
-// wall 33 0 1 1 tx_wal_004 0 0
-// wall 34 0 1 1 tx_wal_004 0 0
-// wall 35 0 1 1 tx_grass 0 0
-// wall 36 0 1 1 tx_grass 0 0
-// wall 37 0 1 1 tx_lab 0 0
-// wall 38 0 1 1 tx_wal_004 0 0
-// wall 39 0 1 1 tx_wal_004 0 0
-// wall 40 0 1 1 tx_wal_004 0 0
-// wall 41 0 1 1 tx_wal_004 0 0
-// wall 42 0 1 1 tx_wal_016 0 0
-// wall 43 0 1 1 tx_wal_016 0 0
-// wall 44 0 1 1 tx_wal_016 0 0
-// wall 45 0 1 1 tx_wal_026 0 0
-// wall 46 0 1 1 tx_wal_026 0 0
-// wall 47 0 1 1 tx_wal_026 0 0
-// wall 48 0 1 1 tx_wal_016 0 0
-// wall 49 0 1 1 tx_wal_016 0 0
-// wall 0 1 1 1 tx_wal_004 0 0
-// wall 1 1 6 1 tx_wal_004 0 0
-// wall 31 1 1 1 tx_tile 0 0
-// wall 32 1 1 1 tx_lab 0 0
-// wall 41 1 1 1 tx_wal_004 0 0
-// wall 42 1 1 1 tx_wal_016 0 0
-// wall 43 1 6 1 tx_wal_016 0 0
-// wall 48 1 5 1 tx_wal_016 0 0
-// wall 49 1 1 1 tx_wal_016 0 0
-// wall 0 2 1 1 tx_wal_004 0 0
-// wall 31 2 1 1 tx_tile 0 0
-// wall 32 2 1 1 tx_lab 0 0
-// wall 41 2 1 1 tx_wal_004 0 0
-// wall 42 2 1 1 tx_wal_016 0 0
-// wall 49 2 1 1 tx_wal_016 0 0
-// wall 0 3 1 1 tx_wal_004 0 0
-// wall 32 3 1 1 tx_wood 0 0
-// wall 33 3 1 1 tx_lab 0 0
-// wall 41 3 1 1 tx_wal_004 0 0
-// wall 42 3 1 1 tx_wal_016 0 0
-// wall 49 3 1 1 tx_wal_016 0 0
-// wall 0 4 1 1 tx_wal_004 0 0
-// wall 32 4 1 1 tx_wood 0 0
-// wall 33 4 1 1 tx_lab 0 0
-// wall 41 4 1 1 tx_wal_004 0 0
-// wall 42 4 1 1 tx_wal_016 0 0
-// wall 49 4 1 1 tx_wal_016 0 0
-// wall 0 5 1 1 tx_wal_004 0 0
-// wall 32 5 5 1 tx_wood 0 0
-// wall 33 5 1 1 tx_wood 0 0
-// wall 34 5 1 1 tx_lab 0 0
-// wall 41 5 1 1 tx_wal_004 0 0
-// wall 42 5 1 1 tx_wal_016 0 0
-// wall 49 5 1 1 tx_wal_016 0 0
-// wall 0 6 1 1 tx_wal_004 0 0
-// wall 33 6 1 1 tx_wood 0 0
-// wall 34 6 1 1 tx_lab 0 0
-// wall 35 6 1 1 tx_lab 0 0
-// wall 36 6 1 1 tx_wal_004 0 0
-// wall 41 6 1 1 tx_wal_004 0 0
-// wall 42 6 1 1 tx_wal_016 0 0
-// wall 43 6 5 1 tx_wal_016 0 0
-// wall 49 6 1 1 tx_wal_016 0 0
-// wall 0 7 1 1 tx_wal_004 0 0
-// wall 12 7 6 1 tx_wal_004 0 0
-// wall 13 7 1 1 tx_wal_004 0 0
-// wall 14 7 5 1 tx_wal_004 0 0
-// wall 18 7 6 1 tx_wal_004 0 0
-// wall 19 7 1 1 tx_wal_004 0 0
-// wall 20 7 1 1 tx_wal_006 0 0
-// wall 21 7 1 1 tx_wal_004 0 0
-// wall 22 7 1 1 tx_wal_004 0 0
-// wall 23 7 5 1 tx_wal_004 0 0
-// wall 33 7 1 1 tx_wood 0 0
-// wall 34 7 1 1 tx_wal_004 0 0
-// wall 35 7 1 1 tx_wal_004 0 0
-// wall 36 7 1 1 tx_wal_004 0 0
-// wall 42 7 1 1 tx_wal_004 0 0
-// wall 43 7 1 1 tx_wal_016 0 0
-// wall 49 7 1 1 tx_wal_016 0 0
-// wall 0 8 1 1 tx_wal_004 0 0
-// wall 3 8 6 1 tx_brick 0 0
-// wall 4 8 5 1 tx_wal_004 0 0
-// wall 11 8 6 1 tx_wal_004 0 0
-// wall 14 8 6 1 tx_wal_004 0 0
-// wall 18 8 5 1 tx_wal_004 0 0
-// wall 19 8 6 1 tx_wal_004 0 0
-// wall 23 8 1 1 tx_wal_004 0 0
-// wall 33 8 1 1 tx_wood 0 0
-// wall 34 8 1 1 tx_wood 0 0
-// wall 35 8 1 1 tx_wal_004 0 0
-// wall 36 8 1 1 tx_wal_004 0 0
-// wall 42 8 1 1 tx_wal_004 0 0
-// wall 43 8 1 1 tx_wal_016 0 0
-// wall 49 8 1 1 tx_wal_016 0 0
-// wall 0 9 1 1 tx_wood 0 0
-// wall 3 9 1 1 tx_brick 0 0
-// wall 4 9 1 1 tx_wal_004 0 0
-// wall 9 9 6 1 tx_wal_004 0 0
-// wall 10 9 1 1 tx_wal_004 0 0
-// wall 13 9 6 1 tx_wal_004 0 0
-// wall 23 9 1 1 tx_wal_004 0 0
-// wall 24 9 1 1 tx_wal_004 0 0
-// wall 33 9 1 1 tx_wal_004 0 0
-// wall 34 9 1 1 tx_wal_004 0 0
-// wall 36 9 1 1 tx_wal_004 0 0
-// wall 42 9 1 1 tx_wal_004 0 0
-// wall 43 9 1 1 tx_wal_016 0 0
-// wall 44 9 5 1 tx_wal_016 0 0
-// wall 49 9 1 1 tx_wal_016 0 0
-// wall 0 10 1 1 tx_brick 0 0
-// wall 3 10 1 1 tx_brick 0 0
-// wall 4 10 1 1 tx_wal_004 0 0
-// wall 9 10 1 1 tx_wal_004 0 0
-// wall 10 10 1 1 tx_wal_004 0 0
-// wall 11 10 1 1 tx_wal_004 0 0
-// wall 12 10 6 1 tx_wal_004 0 0
-// wall 24 10 1 1 tx_wal_004 0 0
-// wall 25 10 1 1 tx_wal_004 0 0
-// wall 33 10 1 1 tx_wal_004 0 0
-// wall 36 10 1 1 tx_wal_004 0 0
-// wall 43 10 1 1 tx_wal_004 0 0
-// wall 44 10 1 1 tx_wal_016 0 0
-// wall 49 10 1 1 tx_wal_016 0 0
-// wall 0 11 1 1 tx_brick 0 0
-// wall 3 11 1 1 tx_brick 0 0
-// wall 4 11 1 1 tx_wal_004 0 0
-// wall 9 11 1 1 tx_wal_004 0 0
-// wall 10 11 6 1 tx_wal_004 0 0
-// wall 25 11 1 1 tx_wal_004 0 0
-// wall 32 11 1 1 tx_wal_004 0 0
-// wall 36 11 1 1 tx_wal_006 0 0
-// wall 43 11 1 1 tx_wal_004 0 0
-// wall 44 11 1 1 tx_wal_016 0 0
-// wall 45 11 5 1 tx_wal_016 0 0
-// wall 49 11 1 1 tx_wal_016 0 0
-// wall 0 12 1 1 tx_brick 0 0
-// wall 3 12 1 1 tx_brick 0 0
-// wall 4 12 1 1 tx_wal_004 0 0
-// wall 9 12 1 1 tx_wal_006 0 0
-// wall 25 12 1 1 tx_wal_004 0 0
-// wall 26 12 1 1 tx_wal_004 0 0
-// wall 36 12 1 1 tx_wal_006 0 0
-// wall 43 12 1 1 tx_wal_004 0 0
-// wall 44 12 1 1 tx_wal_016 0 0
-// wall 45 12 1 1 tx_wal_016 0 0
-// wall 49 12 1 1 tx_wal_016 0 0
-// wall 0 13 1 1 tx_brick 0 0
-// wall 3 13 1 1 tx_brick 0 0
-// wall 4 13 1 1 tx_wal_004 0 0
-// wall 9 13 1 1 tx_wal_004 0 0
-// wall 26 13 1 1 tx_wal_004 0 0
-// wall 36 13 1 1 tx_wal_004 0 0
-// wall 44 13 1 1 tx_wal_004 0 0
-// wall 45 13 1 1 tx_wal_016 0 0
-// wall 49 13 1 1 tx_wal_016 0 0
-// wall 0 14 1 1 tx_brick 0 0
-// wall 3 14 1 1 tx_brick 0 0
-// wall 4 14 1 1 tx_wal_004 0 0
-// wall 9 14 1 1 tx_wal_006 0 0
-// wall 26 14 1 1 tx_wal_004 0 0
-// wall 36 14 1 1 tx_wal_006 0 0
-// wall 37 14 1 1 tx_wal_004 0 0
-// wall 44 14 1 1 tx_wal_004 0 0
-// wall 45 14 1 1 tx_wal_016 0 0
-// wall 46 14 5 1 tx_wal_016 0 0
-// wall 49 14 1 1 tx_wal_016 0 0
-// wall 0 15 1 1 tx_brick 0 0
-// wall 3 15 1 1 tx_brick 0 0
-// wall 4 15 1 1 tx_wal_004 0 0
-// wall 9 15 1 1 tx_wal_004 0 0
-// wall 27 15 1 1 tx_wal_004 0 0
-// wall 37 15 1 1 tx_wal_004 0 0
-// wall 45 15 1 1 tx_wal_004 0 0
-// wall 46 15 1 1 tx_wal_004 0 0
-// wall 49 15 1 1 tx_wal_004 0 0
-// wall 0 16 1 1 tx_brick 0 0
-// wall 3 16 1 1 tx_brick 0 0
-// wall 4 16 1 1 tx_wal_004 0 0
-// wall 9 16 1 1 tx_wal_004 0 0
-// wall 10 16 5 1 tx_wal_004 0 0
-// wall 27 16 1 1 tx_wal_004 0 0
-// wall 37 16 1 1 tx_wal_004 0 0
-// wall 46 16 1 1 tx_wal_004 0 0
-// wall 47 16 5 1 tx_wal_004 0 0
-// wall 49 16 1 1 tx_wal_004 0 0
-// wall 0 17 1 1 tx_brick 0 0
-// wall 3 17 1 1 tx_brick 0 0
-// wall 4 17 1 1 tx_wal_006 0 0
-// wall 9 17 1 1 tx_wal_004 0 0
-// wall 10 17 1 1 tx_wal_004 0 0
-// wall 27 17 1 1 tx_wal_004 0 0
-// wall 37 17 1 1 tx_wal_004 0 0
-// wall 46 17 1 1 tx_wal_004 0 0
-// wall 47 17 1 1 tx_brick 0 0
-// wall 49 17 1 1 tx_brick 0 0
-// wall 0 18 1 1 tx_brick 0 0
-// wall 3 18 1 1 tx_brick 0 0
-// wall 4 18 1 1 tx_wal_006 0 0
-// wall 5 18 5 1 tx_wal_006 0 0
-// wall 9 18 5 1 tx_wal_004 0 0
-// wall 11 18 5 1 tx_wal_004 0 0
-// wall 18 18 1 1 tx_wal_004 0 0
-// wall 28 18 1 1 tx_wal_004 0 0
-// wall 38 18 1 1 tx_wal_004 0 0
-// wall 46 18 1 1 tx_wal_004 0 0
-// wall 47 18 1 1 tx_brick 0 0
-// wall 49 18 1 1 tx_brick 0 0
-// wall 0 19 1 1 tx_brick 0 0
-// wall 3 19 5 1 tx_brick 0 0
-// wall 4 19 1 1 tx_brick 0 0
-// wall 5 19 1 1 tx_wal_004 0 0
-// wall 10 19 1 1 tx_wal_004 0 0
-// wall 12 19 5 1 tx_wal_004 0 0
-// wall 18 19 1 1 tx_wal_004 0 0
-// wall 19 19 5 1 tx_wal_004 0 0
-// wall 28 19 1 1 tx_wal_006 0 0
-// wall 38 19 1 1 tx_wal_004 0 0
-// wall 45 19 1 1 tx_wal_004 0 0
-// wall 46 19 1 1 tx_brick 0 0
-// wall 47 19 1 1 tx_brick 0 0
-// wall 49 19 1 1 tx_brick 0 0
-// wall 0 20 1 1 tx_brick 0 0
-// wall 4 20 1 1 tx_brick 0 0
-// wall 5 20 1 1 tx_wal_004 0 0
-// wall 10 20 5 1 tx_wal_004 0 0
-// wall 13 20 5 1 tx_wal_004 0 0
-// wall 18 20 1 1 tx_wal_004 0 0
-// wall 19 20 1 1 tx_wal_004 0 0
-// wall 28 20 1 1 tx_wal_004 0 0
-// wall 29 20 1 1 tx_wal_004 0 0
-// wall 38 20 1 1 tx_wal_004 0 0
-// wall 44 20 1 1 tx_wal_004 0 0
-// wall 45 20 1 1 tx_brick 0 0
-// wall 46 20 6 1 tx_brick 0 0
-// wall 49 20 1 1 tx_brick 0 0
-// wall 0 21 1 1 tx_brick 0 0
-// wall 4 21 1 1 tx_brick 0 0
-// wall 5 21 1 1 tx_wal_004 0 0
-// wall 11 21 5 1 tx_wal_004 0 0
-// wall 13 21 1 1 tx_wal_004 0 0
-// wall 18 21 5 1 tx_wal_004 0 0
-// wall 20 21 5 1 tx_wal_004 0 0
-// wall 29 21 1 1 tx_wal_004 0 0
-// wall 43 21 1 1 tx_wal_004 0 0
-// wall 44 21 1 1 tx_brick 0 0
-// wall 45 21 6 1 tx_brick 0 0
-// wall 49 21 1 1 tx_brick 0 0
-// wall 0 22 1 1 tx_brick 0 0
-// wall 4 22 1 1 tx_brick 0 0
-// wall 5 22 1 1 tx_wal_004 0 0
-// wall 12 22 5 1 tx_wal_004 0 0
-// wall 13 22 1 1 tx_wal_004 0 0
-// wall 19 22 1 1 tx_wal_004 0 0
-// wall 20 22 1 1 tx_wal_006 0 0
-// wall 29 22 1 1 tx_wal_004 0 0
-// wall 43 22 1 1 tx_wal_004 0 0
-// wall 44 22 1 1 tx_brick 0 0
-// wall 49 22 1 1 tx_brick 0 0
-// wall 0 23 1 1 tx_brick 0 0
-// wall 3 23 6 1 tx_brick 0 0
-// wall 4 23 1 1 tx_brick 0 0
-// wall 5 23 1 1 tx_wal_004 0 0
-// wall 13 23 1 1 tx_wal_004 0 0
-// wall 14 23 5 1 tx_wal_004 0 0
-// wall 19 23 5 1 tx_wal_004 0 0
-// wall 20 23 1 1 tx_wal_006 0 0
-// wall 30 23 1 1 tx_wal_004 0 0
-// wall 43 23 1 1 tx_wal_004 0 0
-// wall 44 23 1 1 tx_brick 0 0
-// wall 49 23 1 1 tx_brick 0 0
-// wall 0 24 1 1 tx_brick 0 0
-// wall 2 24 6 1 tx_brick 0 0
-// wall 3 24 1 1 tx_brick 0 0
-// wall 4 24 1 1 tx_wal_004 0 0
-// wall 5 24 6 1 tx_wal_004 0 0
-// wall 7 24 6 1 tx_wal_004 0 0
-// wall 8 24 5 1 tx_wal_004 0 0
-// wall 13 24 1 1 tx_wal_004 0 0
-// wall 14 24 1 1 tx_wal_004 0 0
-// wall 20 24 1 1 tx_wal_006 0 0
-// wall 30 24 1 1 tx_wal_006 0 0
-// wall 42 24 1 1 tx_wal_004 0 0
-// wall 43 24 6 1 tx_brick 0 0
-// wall 49 24 1 1 tx_brick 0 0
-// wall 0 25 1 1 tx_wal_004 0 0
-// wall 1 25 1 1 tx_brick 0 0
-// wall 2 25 1 1 tx_brick 0 0
-// wall 3 25 1 1 tx_wal_004 0 0
-// wall 4 25 6 1 tx_wal_004 0 0
-// wall 7 25 1 1 tx_wal_004 0 0
-// wall 8 25 1 1 tx_wal_004 0 0
-// wall 13 25 5 1 tx_wal_006 0 0
-// wall 14 25 1 1 tx_wal_006 0 0
-// wall 20 25 1 1 tx_wal_004 0 0
-// wall 21 25 5 1 tx_wal_004 0 0
-// wall 30 25 1 1 tx_wal_006 0 0
-// wall 41 25 1 1 tx_wal_004 0 0
-// wall 42 25 6 1 tx_brick 0 0
-// wall 49 25 1 1 tx_brick 0 0
-// wall 0 26 1 1 tx_wal_004 0 0
-// wall 1 26 1 1 tx_wal_004 0 0
-// wall 2 26 1 1 tx_wal_004 0 0
-// wall 3 26 6 1 tx_wal_004 0 0
-// wall 7 26 1 1 tx_wal_004 0 0
-// wall 8 26 1 1 tx_wal_004 0 0
-// wall 14 26 1 1 tx_wal_004 0 0
-// wall 20 26 1 1 tx_wal_004 0 0
-// wall 21 26 1 1 tx_wal_004 0 0
-// wall 30 26 1 1 tx_wal_004 0 0
-// wall 40 26 1 1 tx_wal_004 0 0
-// wall 41 26 1 1 tx_wal_004 0 0
-// wall 49 26 1 1 tx_lab 0 0
-// wall 0 27 1 1 tx_wal_004 0 0
-// wall 1 27 6 1 tx_wal_004 0 0
-// wall 6 27 6 1 tx_wal_004 0 0
-// wall 8 27 6 1 tx_wal_004 0 0
-// wall 14 27 1 1 tx_wal_004 0 0
-// wall 20 27 5 1 tx_wal_004 0 0
-// wall 21 27 1 1 tx_wal_004 0 0
-// wall 30 27 1 1 tx_wal_004 0 0
-// wall 31 27 1 1 tx_wal_004 0 0
-// wall 39 27 1 1 tx_wal_004 0 0
-// wall 40 27 1 1 tx_wal_004 0 0
-// wall 41 27 6 1 tx_wal_004 0 0
-// wall 49 27 1 1 tx_lab 0 0
-// wall 0 28 1 1 tx_wal_004 0 0
-// wall 5 28 6 1 tx_wal_004 0 0
-// wall 6 28 1 1 tx_wal_004 0 0
-// wall 7 28 6 1 tx_wal_004 0 0
-// wall 14 28 1 1 tx_wal_004 0 0
-// wall 21 28 1 1 tx_wal_004 0 0
-// wall 31 28 1 1 tx_wal_004 0 0
-// wall 32 28 1 1 tx_wal_004 0 0
-// wall 39 28 1 1 tx_wal_004 0 0
-// wall 40 28 1 1 tx_wal_004 0 0
-// wall 48 28 6 1 tx_steel 0 0
-// wall 49 28 1 1 tx_wal_004 0 0
-// wall 0 29 1 1 tx_wal_004 0 0
-// wall 4 29 6 1 tx_wal_004 0 0
-// wall 6 29 1 1 tx_wal_004 0 0
-// wall 14 29 1 1 tx_wal_004 0 0
-// wall 21 29 1 1 tx_wal_004 0 0
-// wall 32 29 1 1 tx_wal_006 0 0
-// wall 38 29 1 1 tx_wal_004 0 0
-// wall 39 29 1 1 tx_wal_004 0 0
-// wall 40 29 6 1 tx_wal_004 0 0
-// wall 47 29 6 1 tx_steel 0 0
-// wall 49 29 1 1 tx_wal_004 0 0
-// wall 0 30 1 1 tx_wal_004 0 0
-// wall 3 30 6 1 tx_wal_004 0 0
-// wall 6 30 6 1 tx_wal_004 0 0
-// wall 12 30 6 1 tx_wal_004 0 0
-// wall 13 30 1 1 tx_wal_004 0 0
-// wall 14 30 1 1 tx_wal_004 0 0
-// wall 21 30 1 1 tx_wal_004 0 0
-// wall 22 30 5 1 tx_wal_004 0 0
-// wall 32 30 1 1 tx_wal_006 0 0
-// wall 33 30 1 1 tx_wal_004 0 0
-// wall 37 30 1 1 tx_wal_004 0 0
-// wall 38 30 1 1 tx_wal_004 0 0
-// wall 39 30 1 1 tx_wal_006 0 0
-// wall 46 30 6 1 tx_steel 0 0
-// wall 48 30 1 1 tx_wal_004 0 0
-// wall 49 30 1 1 tx_wal_004 0 0
-// wall 0 31 1 1 tx_wal_004 0 0
-// wall 2 31 6 1 tx_wal_004 0 0
-// wall 5 31 6 1 tx_wal_004 0 0
-// wall 12 31 1 1 tx_wal_004 0 0
-// wall 13 31 4 1 tx_wal_004 0 0
-// wall 14 31 6 1 tx_wal_004 0 0
-// wall 21 31 1 1 tx_wal_004 0 0
-// wall 22 31 1 1 tx_wal_004 0 0
-// wall 33 31 1 1 tx_wal_004 0 0
-// wall 37 31 1 1 tx_wal_004 0 0
-// wall 38 31 6 1 tx_wal_004 0 0
-// wall 46 31 1 1 tx_steel 0 0
-// wall 47 31 1 1 tx_wal_004 0 0
-// wall 49 31 1 1 tx_wal_004 0 0
-// wall 0 32 1 1 tx_wal_004 0 0
-// wall 2 32 1 1 tx_wal_004 0 0
-// wall 4 32 6 1 tx_wal_004 0 0
-// wall 11 32 6 1 tx_wal_004 0 0
-// wall 12 32 6 1 tx_wal_004 0 0
-// wall 21 32 4 1 tx_wal_004 0 0
-// wall 22 32 1 1 tx_wal_004 0 0
-// wall 28 32 1 1 tx_wal_004 0 0
-// wall 33 32 1 1 tx_wal_004 0 0
-// wall 34 32 1 1 tx_grass 0 0
-// wall 35 32 1 1 tx_wal_005 0 0
-// wall 36 32 1 1 tx_wal_005 0 0
-// wall 37 32 1 1 tx_wal_006 0 0
-// wall 44 32 6 1 tx_tile 0 0
-// wall 45 32 1 1 tx_steel 0 0
-// wall 49 32 1 1 tx_wal_004 0 0
-// wall 0 33 1 1 tx_wal_004 0 0
-// wall 1 33 4 1 tx_wal_004 0 0
-// wall 3 33 6 1 tx_wal_004 0 0
-// wall 10 33 6 1 tx_wal_004 0 0
-// wall 11 33 6 1 tx_wal_004 0 0
-// wall 21 33 1 1 tx_wal_004 0 0
-// wall 22 33 1 1 tx_wal_004 0 0
-// wall 28 33 1 1 tx_wal_004 0 0
-// wall 43 33 6 1 tx_tile 0 0
-// wall 44 33 6 1 tx_tile 0 0
-// wall 49 33 1 1 tx_wal_004 0 0
-// wall 0 34 1 1 tx_wal_004 0 0
-// wall 1 34 1 1 tx_wal_004 0 0
-// wall 2 34 6 1 tx_wal_004 0 0
-// wall 9 34 6 1 tx_wal_004 0 0
-// wall 10 34 6 1 tx_wal_004 0 0
-// wall 21 34 1 1 tx_wal_004 0 0
-// wall 22 34 6 1 tx_wal_004 0 0
-// wall 28 34 1 1 tx_wal_006 0 0
-// wall 40 34 1 1 tx_tile 0 0
-// wall 41 34 1 1 tx_tile 0 0
-// wall 42 34 1 1 tx_tile 0 0
-// wall 43 34 1 1 tx_tile 0 0
-// wall 49 34 1 1 tx_wal_004 0 0
-// wall 0 35 1 1 tx_wal_004 0 0
-// wall 1 35 1 1 tx_wal_004 0 0
-// wall 9 35 4 1 tx_wal_004 0 0
-// wall 20 35 6 1 tx_wal_004 0 0
-// wall 21 35 1 1 tx_wal_004 0 0
-// wall 28 35 1 1 tx_wal_006 0 0
-// wall 49 35 1 1 tx_wal_004 0 0
-// wall 0 36 1 1 tx_wal_006 0 0
-// wall 1 36 6 1 tx_wal_004 0 0
-// wall 9 36 1 1 tx_wal_004 0 0
-// wall 20 36 1 1 tx_wal_004 0 0
-// wall 21 36 1 1 tx_wal_004 0 0
-// wall 28 36 1 1 tx_wal_006 0 0
-// wall 49 36 1 1 tx_wal_004 0 0
-// wall 0 37 1 1 tx_wal_004 0 0
-// wall 9 37 1 1 tx_wal_006 0 0
-// wall 20 37 1 1 tx_wal_006 0 0
-// wall 21 37 6 1 tx_wal_004 0 0
-// wall 28 37 1 1 tx_wal_006 0 0
-// wall 49 37 1 1 tx_wal_004 0 0
-// wall 0 38 1 1 tx_wal_004 0 0
-// wall 9 38 1 1 tx_wal_004 0 0
-// wall 20 38 1 1 tx_wal_006 0 0
-// wall 28 38 1 1 tx_wal_004 0 0
-// wall 29 38 1 1 tx_wal_004 0 0
-// wall 30 38 5 1 tx_wal_004 0 0
-// wall 49 38 1 1 tx_wal_004 0 0
-// wall 0 39 1 1 tx_wal_004 0 0
-// wall 9 39 1 1 tx_wal_004 0 0
-// wall 19 39 6 1 tx_wal_004 0 0
-// wall 20 39 1 1 tx_wal_006 0 0
-// wall 28 39 5 1 tx_wal_004 0 0
-// wall 29 39 1 1 tx_wal_004 0 0
-// wall 30 39 1 1 tx_wal_004 0 0
-// wall 49 39 1 1 tx_wal_004 0 0
-// wall 0 40 1 1 tx_wal_004 0 0
-// wall 8 40 6 1 tx_wal_004 0 0
-// wall 9 40 1 1 tx_wal_004 0 0
-// wall 19 40 1 1 tx_wal_004 0 0
-// wall 20 40 1 1 tx_wal_004 0 0
-// wall 29 40 5 1 tx_wal_004 0 0
-// wall 30 40 1 1 tx_wal_004 0 0
-// wall 31 40 5 1 tx_wal_004 0 0
-// wall 39 40 1 1 tx_wal_004 0 0
-// wall 49 40 1 1 tx_wal_004 0 0
-// wall 0 41 1 1 tx_wal_004 0 0
-// wall 8 41 1 1 tx_wal_004 0 0
-// wall 9 41 6 1 tx_wal_004 0 0
-// wall 19 41 1 1 tx_wal_004 0 0
-// wall 20 41 6 1 tx_wal_004 0 0
-// wall 30 41 5 1 tx_wal_004 0 0
-// wall 31 41 1 1 tx_wal_004 0 0
-// wall 39 41 1 1 tx_wal_004 0 0
-// wall 40 41 1 1 tx_wal_004 0 0
-// wall 49 41 1 1 tx_wal_004 0 0
-// wall 0 42 1 1 tx_wal_004 0 0
-// wall 7 42 6 1 tx_wal_006 0 0
-// wall 8 42 6 1 tx_wal_004 0 0
-// wall 19 42 1 1 tx_wal_004 0 0
-// wall 31 42 1 1 tx_wal_004 0 0
-// wall 39 42 5 1 tx_wal_004 0 0
-// wall 40 42 1 1 tx_wal_004 0 0
-// wall 41 42 1 1 tx_wal_004 0 0
-// wall 49 42 1 1 tx_wal_004 0 0
-// wall 0 43 1 1 tx_wal_004 0 0
-// wall 7 43 1 1 tx_wal_006 0 0
-// wall 18 43 6 1 tx_wal_004 0 0
-// wall 19 43 1 1 tx_wal_004 0 0
-// wall 31 43 1 1 tx_wal_004 0 0
-// wall 40 43 5 1 tx_wal_004 0 0
-// wall 41 43 1 1 tx_wal_004 0 0
-// wall 42 43 1 1 tx_wal_004 0 0
-// wall 49 43 1 1 tx_wal_004 0 0
-// wall 0 44 1 1 tx_wal_004 0 0
-// wall 6 44 6 1 tx_wal_004 0 0
-// wall 7 44 1 1 tx_wal_004 0 0
-// wall 18 44 1 1 tx_wal_004 0 0
-// wall 19 44 6 1 tx_wal_004 0 0
-// wall 31 44 1 1 tx_wal_004 0 0
-// wall 32 44 5 1 tx_wal_004 0 0
-// wall 41 44 5 1 tx_wal_004 0 0
-// wall 42 44 1 1 tx_wal_004 0 0
-// wall 49 44 1 1 tx_wal_004 0 0
-// wall 0 45 1 1 tx_wal_004 0 0
-// wall 6 45 1 1 tx_wal_004 0 0
-// wall 7 45 1 1 tx_wal_004 0 0
-// wall 18 45 1 1 tx_wal_004 0 0
-// wall 31 45 1 1 tx_wal_004 0 0
-// wall 32 45 1 1 tx_wal_004 0 0
-// wall 42 45 5 1 tx_wal_004 0 0
-// wall 43 45 1 1 tx_wal_004 0 0
-// wall 49 45 1 1 tx_wal_004 0 0
-// wall 0 46 1 1 tx_wal_004 0 0
-// wall 6 46 1 1 tx_wal_004 0 0
-// wall 7 46 6 1 tx_wal_004 0 0
-// wall 18 46 1 1 tx_wal_004 0 0
-// wall 31 46 5 1 tx_wal_004 0 0
-// wall 32 46 1 1 tx_wal_004 0 0
-// wall 33 46 5 1 tx_wal_004 0 0
-// wall 44 46 1 1 tx_wal_004 0 0
-// wall 45 46 1 1 tx_wal_004 0 0
-// wall 49 46 1 1 tx_wal_004 0 0
-// wall 0 47 1 1 tx_wal_004 0 0
-// wall 6 47 1 1 tx_wal_004 0 0
-// wall 18 47 1 1 tx_wal_004 0 0
-// wall 32 47 1 1 tx_wal_004 0 0
-// wall 33 47 1 1 tx_wal_004 0 0
-// wall 44 47 5 1 tx_wal_004 0 0
-// wall 45 47 1 1 tx_wal_004 0 0
-// wall 46 47 1 1 tx_wal_004 0 0
-// wall 47 47 1 1 tx_wal_004 0 0
-// wall 49 47 1 1 tx_wal_004 0 0
-// wall 0 48 1 1 tx_wal_004 0 0
-// wall 1 48 5 1 tx_wal_004 0 0
-// wall 5 48 6 1 tx_wal_004 0 0
-// wall 6 48 1 1 tx_wal_004 0 0
-// wall 7 48 5 1 tx_wal_004 0 0
-// wall 17 48 6 1 tx_wal_004 0 0
-// wall 18 48 1 1 tx_wal_004 0 0
-// wall 19 48 5 1 tx_wal_004 0 0
-// wall 32 48 4 1 tx_wal_004 0 0
-// wall 33 48 1 1 tx_wal_004 0 0
-// wall 34 48 5 1 tx_wal_004 0 0
-// wall 45 48 4 1 tx_wal_004 0 0
-// wall 47 48 1 1 tx_wal_004 0 0
-// wall 48 48 1 1 tx_wal_004 0 0
-// wall 49 48 1 1 tx_wal_004 0 0
-// wall 0 49 1 1 tx_wal_004 0 0
-// wall 1 49 1 1 tx_wal_004 0 0
-// wall 2 49 1 1 tx_wal_004 0 0
-// wall 3 49 1 1 tx_wal_004 0 0
-// wall 4 49 1 1 tx_wal_004 0 0
-// wall 5 49 1 1 tx_wal_004 0 0
-// wall 6 49 1 1 tx_wal_004 0 0
-// wall 7 49 1 1 tx_wal_004 0 0
-// wall 8 49 1 1 tx_wal_004 0 0
-// wall 9 49 1 1 tx_wal_004 0 0
-// wall 10 49 1 1 tx_wal_004 0 0
-// wall 11 49 1 1 tx_wal_004 0 0
-// wall 12 49 1 1 tx_wal_004 0 0
-// wall 13 49 1 1 tx_wal_004 0 0
-// wall 14 49 1 1 tx_wal_004 0 0
-// wall 15 49 1 1 tx_wal_004 0 0
-// wall 16 49 1 1 tx_wal_004 0 0
-// wall 17 49 1 1 tx_wal_004 0 0
-// wall 18 49 1 1 tx_wal_004 0 0
-// wall 19 49 1 1 tx_wal_004 0 0
-// wall 20 49 1 1 tx_wal_004 0 0
-// wall 21 49 1 1 tx_wal_004 0 0
-// wall 22 49 1 1 tx_wal_004 0 0
-// wall 23 49 1 1 tx_wal_004 0 0
-// wall 24 49 1 1 tx_wal_004 0 0
-// wall 25 49 1 1 tx_wal_004 0 0
-// wall 26 49 1 1 tx_wal_004 0 0
-// wall 27 49 1 1 tx_wal_004 0 0
-// wall 28 49 1 1 tx_wal_004 0 0
-// wall 29 49 1 1 tx_wal_004 0 0
-// wall 30 49 1 1 tx_wal_004 0 0
-// wall 31 49 1 1 tx_wal_004 0 0
-// wall 32 49 1 1 tx_wal_004 0 0
-// wall 33 49 1 1 tx_wal_004 0 0
-// wall 34 49 1 1 tx_wal_004 0 0
-// wall 35 49 1 1 tx_wal_004 0 0
-// wall 36 49 1 1 tx_wal_004 0 0
-// wall 37 49 1 1 tx_wal_004 0 0
-// wall 38 49 1 1 tx_wal_004 0 0
-// wall 39 49 1 1 tx_wal_004 0 0
-// wall 40 49 1 1 tx_wal_004 0 0
-// wall 41 49 1 1 tx_wal_004 0 0
-// wall 42 49 1 1 tx_wal_004 0 0
-// wall 43 49 1 1 tx_wal_004 0 0
-// wall 44 49 1 1 tx_wal_004 0 0
-// wall 45 49 1 1 tx_wal_004 0 0
-// wall 46 49 1 1 tx_wal_004 0 0
-// wall 47 49 1 1 tx_wal_004 0 0
-// wall 48 49 1 1 tx_wal_004 0 0
-// wall 49 49 1 1 tx_wal_004 0 0
+// wall 0 0 1 1 tx_wal_004 0 0 0
+// wall 1 0 1 1 tx_wal_004 0 0 0
+// wall 2 0 1 1 tx_wal_004 0 0 0
+// wall 3 0 1 1 tx_wal_004 0 0 0
+// wall 4 0 1 1 tx_wal_004 0 0 0
+// wall 5 0 1 1 tx_wal_004 0 0 0
+// wall 6 0 1 1 tx_wal_004 0 0 0
+// wall 7 0 1 1 tx_wal_004 0 0 0
+// wall 8 0 1 1 tx_wal_004 0 0 0
+// wall 9 0 1 1 tx_wal_004 0 0 0
+// wall 10 0 1 1 tx_wal_004 0 0 0
+// wall 11 0 1 1 tx_wal_004 0 0 0
+// wall 12 0 1 1 tx_wal_004 0 0 0
+// wall 13 0 1 1 tx_wal_004 0 0 0
+// wall 14 0 1 1 tx_wal_004 0 0 0
+// wall 15 0 1 1 tx_wal_004 0 0 0
+// wall 16 0 1 1 tx_wal_004 0 0 0
+// wall 17 0 1 1 tx_wal_004 0 0 0
+// wall 18 0 1 1 tx_wal_004 0 0 0
+// wall 19 0 1 1 tx_wal_004 0 0 0
+// wall 20 0 1 1 tx_wal_004 0 0 0
+// wall 21 0 1 1 tx_wal_004 0 0 0
+// wall 22 0 1 1 tx_wal_004 0 0 0
+// wall 23 0 1 1 tx_wal_004 0 0 0
+// wall 24 0 1 1 tx_wal_004 0 0 0
+// wall 25 0 1 1 tx_wal_004 0 0 0
+// wall 26 0 1 1 tx_wal_004 0 0 0
+// wall 27 0 1 1 tx_wal_004 0 0 0
+// wall 28 0 1 1 tx_wal_004 0 0 0
+// wall 29 0 1 1 tx_wal_004 0 0 0
+// wall 30 0 1 1 tx_wal_004 0 0 0
+// wall 31 0 1 1 tx_wal_004 0 0 0
+// wall 32 0 1 1 tx_wal_004 0 0 0
+// wall 33 0 1 1 tx_wal_004 0 0 0
+// wall 34 0 1 1 tx_wal_004 0 0 0
+// wall 35 0 1 1 tx_grass 0 0 0
+// wall 36 0 1 1 tx_grass 0 0 0
+// wall 37 0 1 1 tx_lab 0 0 0
+// wall 38 0 1 1 tx_wal_004 0 0 0
+// wall 39 0 1 1 tx_wal_004 0 0 0
+// wall 40 0 1 1 tx_wal_004 0 0 0
+// wall 41 0 1 1 tx_wal_004 0 0 0
+// wall 42 0 1 1 tx_wal_016 0 0 0
+// wall 43 0 1 1 tx_wal_016 0 0 0
+// wall 44 0 1 1 tx_wal_016 0 0 0
+// wall 45 0 1 1 tx_wal_026 0 0 0
+// wall 46 0 1 1 tx_wal_026 0 0 0
+// wall 47 0 1 1 tx_wal_026 0 0 0
+// wall 48 0 1 1 tx_wal_016 0 0 0
+// wall 49 0 1 1 tx_wal_016 0 0 0
+// wall 0 1 1 1 tx_wal_004 0 0 0
+// wall 1 1 6 1 tx_wal_004 0 0 0
+// wall 31 1 1 1 tx_tile 0 0 0
+// wall 32 1 1 1 tx_lab 0 0 0
+// wall 41 1 1 1 tx_wal_004 0 0 0
+// wall 42 1 1 1 tx_wal_016 0 0 0
+// wall 43 1 6 1 tx_wal_016 0 0 0
+// wall 48 1 5 1 tx_wal_016 0 0 0
+// wall 49 1 1 1 tx_wal_016 0 0 0
+// wall 0 2 1 1 tx_wal_004 0 0 0
+// wall 31 2 1 1 tx_tile 0 0 0
+// wall 32 2 1 1 tx_lab 0 0 0
+// wall 41 2 1 1 tx_wal_004 0 0 0
+// wall 42 2 1 1 tx_wal_016 0 0 0
+// wall 49 2 1 1 tx_wal_016 0 0 0
+// wall 0 3 1 1 tx_wal_004 0 0 0
+// wall 32 3 1 1 tx_wood 0 0 0
+// wall 33 3 1 1 tx_lab 0 0 0
+// wall 41 3 1 1 tx_wal_004 0 0 0
+// wall 42 3 1 1 tx_wal_016 0 0 0
+// wall 49 3 1 1 tx_wal_016 0 0 0
+// wall 0 4 1 1 tx_wal_004 0 0 0
+// wall 32 4 1 1 tx_wood 0 0 0
+// wall 33 4 1 1 tx_lab 0 0 0
+// wall 41 4 1 1 tx_wal_004 0 0 0
+// wall 42 4 1 1 tx_wal_016 0 0 0
+// wall 49 4 1 1 tx_wal_016 0 0 0
+// wall 0 5 1 1 tx_wal_004 0 0 0
+// wall 32 5 5 1 tx_wood 0 0 0
+// wall 33 5 1 1 tx_wood 0 0 0
+// wall 34 5 1 1 tx_lab 0 0 0
+// wall 41 5 1 1 tx_wal_004 0 0 0
+// wall 42 5 1 1 tx_wal_016 0 0 0
+// wall 49 5 1 1 tx_wal_016 0 0 0
+// wall 0 6 1 1 tx_wal_004 0 0 0
+// wall 33 6 1 1 tx_wood 0 0 0
+// wall 34 6 1 1 tx_lab 0 0 0
+// wall 35 6 1 1 tx_lab 0 0 0
+// wall 36 6 1 1 tx_wal_004 0 0 0
+// wall 41 6 1 1 tx_wal_004 0 0 0
+// wall 42 6 1 1 tx_wal_016 0 0 0
+// wall 43 6 5 1 tx_wal_016 0 0 0
+// wall 49 6 1 1 tx_wal_016 0 0 0
+// wall 0 7 1 1 tx_wal_004 0 0 0
+// wall 12 7 6 1 tx_wal_004 0 0 0
+// wall 13 7 1 1 tx_wal_004 0 0 0
+// wall 14 7 5 1 tx_wal_004 0 0 0
+// wall 18 7 6 1 tx_wal_004 0 0 0
+// wall 19 7 1 1 tx_wal_004 0 0 0
+// wall 20 7 1 1 tx_wal_006 0 0 0
+// wall 21 7 1 1 tx_wal_004 0 0 0
+// wall 22 7 1 1 tx_wal_004 0 0 0
+// wall 23 7 5 1 tx_wal_004 0 0 0
+// wall 33 7 1 1 tx_wood 0 0 0
+// wall 34 7 1 1 tx_wal_004 0 0 0
+// wall 35 7 1 1 tx_wal_004 0 0 0
+// wall 36 7 1 1 tx_wal_004 0 0 0
+// wall 42 7 1 1 tx_wal_004 0 0 0
+// wall 43 7 1 1 tx_wal_016 0 0 0
+// wall 49 7 1 1 tx_wal_016 0 0 0
+// wall 0 8 1 1 tx_wal_004 0 0 0
+// wall 3 8 6 1 tx_brick 0 0 0
+// wall 4 8 5 1 tx_wal_004 0 0 0
+// wall 11 8 6 1 tx_wal_004 0 0 0
+// wall 14 8 6 1 tx_wal_004 0 0 0
+// wall 18 8 5 1 tx_wal_004 0 0 0
+// wall 19 8 6 1 tx_wal_004 0 0 0
+// wall 23 8 1 1 tx_wal_004 0 0 0
+// wall 33 8 1 1 tx_wood 0 0 0
+// wall 34 8 1 1 tx_wood 0 0 0
+// wall 35 8 1 1 tx_wal_004 0 0 0
+// wall 36 8 1 1 tx_wal_004 0 0 0
+// wall 42 8 1 1 tx_wal_004 0 0 0
+// wall 43 8 1 1 tx_wal_016 0 0 0
+// wall 49 8 1 1 tx_wal_016 0 0 0
+// wall 0 9 1 1 tx_wood 0 0 0
+// wall 3 9 1 1 tx_brick 0 0 0
+// wall 4 9 1 1 tx_wal_004 0 0 0
+// wall 9 9 6 1 tx_wal_004 0 0 0
+// wall 10 9 1 1 tx_wal_004 0 0 0
+// wall 13 9 6 1 tx_wal_004 0 0 0
+// wall 23 9 1 1 tx_wal_004 0 0 0
+// wall 24 9 1 1 tx_wal_004 0 0 0
+// wall 33 9 1 1 tx_wal_004 0 0 0
+// wall 34 9 1 1 tx_wal_004 0 0 0
+// wall 36 9 1 1 tx_wal_004 0 0 0
+// wall 42 9 1 1 tx_wal_004 0 0 0
+// wall 43 9 1 1 tx_wal_016 0 0 0
+// wall 44 9 5 1 tx_wal_016 0 0 0
+// wall 49 9 1 1 tx_wal_016 0 0 0
+// wall 0 10 1 1 tx_brick 0 0 0
+// wall 3 10 1 1 tx_brick 0 0 0
+// wall 4 10 1 1 tx_wal_004 0 0 0
+// wall 9 10 1 1 tx_wal_004 0 0 0
+// wall 10 10 1 1 tx_wal_004 0 0 0
+// wall 11 10 1 1 tx_wal_004 0 0 0
+// wall 12 10 6 1 tx_wal_004 0 0 0
+// wall 24 10 1 1 tx_wal_004 0 0 0
+// wall 25 10 1 1 tx_wal_004 0 0 0
+// wall 33 10 1 1 tx_wal_004 0 0 0
+// wall 36 10 1 1 tx_wal_004 0 0 0
+// wall 43 10 1 1 tx_wal_004 0 0 0
+// wall 44 10 1 1 tx_wal_016 0 0 0
+// wall 49 10 1 1 tx_wal_016 0 0 0
+// wall 0 11 1 1 tx_brick 0 0 0
+// wall 3 11 1 1 tx_brick 0 0 0
+// wall 4 11 1 1 tx_wal_004 0 0 0
+// wall 9 11 1 1 tx_wal_004 0 0 0
+// wall 10 11 6 1 tx_wal_004 0 0 0
+// wall 25 11 1 1 tx_wal_004 0 0 0
+// wall 32 11 1 1 tx_wal_004 0 0 0
+// wall 36 11 1 1 tx_wal_006 0 0 0
+// wall 43 11 1 1 tx_wal_004 0 0 0
+// wall 44 11 1 1 tx_wal_016 0 0 0
+// wall 45 11 5 1 tx_wal_016 0 0 0
+// wall 49 11 1 1 tx_wal_016 0 0 0
+// wall 0 12 1 1 tx_brick 0 0 0
+// wall 3 12 1 1 tx_brick 0 0 0
+// wall 4 12 1 1 tx_wal_004 0 0 0
+// wall 9 12 1 1 tx_wal_006 0 0 0
+// wall 25 12 1 1 tx_wal_004 0 0 0
+// wall 26 12 1 1 tx_wal_004 0 0 0
+// wall 36 12 1 1 tx_wal_006 0 0 0
+// wall 43 12 1 1 tx_wal_004 0 0 0
+// wall 44 12 1 1 tx_wal_016 0 0 0
+// wall 45 12 1 1 tx_wal_016 0 0 0
+// wall 49 12 1 1 tx_wal_016 0 0 0
+// wall 0 13 1 1 tx_brick 0 0 0
+// wall 3 13 1 1 tx_brick 0 0 0
+// wall 4 13 1 1 tx_wal_004 0 0 0
+// wall 9 13 1 1 tx_wal_004 0 0 0
+// wall 26 13 1 1 tx_wal_004 0 0 0
+// wall 36 13 1 1 tx_wal_004 0 0 0
+// wall 44 13 1 1 tx_wal_004 0 0 0
+// wall 45 13 1 1 tx_wal_016 0 0 0
+// wall 49 13 1 1 tx_wal_016 0 0 0
+// wall 0 14 1 1 tx_brick 0 0 0
+// wall 3 14 1 1 tx_brick 0 0 0
+// wall 4 14 1 1 tx_wal_004 0 0 0
+// wall 9 14 1 1 tx_wal_006 0 0 0
+// wall 26 14 1 1 tx_wal_004 0 0 0
+// wall 36 14 1 1 tx_wal_006 0 0 0
+// wall 37 14 1 1 tx_wal_004 0 0 0
+// wall 44 14 1 1 tx_wal_004 0 0 0
+// wall 45 14 1 1 tx_wal_016 0 0 0
+// wall 46 14 5 1 tx_wal_016 0 0 0
+// wall 49 14 1 1 tx_wal_016 0 0 0
+// wall 0 15 1 1 tx_brick 0 0 0
+// wall 3 15 1 1 tx_brick 0 0 0
+// wall 4 15 1 1 tx_wal_004 0 0 0
+// wall 9 15 1 1 tx_wal_004 0 0 0
+// wall 27 15 1 1 tx_wal_004 0 0 0
+// wall 37 15 1 1 tx_wal_004 0 0 0
+// wall 45 15 1 1 tx_wal_004 0 0 0
+// wall 46 15 1 1 tx_wal_004 0 0 0
+// wall 49 15 1 1 tx_wal_004 0 0 0
+// wall 0 16 1 1 tx_brick 0 0 0
+// wall 3 16 1 1 tx_brick 0 0 0
+// wall 4 16 1 1 tx_wal_004 0 0 0
+// wall 9 16 1 1 tx_wal_004 0 0 0
+// wall 10 16 5 1 tx_wal_004 0 0 0
+// wall 27 16 1 1 tx_wal_004 0 0 0
+// wall 37 16 1 1 tx_wal_004 0 0 0
+// wall 46 16 1 1 tx_wal_004 0 0 0
+// wall 47 16 5 1 tx_wal_004 0 0 0
+// wall 49 16 1 1 tx_wal_004 0 0 0
+// wall 0 17 1 1 tx_brick 0 0 0
+// wall 3 17 1 1 tx_brick 0 0 0
+// wall 4 17 1 1 tx_wal_006 0 0 0
+// wall 9 17 1 1 tx_wal_004 0 0 0
+// wall 10 17 1 1 tx_wal_004 0 0 0
+// wall 27 17 1 1 tx_wal_004 0 0 0
+// wall 37 17 1 1 tx_wal_004 0 0 0
+// wall 46 17 1 1 tx_wal_004 0 0 0
+// wall 47 17 1 1 tx_brick 0 0 0
+// wall 49 17 1 1 tx_brick 0 0 0
+// wall 0 18 1 1 tx_brick 0 0 0
+// wall 3 18 1 1 tx_brick 0 0 0
+// wall 4 18 1 1 tx_wal_006 0 0 0
+// wall 5 18 5 1 tx_wal_006 0 0 0
+// wall 9 18 5 1 tx_wal_004 0 0 0
+// wall 11 18 5 1 tx_wal_004 0 0 0
+// wall 18 18 1 1 tx_wal_004 0 0 0
+// wall 28 18 1 1 tx_wal_004 0 0 0
+// wall 38 18 1 1 tx_wal_004 0 0 0
+// wall 46 18 1 1 tx_wal_004 0 0 0
+// wall 47 18 1 1 tx_brick 0 0 0
+// wall 49 18 1 1 tx_brick 0 0 0
+// wall 0 19 1 1 tx_brick 0 0 0
+// wall 3 19 5 1 tx_brick 0 0 0
+// wall 4 19 1 1 tx_brick 0 0 0
+// wall 5 19 1 1 tx_wal_004 0 0 0
+// wall 10 19 1 1 tx_wal_004 0 0 0
+// wall 12 19 5 1 tx_wal_004 0 0 0
+// wall 18 19 1 1 tx_wal_004 0 0 0
+// wall 19 19 5 1 tx_wal_004 0 0 0
+// wall 28 19 1 1 tx_wal_006 0 0 0
+// wall 38 19 1 1 tx_wal_004 0 0 0
+// wall 45 19 1 1 tx_wal_004 0 0 0
+// wall 46 19 1 1 tx_brick 0 0 0
+// wall 47 19 1 1 tx_brick 0 0 0
+// wall 49 19 1 1 tx_brick 0 0 0
+// wall 0 20 1 1 tx_brick 0 0 0
+// wall 4 20 1 1 tx_brick 0 0 0
+// wall 5 20 1 1 tx_wal_004 0 0 0
+// wall 10 20 5 1 tx_wal_004 0 0 0
+// wall 13 20 5 1 tx_wal_004 0 0 0
+// wall 18 20 1 1 tx_wal_004 0 0 0
+// wall 19 20 1 1 tx_wal_004 0 0 0
+// wall 28 20 1 1 tx_wal_004 0 0 0
+// wall 29 20 1 1 tx_wal_004 0 0 0
+// wall 38 20 1 1 tx_wal_004 0 0 0
+// wall 44 20 1 1 tx_wal_004 0 0 0
+// wall 45 20 1 1 tx_brick 0 0 0
+// wall 46 20 6 1 tx_brick 0 0 0
+// wall 49 20 1 1 tx_brick 0 0 0
+// wall 0 21 1 1 tx_brick 0 0 0
+// wall 4 21 1 1 tx_brick 0 0 0
+// wall 5 21 1 1 tx_wal_004 0 0 0
+// wall 11 21 5 1 tx_wal_004 0 0 0
+// wall 13 21 1 1 tx_wal_004 0 0 0
+// wall 18 21 5 1 tx_wal_004 0 0 0
+// wall 20 21 5 1 tx_wal_004 0 0 0
+// wall 29 21 1 1 tx_wal_004 0 0 0
+// wall 43 21 1 1 tx_wal_004 0 0 0
+// wall 44 21 1 1 tx_brick 0 0 0
+// wall 45 21 6 1 tx_brick 0 0 0
+// wall 49 21 1 1 tx_brick 0 0 0
+// wall 0 22 1 1 tx_brick 0 0 0
+// wall 4 22 1 1 tx_brick 0 0 0
+// wall 5 22 1 1 tx_wal_004 0 0 0
+// wall 12 22 5 1 tx_wal_004 0 0 0
+// wall 13 22 1 1 tx_wal_004 0 0 0
+// wall 19 22 1 1 tx_wal_004 0 0 0
+// wall 20 22 1 1 tx_wal_006 0 0 0
+// wall 29 22 1 1 tx_wal_004 0 0 0
+// wall 43 22 1 1 tx_wal_004 0 0 0
+// wall 44 22 1 1 tx_brick 0 0 0
+// wall 49 22 1 1 tx_brick 0 0 0
+// wall 0 23 1 1 tx_brick 0 0 0
+// wall 3 23 6 1 tx_brick 0 0 0
+// wall 4 23 1 1 tx_brick 0 0 0
+// wall 5 23 1 1 tx_wal_004 0 0 0
+// wall 13 23 1 1 tx_wal_004 0 0 0
+// wall 14 23 5 1 tx_wal_004 0 0 0
+// wall 19 23 5 1 tx_wal_004 0 0 0
+// wall 20 23 1 1 tx_wal_006 0 0 0
+// wall 30 23 1 1 tx_wal_004 0 0 0
+// wall 43 23 1 1 tx_wal_004 0 0 0
+// wall 44 23 1 1 tx_brick 0 0 0
+// wall 49 23 1 1 tx_brick 0 0 0
+// wall 0 24 1 1 tx_brick 0 0 0
+// wall 2 24 6 1 tx_brick 0 0 0
+// wall 3 24 1 1 tx_brick 0 0 0
+// wall 4 24 1 1 tx_wal_004 0 0 0
+// wall 5 24 6 1 tx_wal_004 0 0 0
+// wall 7 24 6 1 tx_wal_004 0 0 0
+// wall 8 24 5 1 tx_wal_004 0 0 0
+// wall 13 24 1 1 tx_wal_004 0 0 0
+// wall 14 24 1 1 tx_wal_004 0 0 0
+// wall 20 24 1 1 tx_wal_006 0 0 0
+// wall 30 24 1 1 tx_wal_006 0 0 0
+// wall 42 24 1 1 tx_wal_004 0 0 0
+// wall 43 24 6 1 tx_brick 0 0 0
+// wall 49 24 1 1 tx_brick 0 0 0
+// wall 0 25 1 1 tx_wal_004 0 0 0
+// wall 1 25 1 1 tx_brick 0 0 0
+// wall 2 25 1 1 tx_brick 0 0 0
+// wall 3 25 1 1 tx_wal_004 0 0 0
+// wall 4 25 6 1 tx_wal_004 0 0 0
+// wall 7 25 1 1 tx_wal_004 0 0 0
+// wall 8 25 1 1 tx_wal_004 0 0 0
+// wall 13 25 5 1 tx_wal_006 0 0 0
+// wall 14 25 1 1 tx_wal_006 0 0 0
+// wall 20 25 1 1 tx_wal_004 0 0 0
+// wall 21 25 5 1 tx_wal_004 0 0 0
+// wall 30 25 1 1 tx_wal_006 0 0 0
+// wall 41 25 1 1 tx_wal_004 0 0 0
+// wall 42 25 6 1 tx_brick 0 0 0
+// wall 49 25 1 1 tx_brick 0 0 0
+// wall 0 26 1 1 tx_wal_004 0 0 0
+// wall 1 26 1 1 tx_wal_004 0 0 0
+// wall 2 26 1 1 tx_wal_004 0 0 0
+// wall 3 26 6 1 tx_wal_004 0 0 0
+// wall 7 26 1 1 tx_wal_004 0 0 0
+// wall 8 26 1 1 tx_wal_004 0 0 0
+// wall 14 26 3 1 tx_steel2 0 0 1
+// wall 20 26 1 1 tx_wal_004 0 0 0
+// wall 21 26 1 1 tx_wal_004 0 0 0
+// wall 30 26 1 1 tx_wal_004 0 0 0
+// wall 40 26 1 1 tx_wal_004 0 0 0
+// wall 41 26 1 1 tx_wal_004 0 0 0
+// wall 49 26 1 1 tx_lab 0 0 0
+// wall 0 27 1 1 tx_wal_004 0 0 0
+// wall 1 27 6 1 tx_wal_004 0 0 0
+// wall 6 27 6 1 tx_wal_004 0 0 0
+// wall 8 27 6 1 tx_wal_004 0 0 0
+// wall 14 27 3 1 tx_steel2 0 0 1
+// wall 20 27 5 1 tx_wal_004 0 0 0
+// wall 21 27 1 1 tx_wal_004 0 0 0
+// wall 30 27 1 1 tx_wal_004 0 0 0
+// wall 31 27 1 1 tx_wal_004 0 0 0
+// wall 39 27 1 1 tx_wal_004 0 0 0
+// wall 40 27 1 1 tx_wal_004 0 0 0
+// wall 41 27 6 1 tx_wal_004 0 0 0
+// wall 49 27 1 1 tx_lab 0 0 0
+// wall 0 28 1 1 tx_wal_004 0 0 0
+// wall 5 28 6 1 tx_wal_004 0 0 0
+// wall 6 28 1 1 tx_wal_004 0 0 0
+// wall 7 28 6 1 tx_wal_004 0 0 0
+// wall 14 28 3 1 tx_steel2 0 0 1
+// wall 21 28 1 1 tx_wal_004 0 0 0
+// wall 31 28 1 1 tx_wal_004 0 0 0
+// wall 32 28 1 1 tx_wal_004 0 0 0
+// wall 39 28 1 1 tx_wal_004 0 0 0
+// wall 40 28 1 1 tx_wal_004 0 0 0
+// wall 48 28 6 1 tx_steel 0 0 0
+// wall 49 28 1 1 tx_wal_004 0 0 0
+// wall 0 29 1 1 tx_wal_004 0 0 0
+// wall 4 29 6 1 tx_wal_004 0 0 0
+// wall 6 29 1 1 tx_wal_004 0 0 0
+// wall 14 29 1 1 tx_wal_004 0 0 0
+// wall 21 29 1 1 tx_wal_004 0 0 0
+// wall 32 29 1 1 tx_wal_006 0 0 0
+// wall 38 29 1 1 tx_wal_004 0 0 0
+// wall 39 29 1 1 tx_wal_004 0 0 0
+// wall 40 29 6 1 tx_wal_004 0 0 0
+// wall 47 29 6 1 tx_steel 0 0 0
+// wall 49 29 1 1 tx_wal_004 0 0 0
+// wall 0 30 1 1 tx_wal_004 0 0 0
+// wall 3 30 6 1 tx_wal_004 0 0 0
+// wall 6 30 6 1 tx_wal_004 0 0 0
+// wall 12 30 6 1 tx_wal_004 0 0 0
+// wall 13 30 1 1 tx_wal_004 0 0 0
+// wall 14 30 1 1 tx_wal_004 0 0 0
+// wall 21 30 1 1 tx_wal_004 0 0 0
+// wall 22 30 5 1 tx_wal_004 0 0 0
+// wall 32 30 1 1 tx_wal_006 0 0 0
+// wall 33 30 1 1 tx_wal_004 0 0 0
+// wall 37 30 1 1 tx_wal_004 0 0 0
+// wall 38 30 1 1 tx_wal_004 0 0 0
+// wall 39 30 1 1 tx_wal_006 0 0 0
+// wall 46 30 6 1 tx_steel 0 0 0
+// wall 48 30 1 1 tx_wal_004 0 0 0
+// wall 49 30 1 1 tx_wal_004 0 0 0
+// wall 0 31 1 1 tx_wal_004 0 0 0
+// wall 2 31 6 1 tx_wal_004 0 0 0
+// wall 5 31 6 1 tx_wal_004 0 0 0
+// wall 12 31 1 1 tx_wal_004 0 0 0
+// wall 13 31 4 1 tx_wal_004 0 0 0
+// wall 14 31 6 1 tx_wal_004 0 0 0
+// wall 21 31 1 1 tx_wal_004 0 0 0
+// wall 22 31 1 1 tx_wal_004 0 0 0
+// wall 33 31 1 1 tx_wal_004 0 0 0
+// wall 37 31 1 1 tx_wal_004 0 0 0
+// wall 38 31 6 1 tx_wal_004 0 0 0
+// wall 46 31 1 1 tx_steel 0 0 0
+// wall 47 31 1 1 tx_wal_004 0 0 0
+// wall 49 31 1 1 tx_wal_004 0 0 0
+// wall 0 32 1 1 tx_wal_004 0 0 0
+// wall 2 32 1 1 tx_wal_004 0 0 0
+// wall 4 32 6 1 tx_wal_004 0 0 0
+// wall 11 32 6 1 tx_wal_004 0 0 0
+// wall 12 32 6 1 tx_wal_004 0 0 0
+// wall 21 32 4 1 tx_wal_004 0 0 0
+// wall 22 32 1 1 tx_wal_004 0 0 0
+// wall 28 32 1 1 tx_wal_004 0 0 0
+// wall 33 32 1 1 tx_wal_004 0 0 0
+// wall 34 32 1 1 tx_grass 0 0 0
+// wall 35 32 1 1 tx_wal_005 0 0 0
+// wall 36 32 1 1 tx_wal_005 0 0 0
+// wall 37 32 1 1 tx_wal_006 0 0 0
+// wall 44 32 6 1 tx_tile 0 0 0
+// wall 45 32 1 1 tx_steel 0 0 0
+// wall 49 32 1 1 tx_wal_004 0 0 0
+// wall 0 33 1 1 tx_wal_004 0 0 0
+// wall 1 33 4 1 tx_wal_004 0 0 0
+// wall 3 33 6 1 tx_wal_004 0 0 0
+// wall 10 33 6 1 tx_wal_004 0 0 0
+// wall 11 33 6 1 tx_wal_004 0 0 0
+// wall 21 33 1 1 tx_wal_004 0 0 0
+// wall 22 33 1 1 tx_wal_004 0 0 0
+// wall 28 33 1 1 tx_wal_004 0 0 0
+// wall 43 33 6 1 tx_tile 0 0 0
+// wall 44 33 6 1 tx_tile 0 0 0
+// wall 49 33 1 1 tx_wal_004 0 0 0
+// wall 0 34 1 1 tx_wal_004 0 0 0
+// wall 1 34 1 1 tx_wal_004 0 0 0
+// wall 2 34 6 1 tx_wal_004 0 0 0
+// wall 9 34 6 1 tx_wal_004 0 0 0
+// wall 10 34 6 1 tx_wal_004 0 0 0
+// wall 21 34 1 1 tx_wal_004 0 0 0
+// wall 22 34 6 1 tx_wal_004 0 0 0
+// wall 28 34 1 1 tx_wal_006 0 0 0
+// wall 40 34 1 1 tx_tile 0 0 0
+// wall 41 34 1 1 tx_tile 0 0 0
+// wall 42 34 1 1 tx_tile 0 0 0
+// wall 43 34 1 1 tx_tile 0 0 0
+// wall 49 34 1 1 tx_wal_004 0 0 0
+// wall 0 35 1 1 tx_wal_004 0 0 0
+// wall 1 35 1 1 tx_wal_004 0 0 0
+// wall 9 35 4 1 tx_wal_004 0 0 0
+// wall 20 35 6 1 tx_wal_004 0 0 0
+// wall 21 35 1 1 tx_wal_004 0 0 0
+// wall 28 35 1 1 tx_wal_006 0 0 0
+// wall 49 35 1 1 tx_wal_004 0 0 0
+// wall 0 36 1 1 tx_wal_006 0 0 0
+// wall 1 36 6 1 tx_wal_004 0 0 0
+// wall 9 36 1 1 tx_wal_004 0 0 0
+// wall 20 36 1 1 tx_wal_004 0 0 0
+// wall 21 36 1 1 tx_wal_004 0 0 0
+// wall 28 36 1 1 tx_wal_006 0 0 0
+// wall 49 36 1 1 tx_wal_004 0 0 0
+// wall 0 37 1 1 tx_wal_004 0 0 0
+// wall 9 37 1 1 tx_wal_006 0 0 0
+// wall 20 37 1 1 tx_wal_006 0 0 0
+// wall 21 37 6 1 tx_wal_004 0 0 0
+// wall 28 37 1 1 tx_wal_006 0 0 0
+// wall 49 37 1 1 tx_wal_004 0 0 0
+// wall 0 38 1 1 tx_wal_004 0 0 0
+// wall 9 38 1 1 tx_wal_004 0 0 0
+// wall 20 38 1 1 tx_wal_006 0 0 0
+// wall 28 38 1 1 tx_wal_004 0 0 0
+// wall 29 38 1 1 tx_wal_004 0 0 0
+// wall 30 38 5 1 tx_wal_004 0 0 0
+// wall 49 38 1 1 tx_wal_004 0 0 0
+// wall 0 39 1 1 tx_wal_004 0 0 0
+// wall 9 39 1 1 tx_wal_004 0 0 0
+// wall 19 39 6 1 tx_wal_004 0 0 0
+// wall 20 39 1 1 tx_wal_006 0 0 0
+// wall 28 39 5 1 tx_wal_004 0 0 0
+// wall 29 39 1 1 tx_wal_004 0 0 0
+// wall 30 39 1 1 tx_wal_004 0 0 0
+// wall 49 39 1 1 tx_wal_004 0 0 0
+// wall 0 40 1 1 tx_wal_004 0 0 0
+// wall 8 40 6 1 tx_wal_004 0 0 0
+// wall 9 40 1 1 tx_wal_004 0 0 0
+// wall 19 40 1 1 tx_wal_004 0 0 0
+// wall 20 40 1 1 tx_wal_004 0 0 0
+// wall 29 40 5 1 tx_wal_004 0 0 0
+// wall 30 40 1 1 tx_wal_004 0 0 0
+// wall 31 40 5 1 tx_wal_004 0 0 0
+// wall 39 40 1 1 tx_wal_004 0 0 0
+// wall 49 40 1 1 tx_wal_004 0 0 0
+// wall 0 41 1 1 tx_wal_004 0 0 0
+// wall 8 41 1 1 tx_wal_004 0 0 0
+// wall 9 41 6 1 tx_wal_004 0 0 0
+// wall 19 41 1 1 tx_wal_004 0 0 0
+// wall 20 41 6 1 tx_wal_004 0 0 0
+// wall 30 41 5 1 tx_wal_004 0 0 0
+// wall 31 41 1 1 tx_wal_004 0 0 0
+// wall 39 41 1 1 tx_wal_004 0 0 0
+// wall 40 41 1 1 tx_wal_004 0 0 0
+// wall 49 41 1 1 tx_wal_004 0 0 0
+// wall 0 42 1 1 tx_wal_004 0 0 0
+// wall 7 42 6 1 tx_wal_006 0 0 0
+// wall 8 42 6 1 tx_wal_004 0 0 0
+// wall 19 42 1 1 tx_wal_004 0 0 0
+// wall 31 42 1 1 tx_wal_004 0 0 0
+// wall 39 42 5 1 tx_wal_004 0 0 0
+// wall 40 42 1 1 tx_wal_004 0 0 0
+// wall 41 42 1 1 tx_wal_004 0 0 0
+// wall 49 42 1 1 tx_wal_004 0 0 0
+// wall 0 43 1 1 tx_wal_004 0 0 0
+// wall 7 43 1 1 tx_wal_006 0 0 0
+// wall 18 43 6 1 tx_wal_004 0 0 0
+// wall 19 43 1 1 tx_wal_004 0 0 0
+// wall 31 43 1 1 tx_wal_004 0 0 0
+// wall 40 43 5 1 tx_wal_004 0 0 0
+// wall 41 43 1 1 tx_wal_004 0 0 0
+// wall 42 43 1 1 tx_wal_004 0 0 0
+// wall 49 43 1 1 tx_wal_004 0 0 0
+// wall 0 44 1 1 tx_wal_004 0 0 0
+// wall 6 44 6 1 tx_wal_004 0 0 0
+// wall 7 44 1 1 tx_wal_004 0 0 0
+// wall 18 44 1 1 tx_wal_004 0 0 0
+// wall 19 44 6 1 tx_wal_004 0 0 0
+// wall 31 44 1 1 tx_wal_004 0 0 0
+// wall 32 44 5 1 tx_wal_004 0 0 0
+// wall 41 44 5 1 tx_wal_004 0 0 0
+// wall 42 44 1 1 tx_wal_004 0 0 0
+// wall 49 44 1 1 tx_wal_004 0 0 0
+// wall 0 45 1 1 tx_wal_004 0 0 0
+// wall 6 45 1 1 tx_wal_004 0 0 0
+// wall 7 45 1 1 tx_wal_004 0 0 0
+// wall 18 45 1 1 tx_wal_004 0 0 0
+// wall 31 45 1 1 tx_wal_004 0 0 0
+// wall 32 45 1 1 tx_wal_004 0 0 0
+// wall 42 45 5 1 tx_wal_004 0 0 0
+// wall 43 45 1 1 tx_wal_004 0 0 0
+// wall 49 45 1 1 tx_wal_004 0 0 0
+// wall 0 46 1 1 tx_wal_004 0 0 0
+// wall 6 46 1 1 tx_wal_004 0 0 0
+// wall 7 46 6 1 tx_wal_004 0 0 0
+// wall 18 46 1 1 tx_wal_004 0 0 0
+// wall 31 46 5 1 tx_wal_004 0 0 0
+// wall 32 46 1 1 tx_wal_004 0 0 0
+// wall 33 46 5 1 tx_wal_004 0 0 0
+// wall 44 46 1 1 tx_wal_004 0 0 0
+// wall 45 46 1 1 tx_wal_004 0 0 0
+// wall 49 46 1 1 tx_wal_004 0 0 0
+// wall 0 47 1 1 tx_wal_004 0 0 0
+// wall 6 47 3 1 tx_steel2 0 0 1
+// wall 18 47 1 1 tx_wal_004 0 0 0
+// wall 32 47 1 1 tx_wal_004 0 0 0
+// wall 33 47 1 1 tx_wal_004 0 0 0
+// wall 44 47 5 1 tx_wal_004 0 0 0
+// wall 45 47 1 1 tx_wal_004 0 0 0
+// wall 46 47 1 1 tx_wal_004 0 0 0
+// wall 47 47 1 1 tx_wal_004 0 0 0
+// wall 49 47 1 1 tx_wal_004 0 0 0
+// wall 0 48 1 1 tx_wal_004 0 0 0
+// wall 1 48 5 1 tx_wal_004 0 0 0
+// wall 5 48 6 1 tx_wal_004 0 0 0
+// wall 6 48 1 1 tx_wal_004 0 0 0
+// wall 7 48 5 1 tx_wal_004 0 0 0
+// wall 17 48 6 1 tx_wal_004 0 0 0
+// wall 18 48 1 1 tx_wal_004 0 0 0
+// wall 19 48 5 1 tx_wal_004 0 0 0
+// wall 32 48 4 1 tx_wal_004 0 0 0
+// wall 33 48 1 1 tx_wal_004 0 0 0
+// wall 34 48 5 1 tx_wal_004 0 0 0
+// wall 45 48 4 1 tx_wal_004 0 0 0
+// wall 47 48 1 1 tx_wal_004 0 0 0
+// wall 48 48 1 1 tx_wal_004 0 0 0
+// wall 49 48 1 1 tx_wal_004 0 0 0
+// wall 0 49 1 1 tx_wal_004 0 0 0
+// wall 1 49 1 1 tx_wal_004 0 0 0
+// wall 2 49 1 1 tx_wal_004 0 0 0
+// wall 3 49 1 1 tx_wal_004 0 0 0
+// wall 4 49 1 1 tx_wal_004 0 0 0
+// wall 5 49 1 1 tx_wal_004 0 0 0
+// wall 6 49 1 1 tx_wal_004 0 0 0
+// wall 7 49 1 1 tx_wal_004 0 0 0
+// wall 8 49 1 1 tx_wal_004 0 0 0
+// wall 9 49 1 1 tx_wal_004 0 0 0
+// wall 10 49 1 1 tx_wal_004 0 0 0
+// wall 11 49 1 1 tx_wal_004 0 0 0
+// wall 12 49 1 1 tx_wal_004 0 0 0
+// wall 13 49 1 1 tx_wal_004 0 0 0
+// wall 14 49 1 1 tx_wal_004 0 0 0
+// wall 15 49 1 1 tx_wal_004 0 0 0
+// wall 16 49 1 1 tx_wal_004 0 0 0
+// wall 17 49 1 1 tx_wal_004 0 0 0
+// wall 18 49 1 1 tx_wal_004 0 0 0
+// wall 19 49 1 1 tx_wal_004 0 0 0
+// wall 20 49 1 1 tx_wal_004 0 0 0
+// wall 21 49 1 1 tx_wal_004 0 0 0
+// wall 22 49 1 1 tx_wal_004 0 0 0
+// wall 23 49 1 1 tx_wal_004 0 0 0
+// wall 24 49 1 1 tx_wal_004 0 0 0
+// wall 25 49 1 1 tx_wal_004 0 0 0
+// wall 26 49 1 1 tx_wal_004 0 0 0
+// wall 27 49 1 1 tx_wal_004 0 0 0
+// wall 28 49 1 1 tx_wal_004 0 0 0
+// wall 29 49 1 1 tx_wal_004 0 0 0
+// wall 30 49 1 1 tx_wal_004 0 0 0
+// wall 31 49 1 1 tx_wal_004 0 0 0
+// wall 32 49 1 1 tx_wal_004 0 0 0
+// wall 33 49 1 1 tx_wal_004 0 0 0
+// wall 34 49 1 1 tx_wal_004 0 0 0
+// wall 35 49 1 1 tx_wal_004 0 0 0
+// wall 36 49 1 1 tx_wal_004 0 0 0
+// wall 37 49 1 1 tx_wal_004 0 0 0
+// wall 38 49 1 1 tx_wal_004 0 0 0
+// wall 39 49 1 1 tx_wal_004 0 0 0
+// wall 40 49 1 1 tx_wal_004 0 0 0
+// wall 41 49 1 1 tx_wal_004 0 0 0
+// wall 42 49 1 1 tx_wal_004 0 0 0
+// wall 43 49 1 1 tx_wal_004 0 0 0
+// wall 44 49 1 1 tx_wal_004 0 0 0
+// wall 45 49 1 1 tx_wal_004 0 0 0
+// wall 46 49 1 1 tx_wal_004 0 0 0
+// wall 47 49 1 1 tx_wal_004 0 0 0
+// wall 48 49 1 1 tx_wal_004 0 0 0
+// wall 49 49 1 1 tx_wal_004 0 0 0
 // floor 33 1 tx_steel
 // floor 34 1 tx_steel
 // floor 35 1 tx_steel
@@ -2031,56 +2031,56 @@ static inline void level_append_exported_entities_level1(YrContext *ctx) {
 }
 
 static const YrWall level_map_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_005, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_005, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_steel, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
-        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_026, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wood, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_016, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_016, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_brick, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_brick, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel2, .kind=YR_WK_THIN_V,.slide_x=0,.slide_y=0,.transparent=1), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel2, .kind=YR_WK_THIN_V,.slide_x=0,.slide_y=0,.transparent=1), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_lab, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel2, .kind=YR_WK_THIN_V,.slide_x=0,.slide_y=0,.transparent=1), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_grass, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_005, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_005, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_steel, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_tile, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_tile, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_006, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_steel2, .kind=YR_WK_THIN_V,.slide_x=0,.slide_y=0,.transparent=1), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D2,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_D1,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_THIN_X,.slide_x=0,.slide_y=0,.transparent=0), YrEmptyWall(), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
+        YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0), YrTexturedWall(tx_wal_004, .kind=YR_WK_FULL,.slide_x=0,.slide_y=0,.transparent=0),
 };
 
 static const uint8_t level_map_floor_level1[YR_MAP_ROWS_LEVEL1 * YR_MAP_COLS_LEVEL1] = {

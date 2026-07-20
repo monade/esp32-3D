@@ -8,24 +8,23 @@
 
 #define COLS 20
 #define ROWS 20
-// 0 null, 1-127 texture_id, 128-255 color_id
 static YrWall walls[ROWS][COLS] = {0};
 
 void init_map() {
     // border
     for (int i = 0; i < ROWS; i++) {
-        walls[i][0] = YrColoredWall(YR_GREEN);
-        walls[i][COLS - 1] = YrColoredWall(YR_GREEN);
+        walls[i][0] = YrColoredWall(YR_GREEN, .kind=YR_WK_FULL);
+        walls[i][COLS - 1] = YrColoredWall(YR_GREEN, .kind=YR_WK_FULL);
     }
     for (int j = 0; j < COLS; j++) {
-        walls[0][j] = YrColoredWall(YR_GREEN);
-        walls[ROWS - 1][j] = YrColoredWall(YR_GREEN);
+        walls[0][j] = YrColoredWall(YR_GREEN, .kind=YR_WK_FULL);
+        walls[ROWS - 1][j] = YrColoredWall(YR_GREEN, .kind=YR_WK_FULL);
     }
 
     // inner blocks
-    walls[7][7] = YrColoredWall(YR_RED);
-    walls[8][8] = YrColoredWall(YR_BLUE);
-    walls[9][9] = YrColoredWall(YR_YELLOW);
+    walls[7][7] = YrColoredWall(YR_RED, .kind=YR_WK_FULL);
+    walls[8][8] = YrColoredWall(YR_BLUE, .kind=YR_WK_FULL);
+    walls[9][9] = YrColoredWall(YR_YELLOW, .kind=YR_WK_FULL);
 }
 
 void move_player(Context *ctx) {
@@ -59,6 +58,6 @@ void yr_init_game(Context *ctx) {
 }
 
 void yr_update_game(Context *ctx) {
-    draw_game();
+    draw_game(ctx);
     move_player(ctx);
 }

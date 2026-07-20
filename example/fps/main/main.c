@@ -633,8 +633,8 @@ void yr_update_game(Context *ctx) {
         }
     } break;
     case GAME_LEVEL1: {
-        draw_game();
         move_player(ctx);
+        draw_game(ctx);
 
         check_monster_spawns(ctx);
 
@@ -659,7 +659,7 @@ void yr_update_game(Context *ctx) {
         }
     } break;
     case GAME_LEVEL2: {
-        draw_game();
+        draw_game(ctx);
         move_player(ctx);
 
         if (is_key_down(YR_KEY_SPACE)) {

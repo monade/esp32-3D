@@ -169,7 +169,7 @@ void yr_update_game(Context *ctx) {
     if (game_state == 0) {
         draw_menu(ctx);
     } else {
-        draw_game();
+        draw_game(ctx);
         draw_hud(ctx);
         move_player(ctx);
         if (g_show_fps) print_fps();

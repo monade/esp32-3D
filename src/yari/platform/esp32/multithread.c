@@ -17,8 +17,6 @@ static bool yr_render_worker_failed = false;
 static void (*yr_par_job)(void *ctx, int start, int end) = NULL;
 static void *yr_par_ctx = NULL;
 static int yr_par_mid = 0;
-static YrEntity **yr_par_entities = NULL;
-static size_t yr_par_entity_count = 0;
 
 static void yr_render_worker(void *arg) {
     (void)arg;
@@ -64,9 +62,22 @@ void yr_run_split(void (*job)(void *ctx, int start, int end), void *ctx, int tot
     }
 }
 
-// Draws background, walls and sprites for a range of screen columns. Units
-// are ray_res-wide columns; the last unit absorbs any screen-width remainder.
-static void yr_draw_half_job(void *_ctx, int start, int end) {
+// Guards ctx->_sprites appends made by yr_raycast_walls (see yari.c), which
+// runs concurrently on both cores during yr_draw_walls_half_job below - a
+// plain yr_da_append (realloc included) is not safe to call from two cores
+// on the same buffer without this. The critical section is just the append
+// itself (a bounds check, maybe a realloc, one struct copy), so contention
+// is negligible even when both cores hit a transparent wall in the same
+// frame.
+static portMUX_TYPE yr_sprites_mux = portMUX_INITIALIZER_UNLOCKED;
+void yr__sprites_lock(void) { portENTER_CRITICAL(&yr_sprites_mux); }
+void yr__sprites_unlock(void) { portEXIT_CRITICAL(&yr_sprites_mux); }
+
+// Draws background and casts walls for a range of screen columns. Units are
+// ray_res-wide columns; the last unit absorbs any screen-width remainder.
+// Transparent-wall hits get appended straight into ctx->_sprites, safely
+// shared between the two halves via yr__sprites_lock/unlock above.
+static void yr_draw_walls_half_job(void *_ctx, int start, int end) {
     YrContext *ctx = (YrContext *)_ctx;
     int rr = ctx->ray_res;
     int total = ctx->screen_width / rr;
@@ -74,19 +85,33 @@ static void yr_draw_half_job(void *_ctx, int start, int end) {
     int x1 = (end == total) ? ctx->screen_width : end * rr;
     yr__draw_background_range(ctx, x0, x1);
     yr__draw_walls_range(ctx, x0, x1);
-    yr__draw_sprites_range(ctx, yr_par_entities, yr_par_entity_count, x0, x1);
+}
+
+// Draws the already-sorted sprite list for a range of screen columns. Only
+// safe to run in parallel because by this point ctx->_sprites is fully
+// built and read-only - each half only ever writes its own disjoint
+// framebuffer columns.
+static void yr_draw_sprites_half_job(void *_ctx, int start, int end) {
+    YrContext *ctx = (YrContext *)_ctx;
+    int rr = ctx->ray_res;
+    int total = ctx->screen_width / rr;
+    int x0 = start * rr;
+    int x1 = (end == total) ? ctx->screen_width : end * rr;
+    yr__draw_sprites_range(ctx, x0, x1);
 }
 
 void yr__draw_game_multithread(YrContext *ctx) {
-    YrEntity **entities = NULL;
-    size_t entity_count = yr__entities_prep(ctx, &entities);
-    yr_par_entities = entities;
-    yr_par_entity_count = entity_count;
-    yr_run_split(yr_draw_half_job, ctx, ctx->screen_width / ctx->ray_res);
-    free(entities);
+    int total = ctx->screen_width / ctx->ray_res;
+
+    yr_run_split(yr_draw_walls_half_job, ctx, total);
+
+    yr__entities_prep(ctx);
+
+    yr_run_split(yr_draw_sprites_half_job, ctx, total);
+
+    yr_da_shrink(&ctx->_sprites);
+    ctx->_sprites.length = 0;
     yr__update_entities(ctx);
 }
 
 #endif
-
-

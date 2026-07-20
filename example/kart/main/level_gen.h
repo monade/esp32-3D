@@ -1,6 +1,6 @@
 // File generated automatically by map_builder.c. DO NOT EDIT.
 // MAP_BUILDER_STATE_BEGIN
-// version 3
+// version 4
 // player_collision 0.300000012 0xFFFFFFFB
 // layer ENTITY 1
 // layer DROP 2

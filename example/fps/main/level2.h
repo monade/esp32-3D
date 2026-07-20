@@ -1,6 +1,6 @@
 // File generated automatically by map_builder.c. DO NOT EDIT.
 // MAP_BUILDER_STATE_BEGIN
-// version 3
+// version 4
 // size 50 50
 // surface floor tx_brick
 // surface ceil NULL_ASSET

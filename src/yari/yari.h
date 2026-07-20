@@ -60,7 +60,10 @@ enum yr_wall_kind {
 };
 typedef struct {
     uint8_t kind;
-    bool textured;
+    struct {
+        uint8_t textured : 1;
+        uint8_t transparent : 1;
+    };
     union {
         uint16_t texture_id;
         yr_pixel_t color;
@@ -83,6 +86,30 @@ typedef struct {
     size_t ceil_texture;
 } YrMap;
 
+enum yr_render_obj_type {
+    YR_RO_ENTITY,
+    YR_RO_WALL,
+};
+
+typedef struct {
+    uint8_t obj_type;
+    float dist;
+    union {
+        struct {
+            int texture_x;
+            int slice_x;
+            int texture_id;
+        };
+        YrEntity * entity;
+    };
+} YrRenderSprite;
+
+typedef struct {
+    YrRenderSprite *data;
+    size_t length;
+    size_t capacity;
+} YrRenderBuffer;
+
 struct YrContext {
     YrCamera camera;
     int screen_width;
@@ -91,6 +118,7 @@ struct YrContext {
     unsigned int target_fps;
     YrMap map;
     YrEntityMap entities;
+    YrRenderBuffer _sprites;
     unsigned int ray_res;
     float *zbuffer;
     const yr_pixel_t **assets_map;
@@ -116,9 +144,9 @@ void yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x);
 // box corners directly: unless slide_x and slide_y have equal magnitude
 // that box isn't square and the corner-to-corner line skews off 45 degrees.
 bool yr__thin_diagonal_hit(Vector2 pos, Vector2 dir, float ex0, float ey0, float ex1, float ey1, float *out_t, float *out_s, bool *out_side);
-void yr__wall_recede_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
-void yr__wall_thin_bar_box(YrWall tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
-void yr__wall_diagonal_endpoints(YrWall tile, size_t cell_x, size_t cell_y, bool slash, Vector2 *out_a, Vector2 *out_b);
+void yr__wall_recede_box(const YrWall *tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
+void yr__wall_thin_bar_box(const YrWall *tile, size_t cell_x, size_t cell_y, float *x0, float *x1, float *y0, float *y1);
+void yr__wall_diagonal_endpoints(const YrWall *tile, size_t cell_x, size_t cell_y, bool slash, Vector2 *out_a, Vector2 *out_b);
 
 void yr_draw_walls(YrContext *ctx);
 
@@ -126,7 +154,7 @@ void yr_draw_background(YrContext *ctx);
 
 void yr_draw_entities(YrContext *ctx);
 
-void yr_draw_game();
+void yr_draw_game(YrContext *ctx);
 
 size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data);
 #define yr_create_entity(state, e) yr_create_entity_ex(state, e, NULL)
@@ -146,12 +174,17 @@ void yr__free_game();
 
 void yr__draw_walls_range(YrContext *ctx, int x_start, int x_end);
 void yr__draw_background_range(YrContext *ctx, int x_start, int x_end);
-void yr__draw_sprites_range( YrContext *ctx, YrEntity **entities, size_t active_entities_count, int x_start, int x_end);
-size_t yr__entities_prep(YrContext *ctx, YrEntity ***out_entities);
+void yr__draw_sprites_range( YrContext *ctx, int x_start, int x_end);
+size_t yr__entities_prep(YrContext *ctx);
 void yr__update_entities(YrContext *ctx);
 
 #ifdef ESP32_MULTITHREAD
-void yr__draw_game_multithread();
+void yr__draw_game_multithread(YrContext *ctx);
+void yr__sprites_lock(void);
+void yr__sprites_unlock(void);
+#else
+static inline void yr__sprites_lock(void) {}
+static inline void yr__sprites_unlock(void) {}
 #endif
 
 #include "physics.h"

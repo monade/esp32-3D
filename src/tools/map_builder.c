@@ -58,7 +58,7 @@
 #define NO_SELECTION -1
 #define MAP_BUILDER_STATE_BEGIN "MAP_BUILDER_STATE_BEGIN"
 #define MAP_BUILDER_STATE_END "MAP_BUILDER_STATE_END"
-#define MAP_BUILDER_STATE_VERSION 3
+#define MAP_BUILDER_STATE_VERSION 4
 #define LEVEL_GEN_FILE_NAME "level_gen.h"
 #define ANIM_NAME_SIZE 64
 #define MAX_ANIM_FRAMES 64
@@ -173,6 +173,7 @@ typedef enum {
 typedef struct {
     int kind; // WallKind; EMPTY is the one true "no wall here" check
     bool textured;
+    bool transparent; // meaningful only when textured - see yr_raycast_walls in src/yari/yari.c
     int asset_index; // meaningful only when textured
     Color color;      // meaningful only when !textured - kept separate from
                        // asset_index (not unioned) so toggling `textured`
@@ -363,6 +364,7 @@ typedef struct {
 
     int brush_wall_kind; // WallKind; UI only ever sets FULL/THIN_H/THIN_V, never WALL_KIND_EMPTY (Delete owns that)
     bool brush_wall_textured;
+    bool brush_wall_transparent;
     Color brush_wall_color;
     int brush_wall_slide_x; // -128..127, clamped on every write into a cell
     int brush_wall_slide_y;
@@ -856,6 +858,7 @@ static WallCell current_brush_wall_cell(const App *app) {
     WallCell cell = {0};
     cell.kind = app->brush_wall_kind;
     cell.textured = app->brush_wall_textured;
+    cell.transparent = app->brush_wall_transparent;
     cell.asset_index = app->selected_asset;
     cell.color = app->brush_wall_color;
     cell.slide_x = clamp_int(app->brush_wall_slide_x, -128, 127);
@@ -1823,6 +1826,7 @@ static void load_wall_fields_into_editor(App *app, int x, int y) {
     app->editing_wall_y = y;
     app->brush_wall_kind = cell->kind;
     app->brush_wall_textured = cell->textured;
+    app->brush_wall_transparent = cell->transparent;
     if (cell->textured) app->selected_asset = cell->asset_index;
     else app->brush_wall_color = cell->color;
     app->brush_wall_slide_x = cell->slide_x;
@@ -2680,6 +2684,16 @@ static void apply_selected_wall_textured_to_edit(App *app) {
     }
 }
 
+static void apply_selected_wall_transparent_to_edit(App *app) {
+    prune_invalid_selection(app);
+    if (app->selection_kind != SELECTION_WALL) return;
+    for (size_t i = 0; i < app->selected_walls.length; i++) {
+        SelectedWall wall = app->selected_walls.data[i];
+        WallCell *cell = wall_grid_cell(&app->map, wall.x, wall.y);
+        if (cell && cell->kind != WALL_KIND_EMPTY) cell->transparent = app->brush_wall_transparent;
+    }
+}
+
 static void apply_selected_wall_color_to_edit(App *app) {
     prune_invalid_selection(app);
     if (app->selection_kind != SELECTION_WALL) return;
@@ -2733,6 +2747,7 @@ static void sync_selected_wall_from_editor(App *app) {
     cell->textured = app->brush_wall_textured;
     if (app->brush_wall_textured) {
         if (app->selected_asset >= 0 && app->selected_asset < (int)app->assets.length) cell->asset_index = app->selected_asset;
+        cell->transparent = app->brush_wall_transparent;
     } else {
         cell->color = app->brush_wall_color;
     }
@@ -3340,13 +3355,15 @@ static void append_level_state(String *out, const App *app) {
             const WallCell *cell = &app->map.cells[y * app->map.cols + x];
             if (cell->kind == WALL_KIND_EMPTY) continue;
             if (cell->textured) {
-                str_appendf(out, "// wall %d %d %d 1 %s %d %d\n", x, y, cell->kind,
+                str_appendf(out, "// wall %d %d %d 1 %s %d %d %d\n", x, y, cell->kind,
                     asset_symbol_or_null(app, cell->asset_index),
-                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127));
+                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127),
+                    cell->transparent ? 1 : 0);
             } else {
-                str_appendf(out, "// wall %d %d %d 0 0x%08X %d %d\n", x, y, cell->kind,
+                str_appendf(out, "// wall %d %d %d 0 0x%08X %d %d %d\n", x, y, cell->kind,
                     color_to_yr_pixel(cell->color),
-                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127));
+                    clamp_int(cell->slide_x, -128, 127), clamp_int(cell->slide_y, -128, 127),
+                    cell->transparent ? 1 : 0);
             }
         }
     }
@@ -3666,12 +3683,18 @@ static bool parse_state_line(App *app, LoadedLevel *loaded, const char *payload,
     int textured_int = 0;
     int slide_x = 0;
     int slide_y = 0;
+    int transparent_int = 0;
     char token[128] = {0};
-    if (sscanf(payload, "wall %d %d %d %d %127s %d %d", &x, &y, &kind, &textured_int, token, &slide_x, &slide_y) == 7) {
+    // Accept both the current 8-field format and the pre-transparent 7-field
+    // one (older saved levels), defaulting transparent to false for the latter.
+    int fields = sscanf(payload, "wall %d %d %d %d %127s %d %d %d", &x, &y, &kind, &textured_int, token, &slide_x, &slide_y, &transparent_int);
+    if (fields != 8) fields = sscanf(payload, "wall %d %d %d %d %127s %d %d", &x, &y, &kind, &textured_int, token, &slide_x, &slide_y);
+    if (fields == 8 || fields == 7) {
         if (!loaded->has_size || !wall_grid_inside(&loaded->map, x, y)) return false;
         WallCell cell = {0};
         cell.kind = clamp_int(kind, WALL_KIND_EMPTY, WALL_KIND_THIN_D2);
         cell.textured = textured_int != 0;
+        cell.transparent = fields == 8 && transparent_int != 0;
         cell.slide_x = clamp_int(slide_x, -128, 127);
         cell.slide_y = clamp_int(slide_y, -128, 127);
         if (cell.textured) {
@@ -4147,8 +4170,8 @@ static void append_wall_cell_literal(String *out, const App *app, const WallCell
     int slide_x = clamp_int(cell->slide_x, -128, 127);
     int slide_y = clamp_int(cell->slide_y, -128, 127);
     if (cell->textured) {
-        str_appendf(out, "YrTexturedWall(%s, .kind=%s,.slide_x=%d,.slide_y=%d)",
-            asset_symbol_or_null(app, cell->asset_index), wall_kind_symbol(cell->kind), slide_x, slide_y);
+        str_appendf(out, "YrTexturedWall(%s, .kind=%s,.slide_x=%d,.slide_y=%d,.transparent=%d)",
+            asset_symbol_or_null(app, cell->asset_index), wall_kind_symbol(cell->kind), slide_x, slide_y, cell->transparent ? 1 : 0);
     } else {
         // YR_COLOR(r,g,b) (src/yari/colors.h) packs a normalized 0..1 color
         // into whichever yr_pixel_t format the level's *consumer* is built
@@ -6625,6 +6648,7 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         bool multi_wall_edit = app->selection_kind == SELECTION_WALL && app->selected_walls.length > 1;
         int wall_kind_before = app->brush_wall_kind;
         bool wall_textured_before = app->brush_wall_textured;
+        bool wall_transparent_before = app->brush_wall_transparent;
         Color wall_color_before = app->brush_wall_color;
         int wall_slide_x_before = app->brush_wall_slide_x;
         int wall_slide_y_before = app->brush_wall_slide_y;
@@ -6671,6 +6695,15 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
         if (app->brush_wall_textured != wall_textured_before) {
             push_undo_snapshot(app, "change %s textured", wall_edit_subject(app));
             if (multi_wall_edit) apply_selected_wall_textured_to_edit(app);
+        }
+
+        // Only meaningful for textured walls - see yr_raycast_walls in src/yari/yari.c.
+        if (app->brush_wall_textured) {
+            GuiCheckBox((Rectangle){x + half_w + gap, y, 18.0f, 18.0f}, "Transparent", &app->brush_wall_transparent);
+            if (app->brush_wall_transparent != wall_transparent_before) {
+                push_undo_snapshot(app, "change %s transparent", wall_edit_subject(app));
+                if (multi_wall_edit) apply_selected_wall_transparent_to_edit(app);
+            }
         }
         y += row_h;
 
@@ -6913,6 +6946,7 @@ static void init_app(App *app, const char *asset_dir, const char *output_path, c
     // as empty.
     app->brush_wall_kind = WALL_KIND_FULL;
     app->brush_wall_textured = true;
+    app->brush_wall_transparent = false;
     app->brush_wall_color = WHITE;
     app->brush_wall_slide_x = 0;
     app->brush_wall_slide_y = 0;

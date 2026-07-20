@@ -27,16 +27,16 @@ static float dist_point_segment(Vector2 p, Vector2 a, Vector2 b) {
 // exact model the renderer uses (yr_raycast_walls in yari.c) rather than
 // just "is this cell non-empty" - a receded/thin/diagonal wall only
 // occupies part of its cell.
-static bool point_in_wall(YrWall tile, size_t cell_x, size_t cell_y, Vector2 point) {
-    if (tile.kind == YR_WK_EMPTY) return false;
+static bool point_in_wall(const YrWall *tile, size_t cell_x, size_t cell_y, Vector2 point) {
+    if (tile->kind == YR_WK_EMPTY) return false;
 
-    if (tile.kind == YR_WK_THIN_D1 || tile.kind == YR_WK_THIN_D2 || tile.kind == YR_WK_THIN_X) {
+    if (tile->kind == YR_WK_THIN_D1 || tile->kind == YR_WK_THIN_D2 || tile->kind == YR_WK_THIN_X) {
         Vector2 a, b;
-        if (tile.kind == YR_WK_THIN_D1 || tile.kind == YR_WK_THIN_X) {
+        if (tile->kind == YR_WK_THIN_D1 || tile->kind == YR_WK_THIN_X) {
             yr__wall_diagonal_endpoints(tile, cell_x, cell_y, false, &a, &b);
             if (dist_point_segment(point, a, b) <= THIN_WALL_HALF_THICKNESS) return true;
         }
-        if (tile.kind == YR_WK_THIN_D2 || tile.kind == YR_WK_THIN_X) {
+        if (tile->kind == YR_WK_THIN_D2 || tile->kind == YR_WK_THIN_X) {
             yr__wall_diagonal_endpoints(tile, cell_x, cell_y, true, &a, &b);
             if (dist_point_segment(point, a, b) <= THIN_WALL_HALF_THICKNESS) return true;
         }
@@ -44,9 +44,9 @@ static bool point_in_wall(YrWall tile, size_t cell_x, size_t cell_y, Vector2 poi
     }
 
     float x0, x1, y0, y1;
-    if (tile.kind == YR_WK_THIN_H || tile.kind == YR_WK_THIN_V) {
+    if (tile->kind == YR_WK_THIN_H || tile->kind == YR_WK_THIN_V) {
         yr__wall_thin_bar_box(tile, cell_x, cell_y, &x0, &x1, &y0, &y1);
-        if (tile.kind == YR_WK_THIN_H) { y0 -= THIN_WALL_HALF_THICKNESS; y1 += THIN_WALL_HALF_THICKNESS; }
+        if (tile->kind == YR_WK_THIN_H) { y0 -= THIN_WALL_HALF_THICKNESS; y1 += THIN_WALL_HALF_THICKNESS; }
         else { x0 -= THIN_WALL_HALF_THICKNESS; x1 += THIN_WALL_HALF_THICKNESS; }
     } else {
         yr__wall_recede_box(tile, cell_x, cell_y, &x0, &x1, &y0, &y1);
@@ -58,17 +58,17 @@ static bool point_in_wall(YrWall tile, size_t cell_x, size_t cell_y, Vector2 poi
 // the ray DDA below so it only stops at a cell once the ray actually
 // crosses that wall's (possibly receded/thin/diagonal) solid geometry,
 // rather than at the raw grid boundary.
-static bool ray_hits_wall(YrWall tile, size_t cell_x, size_t cell_y, Vector2 origin, Vector2 dir, float *out_t) {
-    if (tile.kind == YR_WK_THIN_D1 || tile.kind == YR_WK_THIN_D2 || tile.kind == YR_WK_THIN_X) {
+static bool ray_hits_wall(const YrWall *tile, size_t cell_x, size_t cell_y, Vector2 origin, Vector2 dir, float *out_t) {
+    if (tile->kind == YR_WK_THIN_D1 || tile->kind == YR_WK_THIN_D2 || tile->kind == YR_WK_THIN_X) {
         float best_t = -1.0f;
         float t, s;
         bool side;
         Vector2 a, b;
-        if (tile.kind == YR_WK_THIN_D1 || tile.kind == YR_WK_THIN_X) {
+        if (tile->kind == YR_WK_THIN_D1 || tile->kind == YR_WK_THIN_X) {
             yr__wall_diagonal_endpoints(tile, cell_x, cell_y, false, &a, &b);
             if (yr__thin_diagonal_hit(origin, dir, a.x, a.y, b.x, b.y, &t, &s, &side) && (best_t < 0.0f || t < best_t)) best_t = t;
         }
-        if (tile.kind == YR_WK_THIN_D2 || tile.kind == YR_WK_THIN_X) {
+        if (tile->kind == YR_WK_THIN_D2 || tile->kind == YR_WK_THIN_X) {
             yr__wall_diagonal_endpoints(tile, cell_x, cell_y, true, &a, &b);
             if (yr__thin_diagonal_hit(origin, dir, a.x, a.y, b.x, b.y, &t, &s, &side) && (best_t < 0.0f || t < best_t)) best_t = t;
         }
@@ -78,7 +78,7 @@ static bool ray_hits_wall(YrWall tile, size_t cell_x, size_t cell_y, Vector2 ori
     }
 
     float x0, x1, y0, y1;
-    if (tile.kind == YR_WK_THIN_H || tile.kind == YR_WK_THIN_V) {
+    if (tile->kind == YR_WK_THIN_H || tile->kind == YR_WK_THIN_V) {
         yr__wall_thin_bar_box(tile, cell_x, cell_y, &x0, &x1, &y0, &y1);
     } else {
         yr__wall_recede_box(tile, cell_x, cell_y, &x0, &x1, &y0, &y1);
@@ -108,12 +108,12 @@ static YrCollisionInfo check_wall_at(YrContext *ctx, Vector2 point) {
     size_t cell_y = (size_t)point.y;
     if (cell_x >= ctx->map.cols || cell_y >= ctx->map.rows) return info;
 
-    YrWall tile = ctx->map.walls[cell_y * ctx->map.cols + cell_x];
+    YrWall *tile = &ctx->map.walls[cell_y * ctx->map.cols + cell_x];
     if (point_in_wall(tile, cell_x, cell_y, point)) {
         info.type = YR_COLLISION_WALL;
         info.cell_x = (int)cell_x;
         info.cell_y = (int)cell_y;
-        info.tile = tile;
+        info.tile = *tile;
     }
     return info;
 }
@@ -176,8 +176,8 @@ static YrCollisionInfo check_wall_ray_collision(YrContext *ctx, Vector2 origin, 
             if (map_x >= ctx->map.cols || map_y >= ctx->map.rows) break;
         }
 
-        YrWall tile = ctx->map.walls[map_y * ctx->map.cols + map_x];
-        if (tile.kind == YR_WK_EMPTY) continue;
+        YrWall *tile = &ctx->map.walls[map_y * ctx->map.cols + map_x];
+        if (tile->kind == YR_WK_EMPTY) continue;
 
         float t;
         if (ray_hits_wall(tile, map_x, map_y, origin, dir, &t) && t <= max_dist) {
@@ -185,7 +185,7 @@ static YrCollisionInfo check_wall_ray_collision(YrContext *ctx, Vector2 origin, 
             info.type = YR_COLLISION_WALL;
             info.cell_x = (int)map_x;
             info.cell_y = (int)map_y;
-            info.tile = tile;
+            info.tile = *tile;
             return info;
         }
     }
@@ -308,10 +308,23 @@ Vector2 yr_slide_collision(YrContext *ctx, Vector2 from, Vector2 to, YrCollision
     return yr_slide_collision_out_radius(ctx, from, to, hit, threshold, collision_mask, 0);
 }
 
+static bool path_crosses_wall(YrContext *ctx, Vector2 from, Vector2 candidate, float threshold) {
+    Vector2 delta = Vector2Subtract(candidate, from);
+    float dist = Vector2Length(delta);
+    if (dist <= RAY_EPSILON) return false;
+    Vector2 dir = Vector2Scale(delta, 1.0f / dist);
+    for (float t = THIN_WALL_HALF_THICKNESS; t < dist; t += THIN_WALL_HALF_THICKNESS) {
+        Vector2 p = Vector2Add(from, Vector2Scale(dir, t));
+        if (yr_check_collision_out_radius(ctx, p, threshold, YR_CMSK_WALL, 0.0f).type != YR_COLLISION_NONE) return true;
+    }
+    return false;
+}
+
 Vector2 yr_slide_collision_out_radius(YrContext *ctx, Vector2 from, Vector2 to, YrCollisionInfo *hit, float threshold, uint32_t collision_mask, float radius) {
+    bool check_tunneling = (collision_mask & YR_CMSK_WALL) != 0;
     YrCollisionInfo info = yr_check_collision_out_radius(ctx, to, threshold, collision_mask, radius);
     if (hit) *hit = info;
-    if (info.type == YR_COLLISION_NONE) return to;
+    if (info.type == YR_COLLISION_NONE && !(check_tunneling && path_crosses_wall(ctx, from, to, threshold))) return to;
 
     // A diagonal wall's natural slide direction is along its own 45-degree
     // line, not axis-aligned - trying only the axis-aligned candidates below
@@ -328,21 +341,24 @@ Vector2 yr_slide_collision_out_radius(YrContext *ctx, Vector2 from, Vector2 to, 
 
         for (int i = 0; i < slash_count; i++) {
             Vector2 a, b;
-            yr__wall_diagonal_endpoints(info.tile, (size_t)info.cell_x, (size_t)info.cell_y, slashes[i], &a, &b);
+            yr__wall_diagonal_endpoints(&info.tile, (size_t)info.cell_x, (size_t)info.cell_y, slashes[i], &a, &b);
             Vector2 tangent = Vector2Normalize(Vector2Subtract(b, a));
             Vector2 candidate = Vector2Add(from, Vector2Scale(tangent, Vector2DotProduct(delta, tangent)));
-            if (yr_check_collision_out_radius(ctx, candidate, threshold, collision_mask, radius).type == YR_COLLISION_NONE) {
+            if (yr_check_collision_out_radius(ctx, candidate, threshold, collision_mask, radius).type == YR_COLLISION_NONE &&
+                !(check_tunneling && path_crosses_wall(ctx, from, candidate, threshold))) {
                 return candidate;
             }
         }
     }
 
     Vector2 slide_x = { to.x, from.y };
-    if (yr_check_collision_out_radius(ctx, slide_x, threshold, collision_mask, radius).type == YR_COLLISION_NONE) {
+    if (yr_check_collision_out_radius(ctx, slide_x, threshold, collision_mask, radius).type == YR_COLLISION_NONE &&
+        !(check_tunneling && path_crosses_wall(ctx, from, slide_x, threshold))) {
         return slide_x;
     }
     Vector2 slide_y = { from.x, to.y };
-    if (yr_check_collision_out_radius(ctx, slide_y, threshold, collision_mask, radius).type == YR_COLLISION_NONE) {
+    if (yr_check_collision_out_radius(ctx, slide_y, threshold, collision_mask, radius).type == YR_COLLISION_NONE &&
+        !(check_tunneling && path_crosses_wall(ctx, from, slide_y, threshold))) {
         return slide_y;
     }
     return from;
