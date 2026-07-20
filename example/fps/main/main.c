@@ -601,9 +601,7 @@ void reset_game(Context *ctx) {
     game.player.bob_phase = 0.0f;
     game.player.bob_horizon = 0.0f;
     memset(&boss_spawn_animation, 0, sizeof(boss_spawn_animation));
-    while (ctx->entities.length > 0) {
-        remove_entity(ctx, ctx->entities.data[0].key);
-    }
+    clear_entities(ctx);
 }
 
 // Main game functions

@@ -775,7 +775,7 @@ void yr__update_game() {
 
 void yr__free_game() {
     free(yr_context.zbuffer);
-    yr_da_free(&yr_context.entities);
+    yr_hm_free(&yr_context.entities);
     yr_da_free(&yr_context._sprites);
 }
 
@@ -792,6 +792,14 @@ void yr_remove_entity(YrContext *ctx, size_t id) {
     if (e->cleanup) e->cleanup(e);
     yr_da_free(&e->animation);
     yr_hm_remove(&ctx->entities, id);
+}
+
+void yr_clear_entities(YrContext *ctx) {
+    yr_foreach(&ctx->entities, kv) {
+        if (kv->value.cleanup) kv->value.cleanup(&kv->value);
+        yr_da_free(&kv->value.animation);
+    }
+    yr_hm_free(&ctx->entities);
 }
 
 size_t yr_get_entity_id(YrEntity *e) {

@@ -4314,6 +4314,9 @@ static bool write_level_header(App *app) {
     for (size_t i = 0; i < app->triggers.length; i++) {
         const Trigger *trig = &app->triggers.data[i];
         bool gated = trig->cooldown > 0.0f || trig->once;
+        if (trig->once) {
+            str_appendf(&out, "static bool trigger_%s%s_triggered = false;\n", trig->name, fn_suffix);
+        }
         str_appendf(&out, "static inline bool trigger_%s%s(Vector2 pos) {\n", trig->name, fn_suffix);
         switch (trig->shape) {
             case TRIGGER_RECT:
@@ -4367,15 +4370,14 @@ static bool write_level_header(App *app) {
             str_append(&out, "    return inside;\n");
         } else {
             str_append(&out, "    if (!inside) return false;\n");
-            if (trig->once) str_append(&out, "    static bool triggered = false;\n");
-            if (trig->once) str_append(&out, "    if (triggered) return false;\n");
+            if (trig->once) str_appendf(&out, "    if (trigger_%s%s_triggered) return false;\n", trig->name, fn_suffix);
             if (trig->cooldown > 0.0f) {
                 str_appendf(&out, "    static YrTimer timer_trigger_%s%s = {0};\n", trig->name, fn_suffix);
                 str_appendf(&out, "    if (!yr_timer_loop(&timer_trigger_%s%s, ", trig->name, fn_suffix);
                 append_float_literal(&out, trig->cooldown);
                 str_append(&out, ")) return false;\n");
             }
-            if (trig->once) str_append(&out, "    triggered = true;\n");
+            if (trig->once) str_appendf(&out, "    trigger_%s%s_triggered = true;\n", trig->name, fn_suffix);
             str_append(&out, "    return true;\n");
         }
         str_append(&out, "}\n\n");
@@ -4500,6 +4502,12 @@ static bool write_level_header(App *app) {
     str_appendf(&out, "    ctx->map.ceil_texture = %s;\n", ceil_macro);
     str_appendf(&out, "    ctx->camera = %s();\n", init_camera_fn);
     str_appendf(&out, "    %s(ctx);\n", append_entities_fn);
+    for (size_t i = 0; i < app->triggers.length; i++) {
+        const Trigger *trig = &app->triggers.data[i];
+        if (trig->once) {
+            str_appendf(&out, "    trigger_%s%s_triggered = false;\n", trig->name, fn_suffix);
+        }
+    }
     str_append(&out, "}\n\n");
 
     str_appendf(&out, "#endif // %s\n", guard_name);

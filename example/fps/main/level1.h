@@ -1094,12 +1094,12 @@ static inline bool trigger_fourth_wave_level1(Vector2 pos) {
     return true;
 }
 
+static bool trigger_boss_level1_triggered = false;
 static inline bool trigger_boss_level1(Vector2 pos) {
     bool inside = pos.x >= 47.0f && pos.x <= 49.0f && pos.y >= 15.0f && pos.y <= 17.0f;
     if (!inside) return false;
-    static bool triggered = false;
-    if (triggered) return false;
-    triggered = true;
+    if (trigger_boss_level1_triggered) return false;
+    trigger_boss_level1_triggered = true;
     return true;
 }
 
@@ -2203,6 +2203,7 @@ static inline void load_level1(YrContext *ctx) {
     ctx->map.ceil_texture = YR_LEVEL1_CEIL;
     ctx->camera = init_camera_level1();
     level_append_exported_entities_level1(ctx);
+    trigger_boss_level1_triggered = false;
 }
 
 #endif // YR_LEVEL_H_LEVEL1

@@ -309,6 +309,7 @@ yr_draw_texture_ex(tex, 64, 64, .align=YR_LAY_CENTER,
 size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data); // Runs e.init(&e, data) if set, inserts e into ctx->entities (a YrEntityMap), returns its new stable id
 yr_create_entity(state, e);                              // [macro] yr_create_entity_ex(state, e, NULL)
 void   yr_remove_entity(YrContext *ctx, size_t id);  // Runs entity->cleanup (if set), frees its animation stack, then removes the entity with this id
+void   yr_clear_entities(YrContext *ctx);  // Remove and free all entities calling entity->cleanup (if set)
 size_t yr_get_entity_id(YrEntity *e);                     // Recovers the id of a live entity pointer obtained from ctx->entities
 ```
 

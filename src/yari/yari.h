@@ -161,6 +161,7 @@ size_t yr_create_entity_ex(YrContext *ctx, YrEntity e, void *data);
 
 void yr_remove_entity(YrContext *ctx, size_t id);
 size_t yr_get_entity_id(YrEntity *e);
+void yr_clear_entities(YrContext *ctx);
 
 void yr__init_game();
 
@@ -202,6 +203,7 @@ static inline void yr__sprites_unlock(void) {}
 #define create_entity yr_create_entity
 #define create_entity_ex yr_create_entity_ex
 #define remove_entity yr_remove_entity
+#define clear_entities yr_clear_entities
 #define get_entity_id yr_get_entity_id
 #endif
 
