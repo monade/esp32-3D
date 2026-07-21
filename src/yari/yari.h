@@ -179,7 +179,7 @@ void yr__draw_sprites_range( YrContext *ctx, int x_start, int x_end);
 size_t yr__entities_prep(YrContext *ctx);
 void yr__update_entities(YrContext *ctx);
 
-#ifdef ESP32_MULTITHREAD
+#ifdef YR_MULTITHREAD
 void yr__draw_game_multithread(YrContext *ctx);
 void yr__sprites_lock(void);
 void yr__sprites_unlock(void);

@@ -10,7 +10,7 @@
 #ifdef ESP32
 #define TARGET_FPS 30
 #else
-#define TARGET_FPS 60
+#define TARGET_FPS 0
 #endif
 
 #define PLAYER_ROTATION_SPEED 2.0

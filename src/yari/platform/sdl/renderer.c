@@ -73,6 +73,7 @@ void yr_renderer_init(int width, int height, const char *title, unsigned int fps
     performance_freq = (double)SDL_GetPerformanceFrequency();
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
     window = SDL_CreateWindow(
         title ? title : "Yari",
@@ -208,15 +209,34 @@ void yr_clear_screen(yr_pixel_t color) {
     for (int i = 0; i < count; i++) framebuffer[i] = color;
 }
 
+typedef struct {
+    YrColorFilterCallback apply;
+    void *user_data;
+} yr_filter_job_ctx;
+
+// Applies the filter to framebuffer rows [y_start, y_end). With
+// YR_MULTITHREAD this runs concurrently on the render worker thread over
+// disjoint row ranges, so the callback must be safe to call from either side.
+static void yr_filter_rows(void *arg, int y_start, int y_end) {
+    const yr_filter_job_ctx *ctx = (const yr_filter_job_ctx *)arg;
+
+    yr_pixel_t *px = framebuffer + (size_t)y_start * framebuffer_width;
+    for (int y = y_start; y < y_end; y++) {
+        for (int x = 0; x < framebuffer_width; x++, px++) {
+            ctx->apply(x, y, px, ctx->user_data);
+        }
+    }
+}
+
 void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data) {
     if (!apply || !framebuffer) return;
 
-    yr_pixel_t *px = framebuffer;
-    for (int y = 0; y < framebuffer_height; y++) {
-        for (int x = 0; x < framebuffer_width; x++, px++) {
-            apply(x, y, px, user_data);
-        }
-    }
+    yr_filter_job_ctx ctx = { .apply = apply, .user_data = user_data };
+#ifdef YR_MULTITHREAD
+    yr_run_split(yr_filter_rows, &ctx, framebuffer_height);
+#else
+    yr_filter_rows(&ctx, 0, framebuffer_height);
+#endif
 }
 
 yr_pixel_t *get_framebuffer(void) {

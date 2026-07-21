@@ -706,7 +706,7 @@ dependencies:
 ```
 ### SDK configs
 
-For optimal performance you should keep the esp32 cpu freq to max 240mhz, use compiler optimization flags and define `-DESP32_MULTITHREAD`, check examples `CMakeList.txt` and `sdkconfig`.
+For optimal performance you should keep the esp32 cpu freq to max 240mhz, use compiler optimization flags and define `-DYR_MULTITHREAD`, check examples `CMakeList.txt` and `sdkconfig`.
 If you need more space for assets you should define a custom partition table according to your device flash storage capability using `idf.py menuconfig`.
 
 ### ESP32 Input

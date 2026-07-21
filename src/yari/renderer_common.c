@@ -1,5 +1,6 @@
 #include <math.h>
 #include "renderer.h"
+#include "yari.h"
 
 // Clipping lives here once instead of duplicated per platform; each
 // platform only implements yr_fill_span (an unclipped horizontal run),
@@ -257,3 +258,47 @@ void yr_draw_triangle_line(int x0, int y0, int x1, int y1, int x2, int y2, int t
     yr_draw_line(x1, y1, x2, y2, thickness, color);
     yr_draw_line(x2, y2, x0, y0, thickness, color);
 }
+
+#ifdef YR_MULTITHREAD
+// Draws background and casts walls for a range of screen columns. Units are
+// ray_res-wide columns; the last unit absorbs any screen-width remainder.
+// Transparent-wall hits get appended straight into ctx->_sprites, safely
+// shared between chunks via yr__sprites_lock/unlock (implemented per
+// platform in platform/esp32/multithread.c or platform/pthread/multithread.c).
+static void yr_draw_walls_half_job(void *_ctx, int start, int end) {
+    YrContext *ctx = (YrContext *)_ctx;
+    int rr = ctx->ray_res;
+    int total = ctx->screen_width / rr;
+    int x0 = start * rr;
+    int x1 = (end == total) ? ctx->screen_width : end * rr;
+    yr__draw_background_range(ctx, x0, x1);
+    yr__draw_walls_range(ctx, x0, x1);
+}
+
+// Draws the already-sorted sprite list for a range of screen columns. Only
+// safe to run in parallel because by this point ctx->_sprites is fully
+// built and read-only - each chunk only ever writes its own disjoint
+// framebuffer columns.
+static void yr_draw_sprites_half_job(void *_ctx, int start, int end) {
+    YrContext *ctx = (YrContext *)_ctx;
+    int rr = ctx->ray_res;
+    int total = ctx->screen_width / rr;
+    int x0 = start * rr;
+    int x1 = (end == total) ? ctx->screen_width : end * rr;
+    yr__draw_sprites_range(ctx, x0, x1);
+}
+
+void yr__draw_game_multithread(YrContext *ctx) {
+    int total = ctx->screen_width / ctx->ray_res;
+
+    yr_run_split(yr_draw_walls_half_job, ctx, total);
+
+    yr__entities_prep(ctx);
+
+    yr_run_split(yr_draw_sprites_half_job, ctx, total);
+
+    yr_da_shrink(&ctx->_sprites);
+    ctx->_sprites.length = 0;
+    yr__update_entities(ctx);
+}
+#endif // YR_MULTITHREAD

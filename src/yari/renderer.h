@@ -92,12 +92,13 @@ yr_pixel_t *get_framebuffer();
 typedef void (*YrColorFilterCallback)(int x, int y, yr_pixel_t *color, void *user_data);
 void yr_apply_color_filter(YrColorFilterCallback apply, void *user_data);
 
-#ifdef ESP32_MULTITHREAD
-// Runs job over [0, total) split across the two ESP32 cores (defined in
-// yari.c): the worker runs [0, total/2) while the caller runs the rest.
-// The job runs concurrently on both cores, so it must only write data
-// disjoint per range. Call from the main task only, never from inside
-// another split job.
+#ifdef YR_MULTITHREAD
+// Runs job over [0, total) split across two workers (an ESP32 core pair, or
+// a worker pthread on desktop - see platform/esp32/multithread.c and
+// platform/pthread/multithread.c): the worker runs [0, total/2) while the
+// caller runs the rest. The job runs concurrently on both sides, so it must
+// only write data disjoint per range. Call from the main thread only, never
+// from inside another split job.
 void yr_run_split(void (*job)(void *ctx, int start, int end), void *ctx, int total);
 #endif
 

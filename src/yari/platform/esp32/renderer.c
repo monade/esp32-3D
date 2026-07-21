@@ -363,7 +363,7 @@ typedef struct {
 } yr_filter_job_ctx;
 
 // Applies the filter to framebuffer rows [y_start, y_end). With
-// ESP32_MULTITHREAD this runs concurrently on both cores over disjoint row
+// YR_MULTITHREAD this runs concurrently on both cores over disjoint row
 // ranges, so the callback must be safe to call from either core.
 static void YR_PERF_ATTR yr_filter_rows(void *arg, int y_start, int y_end) {
     const yr_filter_job_ctx *ctx = (const yr_filter_job_ctx *)arg;
@@ -384,7 +384,7 @@ void YR_PERF_ATTR yr_apply_color_filter(YrColorFilterCallback apply, void *user_
     if (!apply) return;
 
     yr_filter_job_ctx ctx = { .apply = apply, .user_data = user_data };
-#ifdef ESP32_MULTITHREAD
+#ifdef YR_MULTITHREAD
     yr_run_split(yr_filter_rows, &ctx, YR_LCD_H);
 #else
     yr_filter_rows(&ctx, 0, YR_LCD_H);

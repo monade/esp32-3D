@@ -3,11 +3,15 @@
 # different pixel format get relinked silently.
 EXTRA_CFLAGS ?=
 
-YARI_CFLAGS = -Wall -Wextra -O3 $(EXTRA_CFLAGS)
+# -DYR_MULTITHREAD enables the raylib/SDL pthread render-splitting backend
+# (see src/yari/platform/pthread/multithread.c); it only applies to the
+# native desktop builds below, not the web/Windows targets. Tune the worker
+# count with -DYR_RENDER_THREAD_COUNT (default: 4).
+YARI_CFLAGS = -Wall -Wextra -O3 -DYR_MULTITHREAD -DYR_RENDER_THREAD_COUNT=8 $(EXTRA_CFLAGS)
 RAYLIB_CFLAGS = $(shell pkg-config --cflags raylib)
-RAYLIB_LIBS = $(shell pkg-config --libs raylib) -lm
+RAYLIB_LIBS = $(shell pkg-config --libs raylib) -lm -lpthread
 SDL2_CFLAGS = $(shell pkg-config --cflags sdl2)
-SDL2_LIBS = $(shell pkg-config --libs sdl2) -lm
+SDL2_LIBS = $(shell pkg-config --libs sdl2) -lm -lpthread
 RAYLIB_WEB_CFLAGS = -Wall -Wextra -O3 -DPLATFORM_WEB -DGRAPHICS_API_OPENGL_ES2 -Iexternal/web/raylib/include -Ibuild/yari/include $(EXTRA_CFLAGS)
 RAYLIB_WEB_LDFLAGS = -s USE_GLFW=3 -s ASSERTIONS=1 -s INITIAL_MEMORY=33554432 --shell-file src/yari/platform/raylib/shell.html
 
@@ -55,21 +59,23 @@ build/yari_utils.o: src/yari/yari_utils.c
 	$(CC) $(YARI_CFLAGS) -c src/yari/yari_utils.c -o build/yari_utils.o
 build/ht.o: src/yari/ht.c
 	$(CC) $(YARI_CFLAGS) -c src/yari/ht.c -o build/ht.o
+build/multithread_pthread.o: src/yari/platform/pthread/multithread.c
+	$(CC) $(YARI_CFLAGS) -c src/yari/platform/pthread/multithread.c -o build/multithread_pthread.o
 
 build/inputs.o: src/yari/platform/raylib/inputs.c
 	$(CC) $(YARI_CFLAGS) $(RAYLIB_CFLAGS) -c src/yari/platform/raylib/inputs.c -o build/inputs.o
 build/renderer.o: src/yari/platform/raylib/renderer.c
 	$(CC) $(YARI_CFLAGS) $(RAYLIB_CFLAGS) -c src/yari/platform/raylib/renderer.c -o build/renderer.o
-build/yari/lib/libyari_raylib.a: build/yari build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
-	ar rcs build/yari/lib/libyari_raylib.a build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o
+build/yari/lib/libyari_raylib.a: build/yari build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o build/multithread_pthread.o
+	ar rcs build/yari/lib/libyari_raylib.a build/yari.o build/renderer_common.o build/inputs.o build/renderer.o build/physics.o build/yari_utils.o build/ht.o build/multithread_pthread.o
 
 ## SDL2
 build/inputs_sdl.o: src/yari/platform/sdl/inputs.c src/yari/inputs.h
 	$(CC) $(YARI_CFLAGS) $(SDL2_CFLAGS) -c src/yari/platform/sdl/inputs.c -o build/inputs_sdl.o
 build/renderer_sdl.o: src/yari/platform/sdl/renderer.c src/yari/renderer.h
 	$(CC) $(YARI_CFLAGS) $(SDL2_CFLAGS) -c src/yari/platform/sdl/renderer.c -o build/renderer_sdl.o
-build/yari/lib/libyari_sdl.a: build/yari build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
-	ar rcs build/yari/lib/libyari_sdl.a build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o
+build/yari/lib/libyari_sdl.a: build/yari build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o build/multithread_pthread.o
+	ar rcs build/yari/lib/libyari_sdl.a build/yari.o build/renderer_common.o build/inputs_sdl.o build/renderer_sdl.o build/physics.o build/yari_utils.o build/ht.o build/multithread_pthread.o
 
 ## Raylib web
 external/web:

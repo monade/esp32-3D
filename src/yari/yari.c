@@ -2,21 +2,6 @@
 
 #include <stdlib.h>
 
-// #define YR_PROFILE 1
-#if YR_PROFILE
-#include <stdio.h>
-#include <string.h>
-static struct {
-    float bg, walls, ents, game, tx, last;
-    int frames;
-} yr_prof;
-#ifdef ESP32
-#include <esp_heap_caps.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#endif
-#endif
-
 #define THRESHOLD 0.0001
 
 static int compare_sprite_dist(const void *a, const void *b) {
@@ -713,65 +698,19 @@ void yr__init_game() {
 }
 
 void yr_draw_game(YrContext *ctx) {
-#ifdef ESP32_MULTITHREAD
+#ifdef YR_MULTITHREAD
     yr__draw_game_multithread(ctx);
-#else // !ESP32_MULTITHREAD
-#if YR_PROFILE
-    float t0 = yr_get_time();
-    yr_draw_background(ctx);
-    float t1 = yr_get_time();
-    yr_draw_walls(ctx);
-    float t2 = yr_get_time();
-    yr_draw_entities(ctx);
-    float t3 = yr_get_time();
-    yr_prof.bg += t1 - t0;
-    yr_prof.walls += t2 - t1;
-    yr_prof.ents += t3 - t2;
-#else
+#else // !YR_MULTITHREAD
     yr_draw_background(ctx);
     yr_draw_walls(ctx);
     yr_draw_entities(ctx);
-#endif
-#endif // ESP32_MULTITHREAD
+#endif // YR_MULTITHREAD
 }
 
 void yr__update_game() {
-#if YR_PROFILE
-    float f0 = yr_get_time();
-    yr_begin_drawing();
-    yr_update_game(&yr_context);
-    float f1 = yr_get_time();
-    yr_render_screen();
-    float f2 = yr_get_time();
-    yr_prof.game += f1 - f0;
-    yr_prof.tx += f2 - f1;
-
-    if (++yr_prof.frames >= 60) {
-        float n = (float)yr_prof.frames;
-        float fps = (yr_prof.last > 0.0f) ? n / (f2 - yr_prof.last) : 0.0f;
-        // "logic" = everything in yr_update_game outside the three draw phases
-        // (game logic, HUD, input handling).
-        float logic = yr_prof.game - yr_prof.bg - yr_prof.walls - yr_prof.ents;
-        printf("[prof] fps=%.1f | bg=%.2f walls=%.2f ents=%.2f logic=%.2f tx=%.2f ms\n",
-               fps,
-               1000.0f * yr_prof.bg / n,
-               1000.0f * yr_prof.walls / n,
-               1000.0f * yr_prof.ents / n,
-               1000.0f * logic / n,
-               1000.0f * yr_prof.tx / n);
-        #ifdef ESP32
-        uint32_t free_heap = esp_get_free_heap_size();
-        uint32_t max_slot = heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT);
-        printf("[mem] free=%lu, max_slot=%lu", free_heap, max_slot);
-        #endif
-        memset(&yr_prof, 0, sizeof(yr_prof));
-        yr_prof.last = f2;
-    }
-#else
     yr_begin_drawing();
     yr_update_game(&yr_context);
     yr_render_screen();
-#endif
     yr_end_drawing();
 }
 
