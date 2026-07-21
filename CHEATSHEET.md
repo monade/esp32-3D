@@ -30,7 +30,7 @@ function, macro and type below (e.g. `yr_draw_rectangle` → `draw_rectangle`,
 
 ```c
 YrContext     // central engine state: camera, map, entities, screen, assets (see README - `Engine` context)
-YrCamera        // { Vector2 pos; Vector2 dir; float horizon; float angle; }
+YrCamera        // { Vector2 pos; Vector2 dir; float horizon; }
 YrEntity        // a sprite/object: pos, texture_id, kind, embedded animation stack, collision info, init/update/cleanup callbacks (see README - `Entities`)
 YrEntityMap     // yr_Hm(size_t, YrEntity) - hash map of entity id -> YrEntity, backs ctx->entities
 yr_pixel_t      // framebuffer pixel: uint16_t (RGB565, ESP32/YR_RGB565), uint8_t (L8/YR_L8), or uint32_t (ARGB, desktop/web)
@@ -67,7 +67,7 @@ YR_MONOCROME           // implies YR_L8; simulates dithered 1bpp on desktop
 void yr_init_game(YrContext *ctx);                          // Implement in game code: configure initial state, called once at startup
 void yr_update_game(YrContext *ctx);                        // Implement in game code: update state and draw, called every frame
 
-void yr_draw_game(void);                                        // Draws background, walls and entities using the global engine state
+void yr_draw_game(YrContext *ctx);                              // Draws background, walls and entities
 
 // low level drawing functions
 void yr_draw_background(YrContext *ctx);                    // Draws the floor and ceiling (textured, per-cell, or solid black)
@@ -172,10 +172,18 @@ Vector2 yr_slide_collision_out_radius(YrContext *ctx, Vector2 from, Vector2 to, 
 ```c
 typedef struct {
     YrCollisionType type;   // YR_COLLISION_NONE, YR_COLLISION_WALL, YR_COLLISION_ENTITY
-    int cell_x, cell_y;     // map cell of the hit wall (wall hits only)
-    uint8_t tile;           // tile value of the hit wall (wall hits only)
-    YrEntity *entity;       // pointer to the hit entity (entity hits only)
-    size_t entity_index;    // id of the hit entity in ctx->entities (entity hits only)
+    union {
+        // valid only when type == YR_COLLISION_WALL
+        struct {
+            int cell_x, cell_y; // map cell of the hit wall
+            YrWall tile;        // the hit wall itself (kind, texture_id/color, slide_x/y, ...)
+        };
+        // valid only when type == YR_COLLISION_ENTITY - shares memory with the struct above
+        struct {
+            YrEntity *entity;       // pointer to the hit entity
+            size_t entity_index;    // id of the hit entity in ctx->entities
+        };
+    };
 } YrCollisionInfo;
 ```
 

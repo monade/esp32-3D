@@ -102,6 +102,7 @@ void yr_draw_text(
 }
 
 size_t yr_get_text_length(const char *text, size_t len, const yr_font_t *font) {
+    if (len == 0) len = 256;
     size_t res = 0;
     for(size_t i=0; i<len; i++) {
         char ch = text[i];
@@ -133,20 +134,41 @@ void yr_draw_line(int x0, int y0, int x1, int y1, int thickness, yr_pixel_t colo
         }
         return;
     }
-    float m = (float)yv/xv;
-    int xs, ys, xe;
-    if (xv>0) {
-        xs = x0;
-        ys = y0;
-        xe = x1;
+    int axv = xv > 0 ? xv : -xv;
+    int ayv = yv > 0 ? yv : -yv;
+
+    if (axv >= ayv) {
+        float m = (float)yv/xv;
+        int xs, ys, xe;
+        if (xv>0) {
+            xs = x0;
+            ys = y0;
+            xe = x1;
+        } else {
+            xs = x1;
+            ys = y1;
+            xe = x0;
+        }
+        for(int x=xs; x<xe; x++) {
+            int y = m*(x-xs);
+            yr_draw_rectangle(x-sm, y-sm+ys, size, size, color);
+        }
     } else {
-        xs = x1;
-        ys = y1;
-        xe = x0;
-    }
-    for(int x=xs; x<xe; x++) {
-        int y = m*(x-xs);
-        yr_draw_rectangle(x-sm, y-sm+ys, size, size, color);
+        float m = (float)xv/yv;
+        int xs, ys, ye;
+        if (yv>0) {
+            xs = x0;
+            ys = y0;
+            ye = y1;
+        } else {
+            xs = x1;
+            ys = y1;
+            ye = y0;
+        }
+        for(int y=ys; y<ye; y++) {
+            int x = m*(y-ys);
+            yr_draw_rectangle(x-sm+xs, y-sm, size, size, color);
+        }
     }
 }
 

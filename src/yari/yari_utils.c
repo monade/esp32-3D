@@ -53,7 +53,7 @@ start:
 
 // Denormalize screen coordinates
 Vector2 yr_screen_coord(Vector2 pos) {
-    Vector2 center = {(yr_screen_width()-1)/2.0, (yr_screen_height()-1)/2.0};
+    Vector2 center = {(yr_screen_width()-1)/2.0f, (yr_screen_height()-1)/2.0f};
     return (Vector2) {pos.x * center.x + center.x, pos.y * center.y + center.y};
 }
 
@@ -105,11 +105,11 @@ void yr__draw_text_ex(const char *txt, const yr_font_t *font, struct yr_dtxt par
         yr_draw_text(txt, dx.x, dx.y + h, font, param.color);
     } break;
     case YR_LAY_TR: {
-        float x = param.box.width - (dx.x + yr_get_text_length(txt, len, font));
+        float x = param.box.width - yr_get_text_length(txt, len, font) + dx.x;
         yr_draw_text(txt, x, dx.y + h, font, param.color);
     } break;
     case YR_LAY_BR: {
-        float x = param.box.width - (dx.x + yr_get_text_length(txt, len, font));
+        float x = param.box.width - yr_get_text_length(txt, len, font) + dx.x;
         float y = param.box.height + dx.y;
         yr_draw_text(txt, x, y, font, param.color);
     } break;

@@ -23,7 +23,7 @@ void yr_esp_key_init(int pin, int key) {
 int yr_esp_joystick_init(int joystick_pin_x, int joystick_pin_y) {
     (void)joystick_pin_x;
     (void)joystick_pin_y;
-    return 0;
+    return -1;
 }
 float yr_esp_joystick_get_axis(int joystick_id, int axis) {
     (void)joystick_id;

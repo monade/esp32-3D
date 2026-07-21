@@ -32,7 +32,6 @@
 #define BOSS_SHOT_COOLDOWN 1.5
 #define PROJECTILE_SPEED 8.0f
 
-int joystick_id;
 
 enum {
     GAME_MENU,
@@ -94,10 +93,6 @@ typedef struct {
     int damage_enemy;
 } ExplosionData;
 
-GameData game = {0};
-
-Timer boss_spawn_animation = {0};
-
 struct v2i {
     int x;
     int y;
@@ -145,6 +140,12 @@ static const GunStat WEAPONS[] = {
         .fire_anim = {.frames=(int[]){tx_wep_bfg1}, .frame_count=1, .duration=ANIMATION_SPEED},
     },
 };
+
+int joystick_id;
+GameData game = {0};
+Timer boss_spawn_animation = {0};
+struct v2i boss_door[2] = {{47,15},{48,15}};
+Timer boss_door_anim = {0};
 
 void pickup_key(YrContext *ctx, YrEntity *self, size_t index) {
     if (self->dist < PLAYER_COLLISION_THRESHOLD + self->collision_threshold) {
@@ -249,6 +250,18 @@ void check_monster_spawns(Context *ctx) {
     }
     if(trigger_boss_level1(player_pos)) {
         spawn_boss(ctx);
+        boss_door_anim = timer_start(0);
+    }
+}
+
+void game_triggers(Context *ctx) {
+    check_monster_spawns(ctx);
+
+    if(timer_is_started(&boss_door_anim) && boss_door_anim.count<128 && timer_loop(&boss_door_anim, 0.01f)) {
+        int d1 = boss_door[0].y*ctx->map.cols + boss_door[0].x;
+        int d2 = boss_door[1].y*ctx->map.cols + boss_door[1].x;
+        ctx->map.walls[d1].slide_x = -boss_door_anim.count;
+        ctx->map.walls[d2].slide_x = boss_door_anim.count;
     }
 }
 
@@ -476,7 +489,7 @@ void print_fps() {
     float fps = get_fps();
     char fps_text[32];
     sprintf(fps_text, "FPS: %.1f", fps);
-    draw_text_ex(fps_text, fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_TR, .x=10, .y=16);
+    draw_text_ex(fps_text, fonts[YR_FONT_SM], YR_WHITE, .align=YR_LAY_TR, .x=-10, .y=16);
 }
 
 void draw_hud(Context *ctx) {
@@ -645,6 +658,7 @@ void reset_game(Context *ctx) {
     game.player.bob_phase = 0.0f;
     game.player.bob_horizon = 0.0f;
     memset(&boss_spawn_animation, 0, sizeof(boss_spawn_animation));
+    memset(&boss_door_anim, 0, sizeof(boss_door_anim));
     clear_entities(ctx);
 }
 
@@ -678,7 +692,7 @@ void yr_update_game(Context *ctx) {
         move_player(ctx);
         draw_game(ctx);
 
-        check_monster_spawns(ctx);
+        game_triggers(ctx);
 
         if (is_key_down(YR_KEY_SPACE)) {
             shoot_gun(ctx);

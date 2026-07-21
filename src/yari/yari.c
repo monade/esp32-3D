@@ -121,11 +121,10 @@ static inline float yr_projection_plane_scale(const YrContext *ctx) {
     return base_scale * (float)ctx->screen_width / (float)ctx->screen_height;
 }
 
-static inline float yr__camera_perp_depth(const YrCamera *p, float scale, Vector2 pos) {
-    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
-    float invDet = 1.0f / (plane.x * p->dir.y - p->dir.x * plane.y);
-    Vector2 rel = Vector2Subtract(pos, p->pos);
-    return (-plane.y * rel.x + plane.x * rel.y) * invDet;
+static inline Vector2 yr__camera_plane(const YrContext *ctx) {
+    float scale = yr_projection_plane_scale(ctx);
+    const YrCamera *p = &ctx->camera;
+    return (Vector2){.x = -p->dir.y * scale, .y = p->dir.x * scale};
 }
 
 static inline void yr_draw_texture_column(
@@ -347,6 +346,9 @@ void YR_PERF_ATTR yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
                 .y = p->pos.y + dir.y * wall_dist};
             diff = hit_vertical ? rs.y - (float)((int)rs.y) : rs.x - (float)((int)rs.x);
             if (diff < 0.0f) diff += 1.0f;
+
+            float slide_frac = (float)(hit_vertical ? map_cell->slide_y : map_cell->slide_x) / 128.0f;
+            diff = slide_frac >= 0.0f ? diff - slide_frac : 1.0f + slide_frac - diff;
         }
 
         float dist = wall_dist;
@@ -416,8 +418,7 @@ void YR_PERF_ATTR yr_raycast_walls(YrContext *ctx, Vector2 dir, int slice_x) {
  */
 void yr__draw_walls_range(YrContext *ctx, int x_start, int x_end) {
     YrCamera *p = &ctx->camera;
-    float scale = yr_projection_plane_scale(ctx);
-    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    Vector2 plane = yr__camera_plane(ctx);
     int ray_res = ctx->ray_res;
     float camera_step = 2.0f * (float)ray_res / (float)ctx->screen_width;
     int start_column = x_start / ray_res;
@@ -443,8 +444,7 @@ void yr_draw_walls(YrContext *ctx) {
  */
 void yr__draw_background_range(YrContext *ctx, int x_start, int x_end) {
     YrCamera *p = &ctx->camera;
-    float scale = yr_projection_plane_scale(ctx);
-    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    Vector2 plane = yr__camera_plane(ctx);
     Vector2 r0 = {.x = p->dir.x - plane.x, .y = p->dir.y - plane.y};
     Vector2 r1 = {.x = p->dir.x + plane.x, .y = p->dir.y + plane.y};
 
@@ -552,15 +552,18 @@ void yr_draw_background(YrContext *ctx) {
 size_t yr__entities_prep(YrContext *ctx) {
     YrCamera *p = &ctx->camera;
     float scale = yr_projection_plane_scale(ctx);
+    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    float invDet = 1.0f / (plane.x * p->dir.y - p->dir.x * plane.y);
     // Update entity distances
     for (size_t i = 0; i < ctx->entities.length; i++) {
         YrEntity *e = &ctx->entities.data[i].value;
         if (e->disabled) continue;
         e->dist = Vector2Length(Vector2Subtract(e->pos, p->pos));
+        Vector2 rel = Vector2Subtract(e->pos, p->pos);
         YrRenderSprite s = {
             .obj_type=YR_RO_ENTITY,
             .entity=e,
-            .dist=yr__camera_perp_depth(p, scale, e->pos)
+            .dist=(-plane.y * rel.x + plane.x * rel.y) * invDet
         };
         yr_da_append(&ctx->_sprites, s);
         yr_animate_entity(e);
@@ -583,9 +586,8 @@ void yr__update_entities(YrContext *ctx) {
 void yr__draw_sprites_range(YrContext *ctx, int x_start, int x_end) {
     YrCamera *p = &ctx->camera;
     float half_screen = ctx->screen_width * 0.5f;
-    float scale = yr_projection_plane_scale(ctx);
     float projection_scale = (float)ctx->screen_height;
-    Vector2 plane = {.x = -p->dir.y * scale, .y = p->dir.x * scale};
+    Vector2 plane = yr__camera_plane(ctx);
     float invDet = 1.0f / (plane.x * p->dir.y - p->dir.x * plane.y);
 
     for (size_t i = 0; i < ctx->_sprites.length; i++) {
@@ -789,8 +791,8 @@ void yr_remove_entity(YrContext *ctx, size_t id) {
     YrEntity *e = yr_hm_try(&ctx->entities, id);
     if (!e) return;
 
-    if (e->cleanup) e->cleanup(e);
     yr_da_free(&e->animation);
+    if (e->cleanup) e->cleanup(e);
     yr_hm_remove(&ctx->entities, id);
 }
 
