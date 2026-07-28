@@ -24,7 +24,11 @@
 
 #define YR_FOV_ANGLE (PI / 3.5)
 #ifndef YR_MAX_RENDER_DIST
+#ifdef ESP32
+#define YR_MAX_RENDER_DIST 14.0
+#else
 #define YR_MAX_RENDER_DIST 20.0
+#endif
 #endif
 #ifndef YR_TEXTURE_SIZE
 #define YR_TEXTURE_SIZE 64
