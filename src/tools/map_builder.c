@@ -1060,30 +1060,109 @@ static float clamp_float(float value, float min, float max) {
     return value;
 }
 
-static Rectangle get_sidebar_bounds(void) {
+// With FLAG_WINDOW_HIGHDPI on Windows, raylib's GLFW backend reports the
+// screen size in logical pixels at startup but in physical pixels after the
+// first window resize (raylib issue #4834 - the WindowSizeCallback writes
+// the scaled client size straight into CORE.Window.screen). All layout math
+// below therefore runs in "logical" screen space: up to the first resize
+// GetScreenWidth() is already logical (it equals the value requested in
+// InitWindow), afterwards it is physical, so it is divided by the DPI scale.
+// The scale is latched once, before any user resize, from the window's real
+// client rect (the true surface), so it never depends on raylib's own
+// size reporting.
+static bool window_size_is_physical = false;
+static bool dpi_scale_latched = false;
+static float window_dpi_scale = 1.0f;
+
+#ifdef _WIN32
+// The real client rect is the one thing that is always the actual GL
+// surface, whatever raylib's bookkeeping says. winuser.h is not reliably
+// available in this translation unit (it is suppressed by the NOGDI/NOUSER
+// defines around the ds.h include), so GetClientRect is declared manually -
+// the signature below matches the user32 export exactly, and the struct
+// name cannot collide with a future winuser.h inclusion.
+struct map_builder_client_rect { long left; long top; long right; long bottom; };
+__declspec(dllimport) int __stdcall GetClientRect(void *hwnd, void *rect);
+
+static void update_window_size_state(void) {
+    // First resize flips the window into this regime...
+    if (IsWindowResized()) window_size_is_physical = true;
+    if (dpi_scale_latched) return;
+
+    // ...and the scale must be latched before that, i.e. at startup.
+    void *hwnd = GetWindowHandle();
+    struct map_builder_client_rect client = {0};
     int screen_w = GetScreenWidth();
-    int screen_h = GetScreenHeight();
+    if (hwnd != NULL && GetClientRect(hwnd, &client) != 0 && client.right > 0 && screen_w > 0) {
+        window_dpi_scale = (float)client.right / (float)screen_w;
+    } else {
+        Vector2 reported = GetWindowScaleDPI();
+        window_dpi_scale = reported.x > 0.0f ? reported.x : 1.0f;
+    }
+    if (window_dpi_scale < 1.0f) window_dpi_scale = 1.0f;
+    dpi_scale_latched = true;
+}
+#else
+static void update_window_size_state(void) {
+}
+#endif
+
+static int layout_width(void) {
+    int w = GetScreenWidth();
+#ifdef _WIN32
+    if (window_size_is_physical && window_dpi_scale > 1.0f) w = (int)((float)w / window_dpi_scale + 0.5f);
+#endif
+    return w;
+}
+
+static int layout_height(void) {
+    int h = GetScreenHeight();
+#ifdef _WIN32
+    if (window_size_is_physical && window_dpi_scale > 1.0f) h = (int)((float)h / window_dpi_scale + 0.5f);
+#endif
+    return h;
+}
+
+// On Windows with FLAG_WINDOW_HIGHDPI the mouse position reported by raylib
+// is scaled down relative to the window's real client space (same DPI
+// mismatch as the screen size, issue #4834), so selection/click coordinates
+// land up-left of the cursor. Converting with the latched DPI scale keeps
+// the mouse in the same space as the drawing.
+static Vector2 get_mouse_pos(void) {
+    Vector2 m = GetMousePosition();
+#ifdef _WIN32
+    if (dpi_scale_latched && window_dpi_scale > 1.0f) {
+        m.x *= window_dpi_scale;
+        m.y *= window_dpi_scale;
+    }
+#endif
+    return m;
+}
+
+static Rectangle get_sidebar_bounds(void) {
+    int screen_w = layout_width();
+    int screen_h = layout_height();
     return (Rectangle){(float)screen_w - SIDEBAR_WIDTH, 0.0f, SIDEBAR_WIDTH, (float)screen_h};
 }
 
 static Rectangle get_topbar_bounds(void) {
-    int screen_w = GetScreenWidth();
+    int screen_w = layout_width();
     float map_width = (float)screen_w - SIDEBAR_WIDTH;
     if (map_width < 160.0f) map_width = 160.0f;
     return (Rectangle){0.0f, 0.0f, map_width, TOPBAR_HEIGHT};
 }
 
 static Rectangle get_map_bounds(void) {
-    int screen_w = GetScreenWidth();
-    int screen_h = GetScreenHeight();
+    int screen_w = layout_width();
+    int screen_h = layout_height();
     float map_width = (float)screen_w - SIDEBAR_WIDTH;
     if (map_width < 160.0f) map_width = 160.0f;
     return (Rectangle){0.0f, TOPBAR_HEIGHT, map_width, (float)screen_h - TOPBAR_HEIGHT - STATUS_BAR_HEIGHT};
 }
 
 static Rectangle get_status_bar_bounds(void) {
-    int screen_w = GetScreenWidth();
-    int screen_h = GetScreenHeight();
+    int screen_w = layout_width();
+    int screen_h = layout_height();
     float map_width = (float)screen_w - SIDEBAR_WIDTH;
     if (map_width < 160.0f) map_width = 160.0f;
     return (Rectangle){0.0f, (float)screen_h - STATUS_BAR_HEIGHT, map_width, STATUS_BAR_HEIGHT};
@@ -2318,7 +2397,7 @@ static void paste_clipboard_at_mouse(App *app, Rectangle map_bounds) {
         return;
     }
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (!CheckCollisionPointRec(mouse, map_bounds)) {
         set_status_kind(app, STATUS_WARNING, "Move mouse over the map to paste");
         return;
@@ -4775,7 +4854,7 @@ static void handle_trigger_map_input(App *app, Vector2 world, int cell_x, int ce
 }
 
 static void handle_map_input(App *app, Rectangle map_bounds) {
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
 
     int touch_count = GetTouchPointCount();
     if (touch_count >= 2) {
@@ -5294,7 +5373,7 @@ static void draw_map(App *app, Rectangle map_bounds) {
         }
     }
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, map_bounds) && !app_is_editing(app)) {
         Vector2 world = GetScreenToWorld2D(mouse, app->camera);
         if (world.x >= 0.0f && world.y >= 0.0f && world.x < (float)app->map.cols && world.y < (float)app->map.rows) {
@@ -5338,7 +5417,7 @@ static void draw_asset_list(App *app, Rectangle list_bounds) {
     float min_scroll = list_bounds.height - content_height;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list_bounds)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->asset_scroll += wheel * ASSET_ROW_HEIGHT;
@@ -5410,7 +5489,7 @@ static void draw_surface_asset_row(App *app, float x, float y, float w, const ch
 static void draw_floor_ceil_section(App *app, float x, float *y, float w) {
     float gap = 8.0f;
     float half_w = (w - gap) * 0.5f;
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
 
     GuiLabel((Rectangle){x, *y, w, 20.0f}, "Draw target");
     *y += 22.0f;
@@ -5575,7 +5654,7 @@ static void draw_triggers_section(App *app, float x, float *y, float w) {
     float row_h = 26.0f;
     float label_w = 58.0f;
     float add_btn_w = 64.0f;
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
 
     GuiLabel((Rectangle){x, *y, label_w, row_h}, "New");
     if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_btn_w - 28.0f, row_h}, app->new_trigger_name, (int)sizeof(app->new_trigger_name), app->new_trigger_edit)) {
@@ -5820,7 +5899,7 @@ static void draw_init_fn_picker(App *app, float x, float *y, float w, float max_
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->init_fn_scroll += wheel * row_h;
@@ -5893,7 +5972,7 @@ static void draw_update_fn_picker(App *app, float x, float *y, float w, float ma
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->update_fn_scroll += wheel * row_h;
@@ -5966,7 +6045,7 @@ static void draw_cleanup_fn_picker(App *app, float x, float *y, float w, float m
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->cleanup_fn_scroll += wheel * row_h;
@@ -6031,7 +6110,7 @@ static void draw_entity_animation_picker(App *app, float x, float *y, float w, f
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->entity_anim_scroll += wheel * row_h;
@@ -6103,7 +6182,7 @@ static void draw_collision_picker(App *app, const char *subject, float x, float 
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) *scroll += wheel * row_h;
@@ -6168,7 +6247,7 @@ static void draw_kind_picker(App *app, float x, float *y, float w, float max_hei
     float min_scroll = list.height - content_h;
     if (min_scroll > 0.0f) min_scroll = 0.0f;
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (CheckCollisionPointRec(mouse, list)) {
         float wheel = GetMouseWheelMove();
         if (wheel != 0.0f) app->kind_scroll += wheel * row_h;
@@ -6296,7 +6375,7 @@ static void draw_anim_section(App *app, float x, float *y, float w) {
     float row_h = 26.0f;
     float label_w = 58.0f;
     float add_btn_w = 64.0f;
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
 
     GuiLabel((Rectangle){x, *y, label_w, row_h}, "New anim");
     if (GuiTextBox((Rectangle){x + label_w + 4.0f, *y, w - label_w - add_btn_w - 28.0f, row_h}, app->new_anim_name, (int)sizeof(app->new_anim_name), app->new_anim_edit)) {
@@ -6527,7 +6606,7 @@ static void draw_topbar(App *app, Rectangle topbar_bounds, Rectangle map_bounds)
     x += toggle_w + 18.0f + toggle_gap;
     Rectangle anim_toggle = {x, y, toggle_w + 4.0f, row_h};
 
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         if (CheckCollisionPointRec(mouse, wall_toggle) && app->brush != BRUSH_WALL) {
             clear_edit_selection(app);
@@ -6617,7 +6696,7 @@ static void draw_sidebar(App *app, Rectangle sidebar_bounds, Rectangle map_bound
     float gap = 8.0f;
     float row_h = 26.0f;
     float half_w = (w - gap) * 0.5f;
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = get_mouse_pos();
 
     GuiCheckBox((Rectangle){x, y, 18.0f, 18.0f}, "Level name suffix", &app->use_level_suffix);
     y += row_h;
@@ -7007,6 +7086,7 @@ int main(int argc, char **argv) {
 
     bool running = true;
     while (running) {
+        update_window_size_state();
         map_bounds = get_map_bounds();
         Rectangle sidebar_bounds = get_sidebar_bounds();
         update_camera_offset(&app, map_bounds);
@@ -7041,8 +7121,8 @@ int main(int argc, char **argv) {
         draw_map_status_bar(&app, get_status_bar_bounds());
 
         if (app.show_exit_dialog) {
-            int sw = GetScreenWidth();
-            int sh = GetScreenHeight();
+            int sw = layout_width();
+            int sh = layout_height();
             DrawRectangle(0, 0, sw, sh, (Color){0, 0, 0, 110});
             float dw = 320.0f;
             float dh = 130.0f;

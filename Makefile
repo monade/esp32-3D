@@ -24,7 +24,7 @@ EMAR = emar
 
 WINCC=x86_64-w64-mingw32-gcc
 WIN_CFLAGS=-Wall -Wextra -O2 -static -Isrc/yari -Iexternal/win/raylib/include
-WIN_LIBS=-Lexternal/win/raylib/lib/ -l:libraylib.a -lopengl32 -lgdi32 -lwinmm
+WIN_LIBS=-Lexternal/win/raylib/lib/ -l:libraylib.a -lopengl32 -lgdi32 -lwinmm -luser32
 
 ESP32_HOME = ~/esp/v5.5.*/esp-idf
 
